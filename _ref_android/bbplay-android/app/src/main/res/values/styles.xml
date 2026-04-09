@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="BBPlay.PrimaryButton" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="backgroundTint">@color/button_background</item>
+        <item name="android:textColor">@color/button_text_color</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:fontFamily">@font/din_round_pro_bold</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="shapeAppearanceOverlay">@style/CornerRadiusButton8dp</item>
+    </style>
+
+    <style name="BBPlay.ButtonGreyStyle" parent="BBPlay.PrimaryButton">
+        <item name="backgroundTint">@color/grey_button_background</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/grey_dark</item>
+        <item name="android:fontFamily">@font/din_round_pro_bold</item>
+    </style>
+
+    <style name="BBPlay.ButtonEventJoinStyle" parent="BBPlay.PrimaryButton">
+        <item name="backgroundTint">@color/background</item>
+        <item name="strokeWidth">2dp</item>
+        <item name="strokeColor">@color/grey_light</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/grey_light</item>
+    </style>
+
+    <style name="BBPlay.ButtonLogout" parent="BBPlay.PrimaryButton">
+        <item name="backgroundTint">@color/bb_red_error</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:fontFamily">@font/din_round_pro_bold</item>
+    </style>
+
+    <style name="BBPlay.ButtonBack" parent="BBPlay.PrimaryButton">
+        <item name="backgroundTint">@color/background</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="android:textColor">@color/grey_light</item>
+    </style>
+
+    <style name="CornerRadiusButton6dp" >
+        <item name="cornerSizeTopLeft">6dp</item>
+        <item name="cornerSizeBottomLeft">6dp</item>
+        <item name="cornerSizeTopRight">6dp</item>
+        <item name="cornerSizeBottomRight">6dp</item>
+    </style>
+    
+    <style name="CornerRadiusButton8dp" >
+        <item name="cornerSizeTopLeft">@dimen/button_corner_radius</item>
+        <item name="cornerSizeBottomLeft">@dimen/button_corner_radius</item>
+        <item name="cornerSizeTopRight">@dimen/button_corner_radius</item>
+        <item name="cornerSizeBottomRight">@dimen/button_corner_radius</item>
+    </style>
+
+    <style name="CornerRadiusButtonNewStyle" >
+        <item name="cornerSizeTopLeft">0dp</item>
+        <item name="cornerSizeBottomLeft">@dimen/button_corner_radius</item>
+        <item name="cornerSizeTopRight">0dp</item>
+        <item name="cornerSizeBottomRight">@dimen/button_corner_radius</item>
+    </style>
+
+    <style name="TextInputLayoutStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxBackgroundColor">@color/background</item>
+        <item name="hintEnabled">false</item>
+        <item name="boxStrokeColor">@color/border_color_empty_edit_text</item>
+        <item name="boxStrokeWidth">2dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="boxCornerRadiusBottomStart">8dp</item>
+        <item name="boxCornerRadiusTopStart">8dp</item>
+        <item name="boxCornerRadiusBottomEnd">8dp</item>
+        <item name="boxCornerRadiusTopEnd">8dp</item>
+    </style>
+
+    <style name="SettingsTextInputLayoutStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxBackgroundColor">@color/grey_600</item>
+        <item name="hintEnabled">false</item>
+        <item name="boxStrokeColor">@color/grey_600</item>
+        <item name="boxStrokeWidth">0dp</item>
+        <item name="boxCornerRadiusBottomStart">8dp</item>
+        <item name="boxCornerRadiusTopStart">8dp</item>
+        <item name="boxCornerRadiusBottomEnd">8dp</item>
+        <item name="boxCornerRadiusTopEnd">8dp</item>
+    </style>
+
+    <style name="SettingsEditTextStyle" parent="Widget.AppCompat.EditText">
+        <item name="android:textColorHint">@color/grey_light</item>
+        <item name="android:textColor">@color/grey_light</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="EditTextStyle" parent="Widget.AppCompat.EditText">
+        <item name="android:textColorHint">@color/grey_light</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="BBPlay.RadioButtonStyle" parent="Widget.AppCompat.CompoundButton.RadioButton">
+        <item name="android:button">@drawable/selector_radio_button</item>
+        <item name="buttonTintMode">screen</item>
+        <item name="buttonTint">@color/transparent</item>
+        <item name="fontFamily">@font/din_round_pro_bold</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <!--region BottomSheetDialog-->
+    <style name="BBPlay.BottomSheetDialogTheme" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/BBPlay.BottomSheetStyle</item>
+    </style>
+
+    <style name="BBPlay.BottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@drawable/bg_bottom_dialog_with_radius</item>
+    </style>
+    <!--endregion-->
+
+    <style name="AppTheme.Picker" parent="Theme.AppCompat.Light.NoActionBar" >
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="fontFamily">@font/din_round_pro_bold</item>
+        <item name="android:textSize">32sp</item>
+    </style>
+
+    <style name="CircularProgress" parent="Theme.AppCompat.Light">
+        <item name="colorAccent">@android:color/white</item>
+    </style>
+
+    <style name="BBPlay.PersonalInfoTextStyle" parent="Widget.AppCompat.TextView">
+        <item name="android:background">@drawable/bg_personal_info</item>
+        <item name="android:layout_marginTop">16dp</item>
+        <item name="android:padding">19dp</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/grey_light</item>
+        <item name="android:fontFamily">@font/din_round_pro_medium</item>
+        <item name="android:drawablePadding">19dp</item>
+        <item name="android:drawableTint">@color/grey_light</item>
+        <item name="drawableTint">@color/grey_light</item>
+    </style>
+
+    <style name="ShapeAppearanceOverlay.App.CornerSize50Percent" parent="">
+        <item name="cornerSize">50%</item>
+    </style>
+    
+    <style name="ShapeAppearanceOverlay.App.CornerBottomSize8dp" parent="">
+        <item name="cornerSizeBottomLeft">8dp</item>
+        <item name="cornerSizeBottomRight">8dp</item>
+    </style>
+
+    <style name="BBPlay.ButtonsItemNewsStyle" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/grey_light</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/grey_900</item>
+        <item name="iconGravity">textStart</item>
+        <item name="iconTint">@color/grey_900</item>
+        <item name="iconPadding">0dp</item>
+    </style>
+
+    <style name="BBPlay.BookingChoiceTextViewStyle" parent="Widget.AppCompat.TextView">
+        <item name="android:background">@drawable/bg_rectangle_grey</item>
+        <item name="android:paddingStart">19dp</item>
+        <item name="android:paddingEnd">19dp</item>
+        <item name="android:fontFamily">@font/din_round_pro_medium</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/grey_light</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="drawableEndCompat">@drawable/ic_bb_arrow_right</item>
+        <item name="android:drawablePadding">19dp</item>
+        <item name="drawableTint">@color/grey_light</item>
+    </style>
+
+</resources>

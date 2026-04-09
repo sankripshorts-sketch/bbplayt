@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:paddingHorizontal="24dp"
+    android:paddingBottom="24dp"
+    tools:context=".screens.settings.SettingsFragment">
+
+    <ImageView
+        android:id="@+id/bt_back_from_settings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingVertical="16dp"
+        android:paddingEnd="20dp"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_back_nav"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:fontFamily="@font/din_round_pro_bold"
+        android:text="@string/settings_text"
+        android:textColor="@color/white"
+        android:textSize="32sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bt_back_from_settings" />
+
+
+    <ScrollView
+        android:id="@+id/sv_info_settings"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="24dp"
+        android:overScrollMode="never"
+        android:scrollbarThumbVertical="@null"
+        app:layout_constraintBottom_toTopOf="@+id/btn_save_changes"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:fontFamily="@font/din_round_pro_bold"
+                android:text="@string/change_password_text"
+                android:textColor="@color/green"
+                android:textSize="16sp" />
+
+            <mobi.blackbears.bbplay.common.views.BbTextLayoutWithEditTextView
+                android:id="@+id/et_old_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:hintText="Старый пароль"
+                app:iconStart="@drawable/ic_password_logo"
+                app:typeInEdit="textPassword" />
+
+            <mobi.blackbears.bbplay.common.views.BbTextLayoutWithEditTextView
+                android:id="@+id/et_new_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:hintText="Новый пароль"
+                app:iconStart="@drawable/ic_password_logo"
+                app:typeInEdit="textPassword" />
+
+            <include
+                android:id="@+id/personal_info_block"
+                layout="@layout/layout_personal_info_settings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="17dp" />
+        </LinearLayout>
+    </ScrollView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_save_changes"
+        style="@style/BBPlay.PrimaryButton"
+        android:layout_width="match_parent"
+        android:layout_height="58dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="16dp"
+        android:enabled="false"
+        android:text="@string/save"
+        app:layout_constraintBottom_toTopOf="@+id/bt_exit"
+        app:layout_constraintTop_toBottomOf="@id/sv_info_settings"
+        tools:layout_editor_absoluteX="24dp" />
+
+    <TextView
+        android:id="@+id/bt_exit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="24dp"
+        android:fontFamily="@font/din_round_pro_bold"
+        android:text="@string/log_out"
+        android:textColor="@color/red_light"
+        android:textSize="22sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <include
+        android:id="@+id/progress_bar"
+        layout="@layout/layout_progress_bar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="24dp"
+    android:orientation="vertical"
+    tools:background="@color/background">
+
+    <mobi.blackbears.bbplay.common.views.BbTextLayoutWithEditTextView
+        android:id="@+id/et_new_nickname"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:hintText="@string/nickname"
+        app:iconStart="@drawable/ic_nick_name_logo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/new_account_text" />
+
+    <mobi.blackbears.bbplay.common.views.BbTextLayoutWithEditTextView
+        android:id="@+id/et_new_phone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:hintText="@string/phone_text"
+        app:iconStart="@drawable/ic_phone_logo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/new_account_text"
+        app:typeInEdit="phone" />
+
+    <mobi.blackbears.bbplay.common.views.BbTextLayoutWithEditTextView
+        android:id="@+id/et_email"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:hintText="@string/email_text"
+        app:iconStart="@drawable/email_svg"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/new_account_text"
+        app:typeInEdit="textEmailAddress" />
+
+    <mobi.blackbears.bbplay.common.views.BbTextLayoutWithEditTextView
+        android:id="@+id/et_new_first_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:hintText="@string/first_name_text"
+        app:iconStart="@drawable/ic_names_info_logo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/new_account_text"
+        app:typeInEdit="textNoSuggestions" />
+
+    <mobi.blackbears.bbplay.common.views.BbTextLayoutWithEditTextView
+        android:id="@+id/et_new_second_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:hintText="@string/second_name_text"
+        app:iconStart="@drawable/ic_names_info_logo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/new_account_text"
+        app:typeInEdit="textNoSuggestions" />
+
+    <mobi.blackbears.bbplay.common.views.BbTextLayoutWithEditTextView
+        android:id="@+id/et_new_date_of_birth"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:hintText="@string/date_of_birth_text"
+        app:iconStart="@drawable/ic_calendar_logo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/new_account_text"
+        app:typeInEdit="date" />
+
+    <mobi.blackbears.bbplay.common.views.BbTextLayoutWithEditTextView
+        android:id="@+id/et_new_password"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:hintText="@string/password_text"
+        app:iconStart="@drawable/ic_password_logo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/new_account_text"
+        app:typeInEdit="textPassword" />
+
+    <LinearLayout
+        android:layout_marginTop="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/cb_agree_with_terms_of_use"
+            android:button="@drawable/selector_radio_button"
+            android:background="@android:color/transparent"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginEnd="12dp"
+            android:checked="true"
+            android:layout_gravity="center_vertical" />
+
+<!--        атрибут lineHeight не поддерживается устройствами с уровнем API < 28-->
+<!--        на более старых устройствах используется lineSpacingMultiplier-->
+        <TextView
+            android:id="@+id/tv_agree_with_terms_of_use"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:fontFamily="@font/din_round_pro_bold"
+            android:text="@string/agree_with_terms_of_use"
+            android:textColor="@color/grey_light"
+            android:textSize="16sp"
+            android:lineHeight="16dp"
+            android:lineSpacingMultiplier="0.78" />
+    </LinearLayout>
+</LinearLayout>

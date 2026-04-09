@@ -1,0 +1,272 @@
+// MARK: - Payments, condition debug or not
+
+"shopNameLive" = "BB Play iCafe";
+"shopPurchaseDescriptionLive" = "Account replenishment";
+
+"shopNameTest" = "Test Store";
+"shopPurchaseDescriptionTest" = "Test payment";
+
+// MARK: - Common
+
+"error" = "Error";
+"networkError" = "Network error";
+"loginInvalid" = "Login invalid.\n Login is case sensitive";
+"accountInvalid" = "Account is missing";
+"accountInactive" = "Account inactive";
+"passwordInvalid" = "Password invalid";
+"updateApp" = "Update";
+"privateKeyInvalid" = "We have added new features in the app, please log in again";
+"passwordsMatch" = "The new password matches the old one";
+"passwordChangeSuccess" = "Password change";
+"success" = "Success";
+"feedbackTheme" = "Feedback on the work of BB Play";
+"mail" = "bbplay_tmb@blackbears.mobi";
+"verificationRequired" = "Verification required";
+
+// MARK: - TabBar
+
+"profile" = "Profile";
+"clubs" = "Clubs";
+"ranking" = "Ranking";
+"reservation" = "Reservation";
+
+// MARK: - Profile, login
+
+"phone" = "Phone";
+"password" = "Password";
+"forgotPassword" = "Forgot your password?";
+"login" = "Sign In";
+"noAccount" = "No account?";
+"create" = "Create";
+
+// MARK: - Profile, create account, verification Phone
+
+"newAccount" = "New account";
+"nickname" = "Nickname";
+"name" = "Name";
+"surname" = "Family name";
+"dateOfBirth" = "dd/mm/yyyy";
+"nicknameVisibleOtherPlayers" = "Nickname visible to other players";
+"phoneUsedForLogin" = "Phone used to sign in";
+"passwordUsedForLogin" = "Password required to login";
+"createAccount" = "Create an account";
+"haveAccount" = "Have an account?";
+"termsOnUseBase" = "By creating an account, you accept the\n%@";
+"termsOnUseUnderline" = "terms of use";
+"fartherButton" = "Farther";
+"verificationDescription" = "Check the relevance of your phone number. This is necessary for the application to work.";
+"verificationTitle" = "Confirmation\nof the phone number";
+"wrongCodeAlertTitle" = "Wrong\ncode";
+"wrongCodeAlertDescription" = "The wrong code from the SMS was entered.\ntry again";
+"wrongCodeAlertButton" = "Clear";
+"codeCheckingTitle" = "Enter the code from the SMS";
+"codeCheckingDescription" = "To the number %@ a message with a code was sent. Enter it below";
+"codeCheckingButton" = "Continue";
+"codeCheckingQuestion" = "The code did not arrive";
+"codeCheckingTimer" = "Resending %@";
+"email" = "Email";
+"invalidEmailAddress" = "Invalid email address";
+
+// MARK: - Profile, replenish
+
+"replenishTheBalance" = "Replenish the balance";
+"description" = "Balance after replenishment:";
+"pay" = "Pay";
+
+"paymentLoading" = "The payment process is\nunderway";
+"paymentLoadingDescription" = "After processing the payment, the money will immediately be credited to the balance";
+
+"paymentProcess" = "The payment\nis being processed";
+"paymentProcessDescription" = "After processing the payment, the money will immediately be credited to the balance";
+
+"PaymentNotProcessed" = "Payment has not been processed";
+"PaymentNotProcessedDescription" = "There are problems with payment processing";
+
+"PaymentSuccessProcessed" = "Payment processed";
+"PaymentSuccessProcessedDescription" = "Payment successfully processed. The balance is replenished";
+
+// MARK: - Profile, input the amount
+"inputDescription" = "Minimum deposit 100 rub";
+"done" = "Done";
+
+// MARK: - Profile, user email
+"enterYouEmail" = "Enter your email";
+"sendedCheckOnEmailAfterPurchase" = "We will send a check to it after payment to comply with the law.";
+"next" = "Next";
+
+//MARK: - News
+"news" = "News";
+"newsNameClub" = "Black Bears Play";
+"newsInAfterDate" = " in ";
+
+
+// MARK: - Clubs, new club
+
+"newClube" = "New club";
+"comingSoon" = "coming soon";
+"nameClub" = "BBPlay";
+"adress" = "Address";
+"socialMedia" = "VKontakte";
+"socialMediaAddress" = "vk.com/bbplay_tmb";
+"join" = "Join";
+"bonus" = "+20";
+"feedback" = "Feedback";
+
+// MARK: - Profile, profile, is logged in
+
+"hello" = "Hello, %@";
+"cups" = "Cups";
+"leaderboard" = "Leader\nboard";
+"descriptionBonus" = "Get a bonus on your first\nreplenishment via SBP";
+"replenishment" = "Replenishment";
+"bonus" = "Bonus";
+"balance" = "Balance";
+"rub" = "%@ rub";
+"bonusRubles" = "Bonus rubles";
+"replenish" = "Replenish";
+
+// MARK: - Settings
+
+"settings" = "Settings";
+"personalInfo" = "Personal information";
+"changePassword" = "Change password";
+"oldPassword" = "Old password";
+"newPassword" = "New password";
+"save" = "Save";
+"exit" = "Exit";
+"removeAccountAndPersonalInfo" = "Delete account and personal data";
+"removeAccountQuestionAlert" = "Are you sure you want to delete your profile?";
+"removeAccountAnswerNo" = "No";
+"removeAccountAnswerDelete" = "Delete";
+"removeAccountNegativeAlert" = "Profile will be deleted within 48 hours";
+"versionApp" = "Application version v%@ (%@)";
+
+// MARK: - Reservation
+
+"gameZone" = "GameZone";
+"bootCamp" = "BootCamp";
+"termsAndPrices" = "Terms and prices";
+"oneHour" = "1 hour";
+"threeHours" = "3 hours";
+"fiveHours" = "5 hours";
+"reserve" = "Reserve";
+"select" = "Select";
+"technicalBreak" = "Technical break 07:00-09:00";
+"time" = "Time";
+"statusFree" = "Freely";
+"statusBusy" = "Busy";
+"statusSelected" = "Selected";
+"statusUnavailable" = "Unavailable";
+
+"selectClub" = "Select club";
+"selectDate" = "Select date";
+"selectTime" = "Select time";
+"selectPlace" = "Select place";
+
+"titleOnSelectedView" = "%@, on %@";
+
+"selectDateWhenReservePlace" = "Choose a date when you want to book a seat";
+
+"cannotReservationOnToday" = "It is no longer possible to book for today, choose another day";
+"selectTimeAndPack" = "Choose the time and \nduration";
+
+"descriptionOnReserveButton" = "%@ place, from %@ to %@";
+"titleReserveButton" = "Pay %@";
+
+"successReserveAlertTitle" = "Booking \ncompleted";
+"successReserveAlertDescription" = "The selected computer will be waiting for you at the specified time. \nHave a good game! 💚";
+"successReserveAlertGreatButton" = "Great";
+
+"myReserveButton" = "My reservations";
+"myReservePlace" = "%@ place";
+
+"deviceTimeError" = "For the correct operation of the reservation, set the 24-Hour Time format (Settings - General - Date & Time)";
+
+"addTimeToExtendedSearch" = "Add 30 minutes \nto expand the search";
+// MARK: - Clubs, Feedback Screen
+
+"feedbackTitle" = "Feedback";
+"enterFeedback" = "Enter feedback";
+"send" = "Send";
+
+//MARK: - Ranking
+
+"hashtag" = "#";
+
+// MARK: - Profile, ProfileBonusRublesInfoAlert
+
+"bonuses" = "Bonuses";
+"descriptionBonusRublesAlert" = "All news about the bonus programme will be in our VKontakte group vk.com/bbplay_tmb";
+"okey" = "Okey";
+
+// MARK: Profile, login, forgot passsword alert
+
+"passwordRecoveryTitle" = "Password\nrecovery";
+"passwordRecoveryDescription" = "To recover your password\nfrom your account, you\nneed to personally contact the administrators of the club";
+
+// MARK: Ranking, picker view alert
+
+"assistants" = "Assistants";
+"defeats" = "Defeats";
+"victories" = "Victories";
+"KDR" = "KDR";
+"kills" = "Kills";
+"deaths" = "Deaths";
+"points" = "Points";
+"winRatio" = "Win Ratio";
+
+// MARK: Clubs, map selection
+
+"googleMaps" = "Google Maps";
+"appleMaps" = "Apple Maps";
+"yandexMaps" = "Yandex Maps";
+"cancel" = "Cancel";
+"chooseApp" = "Choose an app";
+
+// MARK: - Games -
+
+"csgo" = "CS:GO";
+"fortnite" = "Fortnite";
+"lol" = "League of Legends";
+"valorant" = "Valorant";
+"dota2" = "DOTA 2";
+
+// MARK: - Local Events -
+
+"takeReward" = "Take the reward";
+"comingNow" = "Coming now";
+"completed" = "Completed";
+"tournamentBy" = "Tournament by %@";
+"finished" = "Finished";
+"noActiveTournaments" = "There are no active tournaments now";
+"participant" = "Participant";
+
+// MARK: - Local Event -
+
+"events" = "Events";
+"noActiveEvents" = "There are no active tournaments \nright now";
+
+"onePlace" = "1st place";
+"twoPlace" = "2nd place";
+"threePlace" = "3rd place";
+"topPlayers" = "TOP Players";
+
+"howToJoin" = "How to join?";
+
+"youInNumberPlace"  = "You're in %@ place";
+"takeRewardButton" = "Сollect the reward";
+"rewardIsCollected" = "The reward is collected";
+
+"pointsDescription" = "1. Rent any gaming computer in the club\n2. In the main menu of the system, go to the Tournaments tab and select the Active section there\n3. Select the Tournament you want to join from the list of active tournaments\n4. Click Join to participate in the tournament\n5. Accept the Terms of Service\n6. Congratulations! You are participating in the Tournament";
+
+"detailedInfoHowToJoin" = "Detailed information can be obtained from the operators of the club!";
+
+// MARK: - Reservation, Extended Search alert
+"extendedSearchTitle" = "Expand the search";
+"extendedSearchDesctiption" = "To expand the search for the best computer for booking, 30 minutes will be added to the time you selected";
+
+// MARK: - Banner Update App -
+"bannerUpdateTitle" = "Update the app";
+"bannerUpdateSubtitle" = "The current version of the app is no longer available.";
+"bannerUpdateButtonTitle" = "Update";
+"bannerUpdateErrorMessage" = "Failed to open the App Store. Please update the app manually";

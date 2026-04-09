@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="121dp"
+    android:layout_marginTop="16dp"
+    android:background="@drawable/bg_rectangle_grey"
+    android:fontFamily="@font/din_round_pro_bold"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:layout_marginHorizontal="24dp"
+    android:text="@string/event_empty_text"
+    android:textColor="@color/grey_light"
+    android:textSize="20sp" />

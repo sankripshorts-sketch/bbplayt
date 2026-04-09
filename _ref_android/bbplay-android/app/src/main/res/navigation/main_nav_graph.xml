@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_navigation"
+    app:startDestination="@id/loginFragment">
+
+    <!--region MenuItems-->
+
+    <!--region ConfirmUserEmail-->
+    <fragment
+        android:id="@+id/confirm_user_email_fragment"
+        android:name="mobi.blackbears.bbplay.screens.profile.fragments.ConfirmUserEmailFragment"
+        android:label="confirm_user_email"
+        tools:layout="@layout/bottom_fragment_confirm_user_email" >
+
+        <action
+            android:id="@+id/action_confirm_user_email_fragment_to_payFragment"
+            app:destination="@id/payFragment" />
+    </fragment>
+
+    <!-- region profile_item -->
+    <fragment
+        android:id="@+id/profile_item"
+        android:name="mobi.blackbears.bbplay.screens.profile.fragments.ProfileFragment"
+        android:label="fragment_profile"
+        tools:layout="@layout/fragment_profile" >
+        <action
+            android:id="@+id/action_profile_item_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
+        <action
+            android:id="@+id/action_profile_item_to_confirm_user_email_fragment"
+            app:destination="@id/confirm_user_email_fragment" />
+        <action
+            android:id="@+id/action_profile_item_to_leaderboard_fragment"
+            app:destination="@id/leaderboard_fragment" />
+        <action
+            android:id="@+id/action_profile_item_to_bonusDialogFragment"
+            app:destination="@id/bonusDialogFragment" />
+        <action
+            android:id="@+id/action_profile_item_to_payFragment"
+            app:destination="@id/payFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="mobi.blackbears.bbplay.screens.login.fragments.login.LoginFragment"
+        android:label="fragment_login"
+        tools:layout="@layout/fragment_login">
+        <action
+            android:id="@+id/action_loginFragment_to_registrationFragment"
+            app:destination="@id/registrationFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_passwordRecoveryFragment"
+            app:destination="@id/passwordRecoveryFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_phoneNumberConfirmationFragment"
+            app:destination="@id/phoneNumberConfirmationFragment" />
+    </fragment>
+    <!--endregion-->
+
+    <fragment
+        android:id="@+id/news_item"
+        android:name="mobi.blackbears.bbplay.screens.news.fragment.NewsFragment"
+        android:label="NewsFragment"
+        tools:layout="@layout/fragment_news"/>
+    <fragment
+        android:id="@+id/clubs_item"
+        android:name="mobi.blackbears.bbplay.screens.clubs.presentation.ClubsFragment"
+        android:label="fragment_clubs"
+        tools:layout="@layout/fragment_clubs" >
+        <action
+            android:id="@+id/action_clubs_item_to_jobReviewDialogFragment"
+            app:destination="@id/jobReviewDialogFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/events_item"
+        android:name="mobi.blackbears.bbplay.screens.events.fragments.event.EventFragment"
+        android:label="EventFragment"
+        tools:layout="@layout/fragment_event">
+        <action
+            android:id="@+id/action_events_item_to_detailEventFragment"
+            app:destination="@id/detailEventFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/booking_item"
+        android:name="mobi.blackbears.bbplay.screens.booking.presentation.fragments.BookingFragment"
+        android:label="BookingFragment"
+        tools:layout="@layout/fragment_booking">
+        <action
+            android:id="@+id/action_bookingFragment_to_priceInfoBottomFragment2"
+            app:destination="@id/priceInfoBottomFragment2" />
+        <action
+            android:id="@+id/action_bookingFragment_to_choiceAddressBottomFragment"
+            app:destination="@id/choiceAddressBottomFragment" />
+        <action
+            android:id="@+id/action_booking_item_to_choiceDateBottomFragment"
+            app:destination="@id/choiceDateBottomFragment" />
+        <action
+            android:id="@+id/action_booking_item_to_choiceTimeBottomFragment"
+            app:destination="@id/choiceTimeBottomFragment" />
+        <action
+            android:id="@+id/action_booking_item_to_successBookingBottomFragment"
+            app:destination="@id/successBookingBottomFragment" />
+        <action
+            android:id="@+id/action_booking_item_to_userBookingsFragment"
+            app:destination="@id/userBookingsFragment" />
+        <action
+            android:id="@+id/action_booking_item_to_payFragment"
+            app:destination="@id/payFragment" />
+    </fragment>
+    <!--endregion -->
+
+    <fragment
+        android:id="@+id/registrationFragment"
+        android:name="mobi.blackbears.bbplay.screens.login.fragments.registration.RegistrationFragment"
+        android:label="fragment_registration"
+        tools:layout="@layout/fragment_registration">
+        <action
+            android:id="@+id/action_registration_item_to_verificationCodeFragment"
+            app:destination="@id/verificationCodeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/verificationCodeFragment"
+        android:name="mobi.blackbears.bbplay.screens.login.fragments.verification.VerificationCodeFragment"
+        android:label="verification_code"
+        tools:layout="@layout/fragment_verification_code">
+        <action
+            android:id="@+id/action_verification_to_wrongCodeBottomFragment"
+            app:destination="@id/wrongCodeDialogFragment" />
+        <action
+            android:id="@+id/action_verification_to_ProfileFragment"
+            app:destination="@id/profile_item"
+            app:popUpTo="@id/main_navigation"
+            app:popUpToInclusive="true"/>
+    </fragment>
+    <fragment
+        android:id="@+id/phoneNumberConfirmationFragment"
+        android:name="mobi.blackbears.bbplay.screens.login.fragments.confirmnumber.PhoneNumberConfirmationFragment"
+        android:label="fragment_phone_number"
+        tools:layout="@layout/fragment_phone_number_confirmation">
+        <action
+            android:id="@+id/action_confirmation_to_verificationFragment"
+            app:destination="@id/verificationCodeFragment"/>
+    </fragment>
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="mobi.blackbears.bbplay.screens.settings.SettingsFragment"
+        android:label="fragment_settings"
+        tools:layout="@layout/fragment_settings" />
+    <fragment
+        android:id="@+id/jobReviewDialogFragment"
+        android:name="mobi.blackbears.bbplay.screens.clubs.presentation.JobReviewDialogFragment"
+        android:label="JobReviewDialogFragment"
+        tools:layout="@layout/fragment_job_review_dialog"/>
+    <fragment
+        android:id="@+id/payFragment"
+        android:name="mobi.blackbears.bbplay.screens.payment.fragment.PayFragment"
+        android:label="PayFragment"
+        tools:layout="@layout/fragment_pay">
+        <action
+            android:id="@+id/action_payFragment_to_processPaymentBottomFragment"
+            app:destination="@id/processPaymentBottomFragment" />
+
+        <action
+            android:id="@+id/action_payFragment_to_profileFragment"
+            app:destination="@id/profile_item" />
+
+        <argument
+            android:name="userPhone"
+            app:argType="string"
+            app:nullable="true" />
+
+        <argument
+            android:name="userEmail"
+            app:argType="string"
+            app:nullable="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/leaderboard_fragment"
+        android:name="mobi.blackbears.bbplay.screens.leaderboard.fragments.tournament.TournamentsFragment"
+        android:label="LeaderBoardFragment"
+        tools:layout="@layout/fragment_tournaments">
+        <action
+            android:id="@+id/action_tournaments_item_to_leadersFragment"
+            app:destination="@id/leadersFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/leadersFragment"
+        android:name="mobi.blackbears.bbplay.screens.leaderboard.fragments.leaders.LeadersFragment"
+        android:label="LeadersFragment"
+        tools:layout="@layout/fragment_leaders">
+        <action
+            android:id="@+id/action_leadersFragment_to_statisticDialogFragment"
+            app:destination="@id/statisticDialogFragment" />
+        <argument
+            android:name="gameState"
+            app:argType="mobi.blackbears.bbplay.common.domain.model.GamesStates"
+            android:defaultValue="DOTA" />
+    </fragment>
+    <fragment
+        android:id="@+id/detailEventFragment"
+        android:name="mobi.blackbears.bbplay.screens.events.fragments.detail_event.DetailEventFragment"
+        android:label="DetailEventFragment"
+        tools:layout="@layout/fragment_detail_event">
+        <argument
+            android:name="eventId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_detailEventFragment_to_joinEventBottomFragment"
+            app:destination="@id/joinEventBottomFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/userBookingsFragment"
+        android:name="mobi.blackbears.bbplay.screens.booking.presentation.fragments.user_bookings.UserBookingsFragment"
+        android:label="UserBookingsFragment"
+        tools:layout="@layout/fragment_user_bookings"/>
+
+    <dialog
+        android:id="@+id/bonusDialogFragment"
+        android:name="mobi.blackbears.bbplay.screens.profile.fragments.BonusDialogFragment"
+        android:label="BonusDialogFragment"
+        tools:layout="@layout/bottom_fragment_bonus"/>
+    <dialog
+        android:id="@+id/priceInfoBottomFragment2"
+        android:name="mobi.blackbears.bbplay.screens.booking.presentation.fragments.PriceInfoBottomFragment"
+        android:label="PriceInfoBottomFragment"
+        tools:layout="@layout/bottom_fragment_prices"/>
+    <dialog
+        android:id="@+id/choiceAddressBottomFragment"
+        android:name="mobi.blackbears.bbplay.screens.booking.presentation.fragments.ChoiceAddressBottomFragment"
+        android:label="ChoiceAddressBottomFragment"
+        tools:layout="@layout/bottom_fragment_choice_club"/>
+    <dialog
+        android:id="@+id/statisticDialogFragment"
+        android:name="mobi.blackbears.bbplay.screens.leaderboard.fragments.leaders.StatisticDialogFragment"
+        android:label="fragment_statistic_dialog"
+        tools:layout="@layout/bottom_fragment_sorting_leaders" />
+    <dialog
+        android:id="@+id/passwordRecoveryFragment"
+        android:name="mobi.blackbears.bbplay.screens.login.fragments.login.PasswordRecoveryFragment"
+        android:label="PasswordRecoveryFragment"
+        tools:layout="@layout/bottom_fragment_password_recovery"/>
+    <dialog
+        android:id="@+id/processPaymentBottomFragment"
+        android:name="mobi.blackbears.bbplay.screens.payment.fragment.ProcessPaymentBottomFragment"
+        android:label="ProcessPaymentBottomFragment"
+        tools:layout="@layout/bottom_fragment_process_payment"/>
+    <dialog
+        android:id="@+id/joinEventBottomFragment"
+        android:name="mobi.blackbears.bbplay.screens.events.fragments.detail_event.JoinEventBottomFragment"
+        android:label="JoinEventBottomFragment"
+        tools:layout="@layout/bottom_fragment_join_to_event"/>
+    <dialog
+        android:id="@+id/choiceDateBottomFragment"
+        android:name="mobi.blackbears.bbplay.screens.booking.presentation.fragments.ChoiceDateBottomFragment"
+        android:label="ChoiceDateBottomFragment"
+        tools:layout="@layout/bottom_fragment_choice_date"/>
+    <dialog
+        android:id="@+id/choiceTimeBottomFragment"
+        android:name="mobi.blackbears.bbplay.screens.booking.presentation.fragments.ChoiceTimeBottomFragment"
+        android:label="ChoiceTimeBottomFragment"
+        tools:layout="@layout/bottom_fragment_choice_time"/>
+    <dialog
+        android:id="@+id/successBookingBottomFragment"
+        android:name="mobi.blackbears.bbplay.screens.booking.presentation.fragments.SuccessBookingBottomFragment"
+        android:label="SuccessBookingBottomFragment"
+        tools:layout="@layout/bottom_fragment_success_booking"/>
+    <dialog
+        android:id="@+id/wrongCodeDialogFragment"
+        android:name="mobi.blackbears.bbplay.screens.login.fragments.verification.WrongCodeDialogFragment"
+        android:label="WrongCodeDialogFragment"
+        tools:layout="@layout/bottom_fragment_wrong_code"/>
+</navigation>

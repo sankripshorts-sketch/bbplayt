@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:paddingHorizontal="24dp"
+    android:orientation="vertical"
+    tools:context=".screens.leaderboard.fragments.leaders.StatisticDialogFragment">
+
+    <com.shawnlin.numberpicker.NumberPicker
+        android:id="@+id/picker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:np_textColor="@color/white"
+        app:np_textSize="22sp"
+        app:np_selectedTextSize="28sp"
+        app:np_selectedTextColor="@color/white"
+        android:layout_gravity="center_horizontal"
+        android:orientation="vertical"
+        android:fadeScrollbars="false"
+        android:isScrollContainer="false"
+        android:keepScreenOn="false"
+        android:measureWithLargestChild="false"
+        android:nestedScrollingEnabled="false"
+        android:overScrollMode="always"
+        app:np_dividerColor="@color/grey_light"
+        android:verticalScrollbarPosition="defaultPosition"
+        android:scrollbarAlwaysDrawHorizontalTrack="false"
+        android:layout_marginTop="24dp">
+    </com.shawnlin.numberpicker.NumberPicker>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_choice_sort"
+        style="@style/BBPlay.PrimaryButton"
+        android:layout_width="match_parent"
+        android:layout_height="58dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginBottom="43dp"
+        android:enabled="true"
+        android:text="@string/save" />
+
+</LinearLayout>

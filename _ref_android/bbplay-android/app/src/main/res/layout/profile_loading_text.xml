@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+
+    <View
+        android:id="@+id/profile_loading_text1"
+        android:layout_width="124dp"
+        android:layout_height="8dp"
+        android:background="@drawable/dr_loading_field">
+
+    </View>
+
+
+    <View
+        android:id="@+id/profile_loading_text2"
+        android:layout_width="74dp"
+        android:layout_height="8dp"
+        android:layout_marginStart="10dp"
+        android:background="@drawable/dr_loading_field">
+
+    </View>
+
+
+</LinearLayout>

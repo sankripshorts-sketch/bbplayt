@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="16dp"
+    android:background="@drawable/bg_outline_news_item"
+    android:paddingHorizontal="16dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="19dp">
+
+    <TextView
+        android:id="@+id/tv_user_date_booking"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/din_round_pro_bold"
+        android:textColor="@color/green_light_success"
+        android:textSize="24sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Пт, 13 13:00" />
+
+    <TextView
+        android:id="@+id/tv_user_pc_selected"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:drawablePadding="4dp"
+        android:fontFamily="@font/din_round_pro_bold"
+        android:textColor="@color/grey_light"
+        android:textSize="18sp"
+        app:drawableStartCompat="@drawable/ic_pc_image"
+        app:layout_constraintStart_toStartOf="@+id/tv_user_date_booking"
+        app:layout_constraintTop_toBottomOf="@+id/tv_user_date_booking"
+        tools:text="Место 12" />
+
+    <TextView
+        android:id="@+id/tv_time_user_booking"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:drawablePadding="4dp"
+        android:fontFamily="@font/din_round_pro_bold"
+        android:textColor="@color/grey_light"
+        android:textSize="18sp"
+        app:drawableStartCompat="@drawable/ic_clock_time"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_user_pc_selected"
+        app:layout_constraintStart_toEndOf="@+id/tv_user_pc_selected"
+        app:layout_constraintTop_toTopOf="@+id/tv_user_pc_selected"
+        tools:text="1 час" />
+
+    <TextView
+        android:id="@+id/tv_location_user_booking"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:drawablePadding="4dp"
+        android:fontFamily="@font/din_round_pro_bold"
+        android:textColor="@color/grey_light"
+        android:textSize="18sp"
+        app:drawableStartCompat="@drawable/ic_location"
+        app:layout_constraintStart_toStartOf="@+id/tv_user_pc_selected"
+        app:layout_constraintTop_toBottomOf="@+id/tv_user_pc_selected"
+        tools:text="Советская, 121" />
+</androidx.constraintlayout.widget.ConstraintLayout>

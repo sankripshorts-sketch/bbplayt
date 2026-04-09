@@ -1,0 +1,268 @@
+// MARK: - Payments, condition debug or not
+
+"shopNameLive" = "BB Play iCafe";
+"shopPurchaseDescriptionLive" = "Пополнение счёта";
+
+// MARK: - Common
+
+"error" = "Ошибка";
+"networkError" = "Ошибка сети";
+"loginInvalid" = "Неверный логин.\n Логин чувствителен к регистру";
+"accountInvalid" = "Аккаунт отсутствует";
+"privateKeyInvalid" = "Мы добавили новые возможности в приложении, пожалуйста, войдите заново";
+"updateApp" = "Обновление";
+"accountInactive" = "Аккаунт неактивен";
+"passwordInvalid" = "Неверный пароль";
+"passwordsMatch" = "Новый пароль совпадает со старым";
+"passwordChangeSuccess" = "Пароль изменен";
+"success" = "Успех";
+"feedbackTheme" = "Отзыв о работе BB Play";
+"mail" = "bbplay_tmb@blackbears.mobi";
+"verificationRequired" = "Номер не подтвержден";
+
+// MARK: - TabBar
+
+"profile" = "Профиль";
+"clubs" = "Клубы";
+"ranking" = "Рейтинг";
+"reservation" = "Бронь";
+
+// MARK: - Profile, login
+
+"phone" = "Телефон";
+"password" = "Пароль";
+"forgotPassword" = "Забыли пароль?";
+"login" = "Войти";
+"noAccount" = "Нет аккаунта?";
+"create" = "Создать";
+
+// MARK: - Profile, create account
+
+"newAccount" = "Новый аккаунт";
+"nickname" = "Никнейм";
+"name" = "Имя";
+"surname" = "Фамилия";
+"dateOfBirth" = "дд/мм/гггг";
+"nicknameVisibleOtherPlayers" = "Никнейм виден другим игрокам";
+"phoneUsedForLogin" = "Телефон используется для входа";
+"passwordUsedForLogin" = "Пароль нужен для входа";
+"createAccount" = "Создать аккаунт";
+"haveAccount" = "Есть аккаунт?";
+"termsOnUseBase" = "Создавая аккаунт вы принимаете\n%@";
+"termsOnUseUnderline" = "условия использования";
+"fartherButton" = "Дальше";
+"verificationDescription" = "Проверьте актуальность вашего номера телефона. Это необходимо для работы приложения.";
+"verificationTitle" = "Подтверждение\nномера телефона";
+"wrongCodeAlertTitle" = "Неверный\nкод";
+"wrongCodeAlertDescription" = "Введен неверный код из СМС.\nПопробуйте еще раз";
+"wrongCodeAlertButton" = "Понятно";
+"codeCheckingTitle" = "Введите код из СМС";
+"codeCheckingDescription" = "На номер %@ было отправлено сообщение с кодом. Введите его ниже";
+"codeCheckingButton" = "Продолжить";
+"codeCheckingQuestion" = "Не пришел код";
+"codeCheckingTimer" = "Повторная отправка %@";
+"email" = "Почта";
+"invalidEmailAddress" = "Неверный адрес почты";
+
+// MARK: - Profile, replenish
+
+"replenishTheBalance" = "Пополнить баланс";
+"description" = "Баланс после пополнения:";
+"pay" = "Оплатить";
+
+"paymentLoading" = "Идет процесс\nоплаты";
+"paymentLoadingDescription" = "После обработки платежа деньги\nсразу поступят на баланс";
+
+"paymentProcess" = "Платеж\nобрабатывается";
+"paymentProcessDescription" = "После обработки платежа деньги\nсразу поступят на баланс";
+
+"PaymentNotProcessed" = "Платеж\nне обработан";
+"PaymentNotProcessedDescription" = "Возникли проблемы\nс обработкой платежа";
+
+"PaymentSuccessProcessed" = "Платеж\nобработан";
+"PaymentSuccessProcessedDescription" = "Платеж успешно обработан.\nБаланс пополнен";
+
+// MARK: - Profile, input the amount
+"inputDescription" = "Минимальное пополнение 100 руб";
+"done" = "Готово";
+
+// MARK: - Profile, user email
+"enterYouEmail" = "Введите ваш email";
+"sendedCheckOnEmailAfterPurchase" = "Мы будем отправлять на него чек после оплаты для соблюдения закона.";
+"next" = "Дальше";
+
+//MARK: - News
+"news" = "Новости";
+"newsNameClub" = "Black Bears Play";
+"newsInAfterDate" = " в ";
+
+// MARK: - Clubs, new club
+
+"newClube" = "Новый клуб";
+"comingSoon" = "скоро";
+"nameClub" = "BBPlay";
+"adress" = "Адрес";
+"socialMedia" = "ВКонтакте";
+"socialMediaAddress" = "vk.com/bbplay_tmb";
+"join" = "Вступить";
+"bonus" = "+20";
+"feedback" = "Отзыв о работе";
+
+// MARK: - Profile, profile, is logged in
+
+"hello" = "Привет, %@";
+"cups" = "Кубки";
+"leaderboard" = "Таблица\nлидеров";
+"descriptionBonus" = "Получи бонус при первом\nпополнении через СБП";
+"replenishment" = "Пополнение";
+"bonus" = "Бонус";
+"balance" = "Баланс";
+"rub" = "%@ руб";
+"bonusRubles" = "Бонусные рубли";
+"replenish" = "Пополнить";
+
+// MARK: - Settings
+
+"settings" = "Настройки";
+"personalInfo" = "Персональная информация";
+"changePassword" = "Изменить пароль";
+"oldPassword" = "Старый пароль";
+"newPassword" = "Новый пароль";
+"save" = "Сохранить";
+"exit" = "Выйти";
+"removeAccountAndPersonalInfo" = "Удалить аккаунт и персональные данные";
+"removeAccountQuestionAlert" = "Вы точно хотите удалить свой профиль?";
+"removeAccountAnswerNo" = "Нет";
+"removeAccountAnswerDelete" = "Удалить";
+"removeAccountNegativeAlert" = "Профиль будет удалён в течении 48 часов";
+"versionApp" = "Версия приложения v%@ (%@)";
+
+// MARK: - Reservation
+
+"gameZone" = "GameZone";
+"bootCamp" = "BootCamp";
+"termsAndPrices" = "Условия и цены";
+"oneHour" = "1 час";
+"threeHours" = "3 часа";
+"fiveHours" = "5 часов";
+"reserve" = "Бронировать";
+"time" = "Время";
+"select" = "Выбрать";
+"technicalBreak" = "Технический перерыв 07:00-09:00";
+"statusFree" = "Cвободно";
+"statusBusy" = "Занято";
+"statusSelected" = "Выбрано";
+"statusUnavailable" = "Недоступен";
+
+"titleOnSelectedView" = "%@, на %@";
+
+"selectDateWhenReservePlace" = "Выбери дату, когда хочешь забронировать место";
+
+"cannotReservationOnToday" = "На сегодня больше нельзя забронировать, выберите другой день";
+"selectTimeAndPack" = "Выбери время и \nпродолжительность";
+
+"selectClub" = "Выбери клуб";
+"selectDate" = "Выбери дату";
+"selectTime" = "Выбери время";
+"selectPlace" = "Выбери место";
+
+"descriptionOnReserveButton" = "%@ место, c %@ до %@";
+"titleReserveButton" = "Оплатить %@";
+
+"successReserveAlertTitle" = "Бронирование \nзавершено";
+"successReserveAlertDescription" = "Выбранный компьютер будет ждать тебя в указанное время. \nХорошей игры! 💚";
+"successReserveAlertGreatButton" = "Отлично";
+
+"myReserveButton" = "Мои брони";
+
+"myReservePlace" = "%@ место";
+
+"deviceTimeError" = "Для корректной работы бронирования установите в «Настройки - Основные - Дата и время» 24-часовой формат времени";
+"addTimeToExtendedSearch" = "Добавить 30 минут \nдля расширения поиска";
+
+// MARK: - Clubs, Feedback Screen
+
+"feedbackTitle" = "Отзыв о работе";
+"enterFeedback" = "Введите отзыв";
+"send" = "Отправить";
+
+//MARK: - Ranking
+
+"hashtag" = "#";
+
+// MARK: - Profile, ProfileBonusRublesInfoAlert
+
+"bonuses" = "Бонусы";
+"descriptionBonusRublesAlert" = "Все новости про бонусную программу будут в нашей группе ВКонтакте vk.com/bbplay_tmb";
+"okey" = "Понятно";
+
+// MARK: - Profile, login, forgot passsword alert
+
+"passwordRecoveryTitle" = "Восстановление\nпароля";
+"passwordRecoveryDescription" = "Для восстановления пароля\nот своего аккаунта вам\nнеобходимо лично связаться с администраторами клуба";
+
+// MARK: - Ranking, picker view alert
+
+"assistants" = "Ассисты";
+"defeats" = "Поражения";
+"victories" = "Победы";
+"KDR" = "KDR";
+"kills" = "Убийства";
+"deaths" = "Смерти";
+"points" = "Очки";
+"winRatio" = "Коэффициент побед";
+
+// MARK: Clubs, map selection
+
+"googleMaps" = "Google Карты";
+"appleMaps" = "Apple Карты";
+"yandexMaps" = "Яндекс Карты";
+"cancel" = "Отмена";
+"chooseApp" = "Выбери приложение";
+
+// MARK: - Games -
+
+"csgo" = "CS:GO";
+"fortnite" = "Fortnite";
+"lol" = "League of Legends";
+"valorant" = "Valorant";
+"dota2" = "DOTA 2";
+
+// MARK: - Local Events -
+
+"takeReward" = "Забери награду";
+"comingNow" = "Сейчас идут";
+"completed" = "Завершенные";
+"tournamentBy" = "Турнир по %@";
+"finished" = "Окончен";
+"noActiveTournaments" = "Активных турниров сейчас нет";
+"participant" = "Участник";
+
+// MARK: - Local Event -
+
+"events" = "Ивенты";
+"noActiveEvents" = "Активных турниров \nсейчас нет";
+
+"onePlace" = "1 место";
+"twoPlace" = "2 место";
+"threePlace" = "3 место";
+"topPlayers" = "ТОП Игроков";
+
+"howToJoin" = "Как присоединиться?";
+"youInNumberPlace" =  "Ты на %@ месте";
+"takeRewardButton" = "Забрать награду";
+"rewardIsCollected" = "Награда собрана";
+
+"pointsDescription" = "1. Арендуйте любой игровой компьютер в клубе\n2. В главном меню системы зайдите на вкладку Турниры и выберите там раздел Активные\n3. Выберите Турнир, к которому хотите присоединиться из списка активных турниров\n4. Нажмите кнопку Присоединиться, чтобы участвовать в турнире\n5. Примите Условия предоставления услуг\n6. Поздравляем! Вы участвуете в Турнире";
+
+"detailedInfoHowToJoin" = "Подробную информацию \nможно получить у операторов клуба!";
+
+// MARK: - Reservation, Extended Search alert
+"extendedSearchTitle" = "Расширить поиск";
+"extendedSearchDesctiption" = "Чтобы расширить поиск компьютера, оптимального для бронирования, к выбранному вами времени будет добавлено 30 минут";
+
+// MARK: - Banner Update App -
+"bannerUpdateTitle" = "Обновите приложение";
+"bannerUpdateSubtitle" = "Текущая версия приложения больше недоступна для работы.";
+"bannerUpdateButtonTitle" = "Обновить";
+"bannerUpdateErrorMessage" = "Не удалось открыть App Store. Пожалуйста, обновите приложение вручную";

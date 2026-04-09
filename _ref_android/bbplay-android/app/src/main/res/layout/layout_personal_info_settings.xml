@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/din_round_pro_bold"
+        android:text="@string/personal_info_text"
+        android:textColor="@color/green"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/et_nickname_settings"
+        style="@style/BBPlay.PersonalInfoTextStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:drawableStartCompat="@drawable/ic_nick_name_logo"
+        tools:text="Test" />
+
+    <TextView
+        android:id="@+id/et_phone_settings"
+        style="@style/BBPlay.PersonalInfoTextStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:drawableStartCompat="@drawable/ic_phone_logo"
+        tools:text="8 999 555 44 33" />
+
+    <TextView
+        android:id="@+id/et_email"
+        style="@style/BBPlay.PersonalInfoTextStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:drawableStartCompat="@drawable/email_svg"
+        android:visibility="gone"
+        tools:text="Ivan@gmail.com" />
+
+    <TextView
+        android:id="@+id/et_first_name"
+        style="@style/BBPlay.PersonalInfoTextStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:drawableStartCompat="@drawable/ic_names_info_logo"
+        tools:text="Ivan" />
+
+    <TextView
+        android:id="@+id/et_second_name"
+        style="@style/BBPlay.PersonalInfoTextStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:drawableStartCompat="@drawable/ic_names_info_logo"
+        tools:text="Ivanov" />
+
+    <TextView
+        android:id="@+id/et_date_of_birth"
+        style="@style/BBPlay.PersonalInfoTextStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:drawableStartCompat="@drawable/ic_calendar_logo"
+        tools:text="14.04.2000" />
+</LinearLayout>

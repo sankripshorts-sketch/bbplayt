@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Переопредели ресурс bottomNavigationView чтобы изменить отступ элементов внутнри view-->
+    <dimen name="design_bottom_navigation_margin" tools:override="true">0dp</dimen>
+
+    <dimen name="button_corner_radius">8dp</dimen>
+
+    <!--region bonus info banner view-->
+    <dimen name="bonus_banner_header_margin_top">8dp</dimen>
+    <dimen name="bonus_banner_line_margin_top">4dp</dimen>
+    <dimen name="bonus_banner_amount_margin_start">-6dp</dimen>
+    <dimen name="bonus_banner_description_text_size">16sp</dimen>
+    <dimen name="bonus_banner_header_text_size">14sp</dimen>
+    <dimen name="bonus_banner_line_text_size">16sp</dimen>
+    <!--endregion-->
+</resources>

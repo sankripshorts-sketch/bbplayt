@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/linearLayout2"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="24dp"
+    android:background="@drawable/bg_rounded_upper_corners"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/balance1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:fontFamily="@font/din_round_pro_bold"
+        android:text="@string/balance"
+        android:textColor="@color/grey_light"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/et_balance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="2dp"
+        android:fontFamily="@font/din_round_pro_bold"
+        android:text="0.00 рублей"
+        android:textColor="@color/white"
+        android:textSize="32sp" />
+
+    <!--region Данный блок с бонусами скрыт т.к.
+        они сами не знают чего хотят.
+        Пока его оставлю вдруг надо будет вернуть-->
+    <TextView
+        android:id="@+id/bonus1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:drawablePadding="5dp"
+        android:visibility="gone"
+        android:fontFamily="@font/din_round_pro_bold"
+        android:text="@string/bonus"
+        android:textColor="@color/grey_light"
+        android:textSize="16sp"
+        app:drawableEndCompat="@drawable/ic_what" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:visibility="gone"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_bbcoin" />
+
+        <TextView
+            android:id="@+id/et_bonus_balance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:fontFamily="@font/din_round_pro_bold"
+            android:text="0"
+            android:textColor="@color/grey_light"
+            android:textSize="32sp" />
+    </LinearLayout>
+    <!--endregion -->
+
+</LinearLayout>

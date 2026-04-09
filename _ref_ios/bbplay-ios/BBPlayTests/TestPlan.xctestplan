@@ -1,0 +1,34 @@
+{
+  "configurations" : [
+    {
+      "id" : "225AAB5F-574E-4FEC-8354-EBF25FDD2999",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:BBPlay.xcodeproj",
+          "identifier" : "3A1262F4298BBBA1009B36C2",
+          "name" : "BBPlay"
+        }
+      ]
+    },
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : false,
+      "target" : {
+        "containerPath" : "container:BBPlay.xcodeproj",
+        "identifier" : "CEF2CC442EA3D9AF004332EE",
+        "name" : "BBPlayTests"
+      }
+    }
+  ],
+  "version" : 1
+}
