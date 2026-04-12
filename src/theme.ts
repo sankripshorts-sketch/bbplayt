@@ -1,11 +1,10 @@
-export const colors = {
-  bg: '#141824',
-  card: '#1e2433',
-  text: '#f0f2f7',
-  muted: '#8b93a7',
-  accent: '#6c5ce7',
-  accentDim: '#4b3bb0',
-  border: '#2a3145',
-  danger: '#e74c3c',
-  success: '#27ae60',
-};
+/**
+ * @deprecated Используйте useThemeColors() из ./theme/ThemeContext.
+ * Оставлено для обратной совместимости импортов до полного перехода экранов.
+ */
+import { palettes } from './theme/palettes';
+
+export const colors = palettes.dark;
+export type { ColorPalette, ThemeName } from './theme/palettes';
+export { palettes, getPalette } from './theme/palettes';
+export { ThemeProvider, useTheme, useThemeColors } from './theme/ThemeContext';

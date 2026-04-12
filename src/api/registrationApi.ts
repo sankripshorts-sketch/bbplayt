@@ -20,13 +20,40 @@ export type RegistrationBody = {
   member_confirm: string;
 };
 
-function smsPath(): string {
-  const p = process.env.EXPO_PUBLIC_REQUEST_SMS_PATH?.trim();
-  return p || 'requestsms';
-}
+/** Как в официальной доке iCafe Cloud; референсный клиент часто использует без дефиса. */
+const SMS_PATH_DOC = 'request-sms';
+const SMS_PATH_LEGACY = 'requestsms';
 
 function asRecord(v: unknown): Record<string, unknown> | null {
   return v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : null;
+}
+
+/**
+ * Порядок попыток POST запроса SMS (при 404 на первом пути — следующий).
+ * Если задан `EXPO_PUBLIC_REQUEST_SMS_PATH`, он идёт первым, затем оба канонических варианта.
+ */
+export function requestSmsPathCandidates(): string[] {
+  const explicit = process.env.EXPO_PUBLIC_REQUEST_SMS_PATH?.trim();
+  const canonical = [SMS_PATH_DOC, SMS_PATH_LEGACY];
+  if (explicit) {
+    const rest = canonical.filter((p) => p !== explicit);
+    return [...new Set([explicit, ...rest])];
+  }
+  return [...canonical];
+}
+
+/**
+ * По умолчанию `{ member_id, member_phone }` (совместимо с большинством прокси).
+ * Строго по доке iCafe (только `member_id`): `EXPO_PUBLIC_REQUEST_SMS_INCLUDE_PHONE=0`
+ */
+function buildRequestSmsBody(memberId: string, memberPhone: string): Record<string, string> {
+  const minimal =
+    process.env.EXPO_PUBLIC_REQUEST_SMS_INCLUDE_PHONE === '0' ||
+    process.env.EXPO_PUBLIC_REQUEST_SMS_INCLUDE_PHONE === 'false';
+  if (minimal) {
+    return { member_id: memberId };
+  }
+  return { member_id: memberId, member_phone: memberPhone };
 }
 
 /** POST api/v2/cafe/:cafeId/members */
@@ -73,14 +100,7 @@ export type RequestSmsResult = {
   nextRequestSmsTime: number;
 };
 
-/** POST requestsms (или EXPO_PUBLIC_REQUEST_SMS_PATH) */
-export async function requestMemberSms(memberId: string, memberPhone: string): Promise<RequestSmsResult> {
-  const path = smsPath();
-  const raw = await icafePostJson<Record<string, unknown>>(path, {
-    member_id: memberId,
-    member_phone: memberPhone,
-  });
-
+function parseRequestSmsResponse(raw: Record<string, unknown>): RequestSmsResult {
   if (raw.code === 429) {
     throw new ApiError(String(raw.message ?? 'Слишком частые запросы SMS'), 200, { code: 429 });
   }
@@ -105,6 +125,32 @@ export async function requestMemberSms(memberId: string, memberPhone: string): P
     throw new ApiError('Нет encoded_data или next_request_sms_time в ответе', 200);
   }
   return { encodedData: encoded, nextRequestSmsTime: Number(next) };
+}
+
+/**
+ * POST `request-sms` / `requestsms` (или `EXPO_PUBLIC_REQUEST_SMS_PATH`).
+ * При HTTP 404 на одном пути выполняется запрос на альтернативный (разные прокси/iCafe).
+ */
+export async function requestMemberSms(memberId: string, memberPhone: string): Promise<RequestSmsResult> {
+  const body = buildRequestSmsBody(memberId, memberPhone);
+  const paths = requestSmsPathCandidates();
+  let lastErr: unknown;
+
+  for (let i = 0; i < paths.length; i++) {
+    const path = paths[i]!;
+    try {
+      const raw = await icafePostJson<Record<string, unknown>>(path, body);
+      return parseRequestSmsResponse(raw);
+    } catch (e) {
+      lastErr = e;
+      const is404 = e instanceof ApiError && e.status === 404;
+      if (is404 && i < paths.length - 1) continue;
+      throw e;
+    }
+  }
+
+  if (lastErr instanceof Error) throw lastErr;
+  throw new ApiError('Не удалось запросить SMS', 0);
 }
 
 /** POST verify */

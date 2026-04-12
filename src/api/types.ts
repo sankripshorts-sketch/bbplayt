@@ -23,8 +23,12 @@ export type SessionUser = {
   /** Числовой id участника iCafe — нужен для POST /booking */
   memberId: string;
   memberAccount: string;
+  /** private_key из ответа логина — для подписи POST /booking (режим android на прокси) */
+  privateKey?: string;
   /** Баланс, если сервер отдаёт в ответе логина / профиля */
   balanceRub?: number;
+  /** Бонусный баланс (iCafe), если есть */
+  bonusBalanceRub?: number;
   displayName?: string;
   raw: Record<string, unknown>;
 };
@@ -32,11 +36,18 @@ export type SessionUser = {
 export type CafeItem = {
   address: string;
   icafe_id: number;
+  lat?: number;
+  lng?: number;
+  phone?: string;
+  vk_url?: string;
+  site?: string;
 };
 
 export type PcListItem = {
   pc_name: string;
   pc_area_name: string;
+  /** Группа ПК для прайса (iCafe price PC group), для сопоставления с `group_name` в тарифах — важнее подписи зала */
+  pc_group_name?: string;
   pc_icafe_id: number;
   price_name?: string;
   is_using: boolean;
@@ -66,15 +77,24 @@ export type ProductItem = {
   product_name: string;
   product_price?: string;
   total_price?: string;
+  /** Тип продукта в iCafe (пополнение / пакет и т.д.) */
+  product_type?: string;
   group_name?: string;
   duration?: string;
   duration_min?: string;
   is_calc_duration?: boolean;
 };
 
+export type TimeTechBreakNormalized = {
+  startMins: number;
+  durationMins: number;
+};
+
 export type AllPricesData = {
   prices: PriceItem[];
   products: ProductItem[];
+  step_start_booking?: number;
+  time_tech_break?: TimeTechBreakNormalized | null;
 };
 
 export type BookingPostBody = {
@@ -100,7 +120,7 @@ export type MemberBookingRow = {
   member_account?: string;
 };
 
-/** GET /all-books-member — data: { [icafeId: string]: MemberBookingRow[] } */
+/** Список броней по клубам: путь задаётся `getAllBooksPath()` (`/all-books-cafes` или `/all-books-member`). */
 export type AllBooksData = Record<string, MemberBookingRow[]>;
 
 export type IcafeIdForMemberData = {

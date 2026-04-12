@@ -1,27 +1,18 @@
-import React from 'react';
-import {
-  ActivityIndicator,
-  Dimensions,
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import React, { useMemo } from 'react';
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { bookingFlowApi } from '../../api/endpoints';
+import { queryKeys } from '../../query/queryKeys';
 import { ApiError } from '../../api/client';
-import type { CafeItem, StructRoom } from '../../api/types';
-import { colors } from '../../theme';
-
-const SCREEN_W = Dimensions.get('window').width;
-
-function hexColor(raw: string | undefined, fallback: string): string {
-  if (!raw?.trim()) return fallback;
-  const s = raw.trim();
-  return s.startsWith('#') ? s : `#${s}`;
-}
+import type { CafeItem } from '../../api/types';
+import { useLocale } from '../../i18n/LocaleContext';
+import type { ColorPalette } from '../../theme/palettes';
+import { useThemeColors } from '../../theme';
+import { getHallMapAxisScaleForClub, getHallMapOffsetsForClub } from '../../config/clubLayoutConfig';
+import { ClubLayoutCanvas } from './ClubLayoutCanvas';
+import type { PcAvailabilityState } from './clubLayoutGeometry';
+import { SkeletonBlock } from '../ui/SkeletonBlock';
+import { useLivePcsQuery } from '../booking/useLivePcsQuery';
 
 type Props = {
   cafe: CafeItem;
@@ -30,152 +21,101 @@ type Props = {
 };
 
 export function HallMapPanel({ cafe, visible, onClose }: Props) {
+  const { t } = useLocale();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   const q = useQuery({
-    queryKey: ['struct-rooms', cafe.icafe_id],
+    queryKey: queryKeys.structRooms(cafe.icafe_id),
     queryFn: () => bookingFlowApi.structRooms(cafe.icafe_id),
     enabled: visible,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
   });
+
+  const liveQ = useLivePcsQuery(cafe.icafe_id, visible);
+
+  const liveByName = useMemo(() => {
+    const m = new Map<string, boolean>();
+    for (const p of liveQ.data ?? []) {
+      m.set(String(p.pc_name).trim().toLowerCase(), !!p.is_using);
+    }
+    return m;
+  }, [liveQ.data]);
+
+  const pcAvailability = useMemo(() => {
+    const map: Record<string, PcAvailabilityState> = {};
+    const rooms = q.data?.rooms ?? [];
+    for (const r of rooms) {
+      for (const pc of r.pcs_list ?? []) {
+        const lk = String(pc.pc_name).trim().toLowerCase();
+        const on = liveByName.get(lk);
+        map[pc.pc_name] = on ? 'liveBusy' : 'free';
+      }
+    }
+    return map;
+  }, [q.data?.rooms, liveByName]);
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <View style={styles.modalRoot}>
         <View style={styles.header}>
           <Text style={styles.headerTitle} numberOfLines={2}>
-            Схема: {cafe.address}
+            {t('hallMap.title', { address: cafe.address })}
           </Text>
           <Pressable onPress={onClose} style={styles.closeBtn}>
-            <Text style={styles.closeText}>Закрыть</Text>
+            <Text style={styles.closeText}>{t('hallMap.close')}</Text>
           </Pressable>
         </View>
 
         {q.isLoading ? (
-          <ActivityIndicator color={colors.accent} style={{ marginTop: 24 }} />
+          <View style={styles.skeletonWrap}>
+            <SkeletonBlock height={220} colors={colors} />
+          </View>
         ) : q.isError ? (
           <Text style={styles.err}>
-            {q.error instanceof ApiError ? q.error.message : 'Ошибка загрузки схемы'}
+            {q.error instanceof ApiError ? q.error.message : t('hallMap.loadError')}
           </Text>
         ) : q.data?.rooms?.length ? (
-          <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-            <HallCanvas rooms={q.data.rooms} />
-          </ScrollView>
+          <View style={styles.mapBody}>
+            <Text style={styles.liveHint}>{t('hallMap.liveLegend')}</Text>
+            <ClubLayoutCanvas
+              rooms={q.data.rooms}
+              colors={colors}
+              icafeId={cafe.icafe_id}
+              pcAvailability={liveQ.isError ? undefined : pcAvailability}
+              horizontalPadding={32}
+              layoutOffsetPx={getHallMapOffsetsForClub(cafe.icafe_id)}
+              axisScale={getHallMapAxisScaleForClub(cafe.icafe_id)}
+            />
+          </View>
         ) : (
-          <Text style={styles.empty}>Нет данных зон</Text>
+          <Text style={styles.empty}>{t('hallMap.emptyZones')}</Text>
         )}
       </View>
     </Modal>
   );
 }
 
-function HallCanvas({ rooms }: { rooms: StructRoom[] }) {
-  let maxX = 120;
-  let maxY = 120;
-  for (const r of rooms) {
-    maxX = Math.max(maxX, r.area_frame_x + r.area_frame_width);
-    maxY = Math.max(maxY, r.area_frame_y + r.area_frame_height);
-  }
-
-  const canvasW = SCREEN_W - 32;
-  const scale = canvasW / maxX;
-  const canvasH = Math.max(280, maxY * scale);
-
-  return (
-    <View style={[styles.canvas, { width: canvasW, height: canvasH }]}>
-      {rooms.map((r, idx) => {
-        const left = r.area_frame_x * scale;
-        const top = r.area_frame_y * scale;
-        const w = r.area_frame_width * scale;
-        const h = r.area_frame_height * scale;
-        const border = hexColor(r.color_border, colors.border);
-        return (
-          <View
-            key={`${r.area_name}-${idx}`}
-            style={[
-              styles.zone,
-              {
-                left,
-                top,
-                width: w,
-                height: h,
-                borderColor: border,
-              },
-            ]}
-          >
-            <Text style={[styles.zoneTitle, { color: hexColor(r.color_text, colors.text) }]}>
-              {r.area_name}
-            </Text>
-            {(r.pcs_list ?? []).map((pc) => {
-              const px = (pc.pc_box_left / Math.max(r.area_frame_width, 1)) * w;
-              const py = (pc.pc_box_top / Math.max(r.area_frame_height, 1)) * h;
-              return (
-                <View
-                  key={pc.pc_name}
-                  style={[
-                    styles.pcDot,
-                    {
-                      left: Math.min(px, w - 36),
-                      top: Math.min(py, h - 22),
-                    },
-                  ]}
-                >
-                  <Text style={styles.pcName} numberOfLines={1}>
-                    {pc.pc_name}
-                  </Text>
-                </View>
-              );
-            })}
-          </View>
-        );
-      })}
-    </View>
-  );
+function createStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    modalRoot: { flex: 1, backgroundColor: colors.bg, paddingTop: 8 },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingBottom: 8,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    headerTitle: { flex: 1, color: colors.text, fontSize: 16, fontWeight: '600', marginRight: 8 },
+    closeBtn: { paddingVertical: 8, paddingHorizontal: 12 },
+    closeText: { color: colors.accent, fontWeight: '600' },
+    mapBody: { flex: 1, paddingHorizontal: 16, paddingTop: 8 },
+    liveHint: { fontSize: 12, color: colors.muted, marginBottom: 8, lineHeight: 17 },
+    skeletonWrap: { padding: 16 },
+    err: { color: colors.danger, padding: 20 },
+    empty: { color: colors.muted, padding: 20 },
+  });
 }
-
-const styles = StyleSheet.create({
-  modalRoot: { flex: 1, backgroundColor: colors.bg, paddingTop: 8 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerTitle: { flex: 1, color: colors.text, fontSize: 16, fontWeight: '600', marginRight: 8 },
-  closeBtn: { paddingVertical: 8, paddingHorizontal: 12 },
-  closeText: { color: colors.accent, fontWeight: '600' },
-  scroll: { flex: 1 },
-  scrollContent: { padding: 16, paddingBottom: 40 },
-  canvas: {
-    position: 'relative',
-    alignSelf: 'center',
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  zone: {
-    position: 'absolute',
-    borderWidth: 2,
-    borderRadius: 8,
-    backgroundColor: 'rgba(108, 92, 231, 0.06)',
-    overflow: 'hidden',
-  },
-  zoneTitle: {
-    fontSize: 11,
-    fontWeight: '700',
-    margin: 4,
-    opacity: 0.95,
-  },
-  pcDot: {
-    position: 'absolute',
-    backgroundColor: colors.accentDim,
-    paddingHorizontal: 6,
-    paddingVertical: 4,
-    borderRadius: 6,
-    maxWidth: 72,
-  },
-  pcName: { color: '#fff', fontSize: 10, fontWeight: '600' },
-  err: { color: colors.danger, padding: 20 },
-  empty: { color: colors.muted, padding: 20 },
-});

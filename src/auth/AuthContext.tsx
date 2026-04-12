@@ -1,14 +1,24 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { loginRequest } from '../api/endpoints';
+import { bookingFlowApi, loginRequest } from '../api/endpoints';
+import { fetchMemberBalanceIcafe } from '../api/icafeMemberBalance';
 import type { SessionUser } from '../api/types';
 import { extractToken, mapLoginData } from './mapLogin';
 import { clearSession, getSession, setSession } from './sessionStorage';
+
+export type PatchUserInput = {
+  balanceRub?: number;
+  bonusBalanceRub?: number;
+  displayName?: string;
+  rawPatch?: Record<string, unknown>;
+};
 
 type AuthContextValue = {
   user: SessionUser | null;
   ready: boolean;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  patchUser: (patch: PatchUserInput) => Promise<void>;
+  refreshMemberBalance: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -58,9 +68,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }, []);
 
+  const patchUser = useCallback(async (patch: PatchUserInput) => {
+    const session = await getSession();
+    if (!session?.user) return;
+    const prev = session.user;
+    const nextRaw =
+      patch.rawPatch && Object.keys(patch.rawPatch).length
+        ? { ...prev.raw, ...patch.rawPatch }
+        : prev.raw;
+    const next: SessionUser = {
+      ...prev,
+      raw: nextRaw,
+      balanceRub: patch.balanceRub ?? prev.balanceRub,
+      bonusBalanceRub: patch.bonusBalanceRub ?? prev.bonusBalanceRub,
+      displayName: patch.displayName ?? prev.displayName,
+    };
+    await setSession({ ...session, user: next });
+    setUser(next);
+  }, []);
+
+  const refreshMemberBalance = useCallback(async () => {
+    if (!user?.memberId || !user.memberAccount.trim()) return;
+    const { icafe_id } = await bookingFlowApi.icafeIdForMember();
+    const cafeId = Number(String(icafe_id).trim());
+    const { balanceRub, bonusRub } = await fetchMemberBalanceIcafe({
+      cafeId,
+      memberId: user.memberId,
+      memberAccount: user.memberAccount,
+    });
+    await patchUser({
+      balanceRub,
+      ...(bonusRub !== undefined ? { bonusBalanceRub: bonusRub } : {}),
+    });
+  }, [user, patchUser]);
+
   const value = useMemo(
-    () => ({ user, ready, login, logout }),
-    [user, ready, login, logout]
+    () => ({ user, ready, login, logout, patchUser, refreshMemberBalance }),
+    [user, ready, login, logout, patchUser, refreshMemberBalance]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

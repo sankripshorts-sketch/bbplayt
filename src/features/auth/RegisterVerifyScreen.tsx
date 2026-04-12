@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -15,12 +15,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ApiError } from '../../api/client';
 import { requestMemberSms, verifyMemberSms } from '../../api/registrationApi';
 import type { AuthStackParamList } from '../../navigation/AuthNavigator';
-import { colors } from '../../theme';
+import { useLocale } from '../../i18n/LocaleContext';
+import type { ColorPalette } from '../../theme/palettes';
+import { useThemeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'RegisterVerify'>;
 
 export function RegisterVerifyScreen({ navigation, route }: Props) {
   const { memberId, privateKey, phone, memberAccount } = route.params;
+  const { t } = useLocale();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   const [code, setCode] = useState('');
   const [encodedData, setEncodedData] = useState<string | null>(null);
   const [resendAt, setResendAt] = useState<number>(0);
@@ -29,8 +35,8 @@ export function RegisterVerifyScreen({ navigation, route }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [, bump] = useState(0);
   useEffect(() => {
-    const t = setInterval(() => bump((n) => n + 1), 1000);
-    return () => clearInterval(t);
+    const timer = setInterval(() => bump((n) => n + 1), 1000);
+    return () => clearInterval(timer);
   }, []);
 
   const sendSms = useCallback(async () => {
@@ -42,24 +48,20 @@ export function RegisterVerifyScreen({ navigation, route }: Props) {
       setResendAt(r.nextRequestSmsTime);
     } catch (e) {
       const msg =
-        e instanceof ApiError ? e.message : e instanceof Error ? e.message : 'Не удалось запросить SMS';
+        e instanceof ApiError ? e.message : e instanceof Error ? e.message : t('verify.errorSms');
       setError(msg);
     } finally {
       setLoadingSms(false);
     }
-  }, [memberId, phone]);
+  }, [memberId, phone, t]);
 
   useEffect(() => {
     sendSms();
   }, [sendSms]);
 
   const onVerify = async () => {
-    if (!encodedData) {
-      setError('Сначала дождитесь SMS или запросите код снова');
-      return;
-    }
     if (!code.trim()) {
-      setError('Введите код из SMS');
+      setError(t('verify.errorCode'));
       return;
     }
     setError(null);
@@ -68,24 +70,30 @@ export function RegisterVerifyScreen({ navigation, route }: Props) {
       await verifyMemberSms({
         memberId,
         privateKey,
-        encodedData,
+        encodedData: encodedData ?? '',
         code: code.trim(),
       });
-      Alert.alert('Готово', `Аккаунт ${memberAccount} подтверждён. Войдите с паролем.`, [
-        { text: 'OK', onPress: () => navigation.popToTop() },
+      Alert.alert(t('verify.alertTitle'), t('verify.alertBody', { account: memberAccount }), [
+        { text: t('verify.alertOk'), onPress: () => navigation.popToTop() },
       ]);
     } catch (e) {
       const msg =
-        e instanceof ApiError ? e.message : e instanceof Error ? e.message : 'Ошибка подтверждения';
+        e instanceof ApiError ? e.message : e instanceof Error ? e.message : t('verify.errorGeneric');
       setError(msg);
     } finally {
       setLoadingVerify(false);
     }
   };
 
-  const nowSec = Math.floor(Date.now() / 1000);
-  const waitLeft = resendAt > nowSec ? resendAt - nowSec : 0;
-  const canResendSms = !loadingSms && (!encodedData || waitLeft === 0);
+  const nowMs = Date.now();
+  const waitLeft = resendAt > nowMs ? Math.ceil((resendAt - nowMs) / 1000) : 0;
+  const canResendSms = !loadingSms && waitLeft === 0;
+
+  const secondaryLabel = loadingSms
+    ? t('verify.sendingSms')
+    : waitLeft > 0
+      ? t('verify.resendIn', { sec: waitLeft })
+      : t('verify.resend');
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
@@ -93,19 +101,17 @@ export function RegisterVerifyScreen({ navigation, route }: Props) {
         style={styles.root}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <Text style={styles.title}>Подтверждение телефона</Text>
-        <Text style={styles.sub}>
-          Код отправлен на {phone}. Аккаунт: {memberAccount}
-        </Text>
+        <Text style={styles.title}>{t('verify.title')}</Text>
+        <Text style={styles.sub}>{t('verify.sub', { phone, account: memberAccount })}</Text>
 
         {loadingSms ? <ActivityIndicator color={colors.accent} style={{ marginVertical: 16 }} /> : null}
 
-        <Text style={styles.label}>Код из SMS</Text>
+        <Text style={styles.label}>{t('verify.labelCode')}</Text>
         <TextInput
           style={styles.input}
           value={code}
           onChangeText={setCode}
-          placeholder="000000"
+          placeholder={t('verify.placeholderCode')}
           placeholderTextColor={colors.muted}
           keyboardType="number-pad"
           maxLength={8}
@@ -121,7 +127,7 @@ export function RegisterVerifyScreen({ navigation, route }: Props) {
           {loadingVerify ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Подтвердить</Text>
+            <Text style={styles.buttonText}>{t('verify.submit')}</Text>
           )}
         </Pressable>
 
@@ -130,54 +136,48 @@ export function RegisterVerifyScreen({ navigation, route }: Props) {
           onPress={() => canResendSms && sendSms()}
           disabled={!canResendSms}
         >
-          <Text style={styles.secondaryText}>
-            {loadingSms
-              ? 'Отправка SMS…'
-              : !encodedData
-                ? 'Запросить SMS'
-                : waitLeft > 0
-                  ? `Отправить снова через ${waitLeft} с`
-                  : 'Отправить код снова'}
-          </Text>
+          <Text style={styles.secondaryText}>{secondaryLabel}</Text>
         </Pressable>
 
         <Pressable onPress={() => navigation.goBack()} style={styles.link}>
-          <Text style={styles.linkText}>Назад</Text>
+          <Text style={styles.linkText}>{t('verify.back')}</Text>
         </Pressable>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg },
-  root: { flex: 1, paddingHorizontal: 24, paddingTop: 8 },
-  title: { fontSize: 24, fontWeight: '700', color: colors.text, marginBottom: 8 },
-  sub: { color: colors.muted, fontSize: 14, lineHeight: 20, marginBottom: 20 },
-  label: { color: colors.muted, marginBottom: 8 },
-  input: {
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: 14,
-    fontSize: 20,
-    color: colors.text,
-    letterSpacing: 4,
-  },
-  error: { color: colors.danger, marginTop: 12 },
-  button: {
-    backgroundColor: colors.accent,
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  pressed: { opacity: 0.88 },
-  buttonText: { color: '#fff', fontWeight: '600', fontSize: 17 },
-  secondary: { marginTop: 16, alignItems: 'center' },
-  secondaryOff: { opacity: 0.5 },
-  secondaryText: { color: colors.accent, fontSize: 15 },
-  link: { marginTop: 28, alignItems: 'center' },
-  linkText: { color: colors.muted, fontSize: 15 },
-});
+function createStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.bg },
+    root: { flex: 1, paddingHorizontal: 24, paddingTop: 8 },
+    title: { fontSize: 24, fontWeight: '700', color: colors.text, marginBottom: 8 },
+    sub: { color: colors.muted, fontSize: 14, lineHeight: 20, marginBottom: 20 },
+    label: { color: colors.muted, marginBottom: 8 },
+    input: {
+      backgroundColor: colors.card,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.border,
+      padding: 14,
+      fontSize: 20,
+      color: colors.text,
+      letterSpacing: 4,
+    },
+    error: { color: colors.danger, marginTop: 12 },
+    button: {
+      backgroundColor: colors.accent,
+      borderRadius: 12,
+      paddingVertical: 16,
+      alignItems: 'center',
+      marginTop: 20,
+    },
+    pressed: { opacity: 0.88 },
+    buttonText: { color: '#fff', fontWeight: '600', fontSize: 17 },
+    secondary: { marginTop: 16, alignItems: 'center' },
+    secondaryOff: { opacity: 0.5 },
+    secondaryText: { color: colors.accent, fontSize: 15 },
+    link: { marginTop: 28, alignItems: 'center' },
+    linkText: { color: colors.muted, fontSize: 15 },
+  });
+}
