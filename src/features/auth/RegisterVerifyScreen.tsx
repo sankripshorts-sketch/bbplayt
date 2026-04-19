@@ -11,13 +11,13 @@ import { Text } from '../../components/DinText';
 import { TextInput } from '../../components/DinTextInput';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ApiError } from '../../api/client';
 import { requestMemberSms, verifyMemberSms } from '../../api/registrationApi';
 import type { AuthStackParamList } from '../../navigation/AuthNavigator';
 import { useLocale } from '../../i18n/LocaleContext';
 import type { MessageKey } from '../../i18n/messagesRu';
 import type { ColorPalette } from '../../theme/palettes';
 import { useThemeColors } from '../../theme';
+import { formatPublicErrorMessage } from '../../utils/publicText';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'RegisterVerify'>;
 
@@ -87,9 +87,7 @@ export function RegisterVerifyScreen({ navigation, route }: Props) {
       setEncodedData(r.encodedData);
       setResendAt(r.nextRequestSmsTime);
     } catch (e) {
-      const msg =
-        e instanceof ApiError ? e.message : e instanceof Error ? e.message : t('verify.errorSms');
-      setError(msg);
+      setError(formatPublicErrorMessage(e, t, 'verify.errorSms'));
     } finally {
       setLoadingSms(false);
     }
@@ -117,9 +115,7 @@ export function RegisterVerifyScreen({ navigation, route }: Props) {
         { text: t('verify.alertOk'), onPress: () => navigation.popToTop() },
       ]);
     } catch (e) {
-      const msg =
-        e instanceof ApiError ? e.message : e instanceof Error ? e.message : t('verify.errorGeneric');
-      setError(msg);
+      setError(formatPublicErrorMessage(e, t, 'verify.errorGeneric'));
     } finally {
       setLoadingVerify(false);
     }

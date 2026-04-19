@@ -1,7 +1,7 @@
 import { md5HexUtf8 } from './md5Utf8';
 
 /**
- * Подпись для POST /verify (SMS). Как в референсном Android:
+ * Подпись для POST /verify (SMS). Типичная схема для Android-клиентов:
  * MD5(memberId + randKey + privateKey + secret)
  */
 export async function buildVerifySmsKey(params: {

@@ -27,6 +27,7 @@ import type { MessageKey } from '../../i18n/messagesRu';
 import type { ColorPalette } from '../../theme/palettes';
 import { useThemeColors } from '../../theme';
 import { queryKeys } from '../../query/queryKeys';
+import { formatPublicErrorMessage } from '../../utils/publicText';
 
 const MAX_ROW_JSON_CHARS = 12_000;
 const MAX_FULL_JSON_CHARS = 80_000;
@@ -73,9 +74,9 @@ function formatInsightError(e: unknown, t: (k: MessageKey) => string): string {
     ) {
       return t('profile.insightApiNotAllowed');
     }
-    return e.message;
+    return formatPublicErrorMessage(e, t, 'profile.insightLoadError');
   }
-  return t('profile.insightLoadError');
+  return formatPublicErrorMessage(e, t, 'profile.insightLoadError');
 }
 
 function InsightsFallbackButton({

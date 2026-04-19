@@ -21,7 +21,6 @@ import { useNavigation } from '@react-navigation/native';
 import { type BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { bookingFlowApi, cafesApi } from '../../api/endpoints';
-import { ApiError } from '../../api/client';
 import type { CafeItem } from '../../api/types';
 import { FirstHintBanner } from '../../hints/FirstHintBanner';
 import { useLocale } from '../../i18n/LocaleContext';
@@ -29,6 +28,7 @@ import type { ColorPalette } from '../../theme/palettes';
 import { useThemeColors } from '../../theme';
 import { loadAppPreferences, patchAppPreferences } from '../../preferences/appPreferences';
 import { queryKeys } from '../../query/queryKeys';
+import { formatPublicErrorMessage } from '../../utils/publicText';
 import { HallMapPanel } from './HallMapPanel';
 import {
   dialPhone,
@@ -509,9 +509,7 @@ export function CafesScreen() {
         <SkeletonBlock height={200} colors={colors} />
       ) : q.isError ? (
         <View style={styles.errBox}>
-          <Text style={styles.err}>
-            {q.error instanceof ApiError ? q.error.message : t('cafes.loadError')}
-          </Text>
+          <Text style={styles.err}>{formatPublicErrorMessage(q.error, t, 'cafes.loadError')}</Text>
           <Pressable style={styles.retryBtn} onPress={() => q.refetch()}>
             <Text style={styles.retryText}>{t('booking.retry')}</Text>
           </Pressable>

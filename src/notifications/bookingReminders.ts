@@ -20,10 +20,10 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export async function ensureNotificationChannel(): Promise<void> {
+export async function ensureNotificationChannel(channelName = 'Booking reminders'): Promise<void> {
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync(ANDROID_CHANNEL_ID, {
-      name: 'Booking reminders',
+      name: channelName,
       importance: Notifications.AndroidImportance.DEFAULT,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#22e07a',
@@ -31,8 +31,8 @@ export async function ensureNotificationChannel(): Promise<void> {
   }
 }
 
-export async function requestReminderPermissions(): Promise<boolean> {
-  await ensureNotificationChannel();
+export async function requestReminderPermissions(channelName?: string): Promise<boolean> {
+  await ensureNotificationChannel(channelName);
   const { status: existing } = await Notifications.getPermissionsAsync();
   let finalStatus = existing;
   if (existing !== 'granted') {
@@ -151,6 +151,7 @@ export async function scheduleBookingRemindersFromPrefs(
   startDate: string,
   startTime: string,
   messages: BookingReminderMessages,
+  androidChannelName?: string,
   followUp?: {
     durationMins: number;
     icafeId: number;
@@ -158,7 +159,7 @@ export async function scheduleBookingRemindersFromPrefs(
   },
 ): Promise<void> {
   await cancelBookingScheduledReminders();
-  const granted = await requestReminderPermissions();
+  const granted = await requestReminderPermissions(androidChannelName);
   if (!granted) return;
 
   const start = bookingStartInstant(startDate, startTime);

@@ -7,7 +7,7 @@ export type ColorPalette = {
   text: string;
   muted: string;
   mutedDark: string;
-  /** Заливки кнопок, обводки акцента (как на референсе #006400) */
+  /** Заливки кнопок, обводки акцента (фирменный зелёный #006400) */
   accent: string;
   /** Текст и иконки акцента на тёмном фоне — ярче, чем `accent` */
   accentBright: string;

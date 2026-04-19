@@ -66,18 +66,13 @@ function resolveChipScaleUniform(
 
 export type PcAvailabilityState = 'free' | 'busy' | 'selected' | 'unknown' | 'liveBusy';
 
+import { formatPublicPcToken } from '../../utils/publicText';
+
 /**
  * Подпись на схеме как в HTML: без префикса «PC» — «PC09» → «09», «pc-7» → «7».
  */
 export function formatPcLabelForHallMap(pcName: string): string {
-  const s = String(pcName).trim();
-  const noPrefix = s.replace(/^pc[\s._-]*/i, '').trim();
-  if (noPrefix.length > 0) {
-    if (/^\d+$/.test(noPrefix)) return String(parseInt(noPrefix, 10));
-    return noPrefix;
-  }
-  const m = s.match(/\d+/);
-  return m ? String(parseInt(m[0]!, 10)) : s;
+  return formatPublicPcToken(pcName);
 }
 
 export function coerceLayoutNum(v: unknown, fallback = 0): number {

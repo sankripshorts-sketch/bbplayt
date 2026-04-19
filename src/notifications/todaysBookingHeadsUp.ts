@@ -17,7 +17,7 @@ const ANDROID_CHANNEL_TODAY = 'booking-today';
 
 let categoryRegistered = false;
 
-export async function ensureTodaysBookingCategory(ackLabel: string): Promise<void> {
+export async function ensureTodaysBookingCategory(ackLabel: string, androidChannelName: string): Promise<void> {
   if (categoryRegistered) return;
   if (Platform.OS === 'ios') {
     await Notifications.setNotificationCategoryAsync(CATEGORY_ID, [
@@ -30,7 +30,7 @@ export async function ensureTodaysBookingCategory(ackLabel: string): Promise<voi
   }
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync(ANDROID_CHANNEL_TODAY, {
-      name: 'Booking today',
+      name: androidChannelName,
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 200, 100, 200],
       sound: 'default',
@@ -65,11 +65,12 @@ export async function syncTodaysBookingHeadsUpNotification(input: {
   prefs: AppPreferences;
   title: string;
   ackLabel: string;
+  androidChannelName: string;
 }): Promise<void> {
-  const { hasUpcomingToday, bodyLines, prefs, title, ackLabel } = input;
+  const { hasUpcomingToday, bodyLines, prefs, title, ackLabel, androidChannelName } = input;
   const day = todayISO();
 
-  await ensureTodaysBookingCategory(ackLabel);
+  await ensureTodaysBookingCategory(ackLabel, androidChannelName);
 
   const granted = (await Notifications.getPermissionsAsync()).status === 'granted';
   if (!granted) return;

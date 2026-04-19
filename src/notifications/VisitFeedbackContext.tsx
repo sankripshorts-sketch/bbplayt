@@ -30,6 +30,7 @@ import { useMemberBooksQuery } from '../features/booking/useMemberBooksQuery';
 import { useBookingNowMs } from '../features/booking/useBookingNowMs';
 import { addHandledVisitKey, loadHandledVisitKeys } from './visitFeedbackStorage';
 import { selectPendingVisitFeedback, type PendingVisitFeedback } from './selectPendingVisitFeedback';
+import { formatPublicClubLabel, formatPublicPcLabel } from '../utils/publicText';
 
 type Ctx = {
   openVisitFeedbackPrompt: () => void;
@@ -118,8 +119,8 @@ export function VisitFeedbackProvider({ children }: { children: React.ReactNode 
         key: display.bookingKey,
         rating,
         comment: comment.trim(),
-        club: display.clubAddress,
-        pc: display.pcName,
+        club: formatPublicClubLabel({ address: display.clubAddress, t }),
+        pc: formatPublicPcLabel(display.pcName, t),
       });
     }
     await markHandled(display.bookingKey);
@@ -172,7 +173,7 @@ export function VisitFeedbackProvider({ children }: { children: React.ReactNode 
                 <Text style={styles.title}>{t('feedback.visitTitle')}</Text>
                 {display ? (
                   <Text style={styles.sub}>
-                    {display.clubAddress} · {display.pcName}
+                    {formatPublicClubLabel({ address: display.clubAddress, t })} · {formatPublicPcLabel(display.pcName, t)}
                   </Text>
                 ) : (
                   <Text style={styles.sub}>{t('feedback.visitSub')}</Text>

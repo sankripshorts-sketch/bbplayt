@@ -5,6 +5,7 @@ export const messagesRu = {
   'tabs.news': 'Новости',
   'tabs.booking': 'Бронь',
   'tabs.help': 'Помощь',
+  'common.yourClub': 'Ваш клуб',
 
   'login.title': 'BBplay',
   'login.subtitle': 'BlackBears Play',
@@ -127,7 +128,7 @@ export const messagesRu = {
   'chat.category.support': 'Поддержка',
 
   'cafes.title': 'Клубы',
-  'cafes.regHint': 'Регистрация в клубе: {{id}}',
+  'cafes.regHint': 'Регистрация в приложении клуба',
   'cafes.loadingIcafe': 'Загрузка настроек клуба…',
   'cafes.icafeUnavailable': 'Не удалось получить настройки клуба',
   'cafes.loadError': 'Не удалось загрузить список',
@@ -176,9 +177,9 @@ export const messagesRu = {
   'hallMap.liveLegend':
     'Цвет «в работе» — занятость сейчас (данные клуба). Не путать с бронью на выбранное время.',
   'hallMap.resetView': 'Вернуть схему в исходное положение',
-  'hallMap.zoneBoot': 'BootCamp',
-  'hallMap.zoneGame': 'GameZone',
-  'hallMap.zoneVip': 'VIP',
+  'hallMap.zoneBoot': 'BootCamp-зона',
+  'hallMap.zoneGame': 'Игровая зона',
+  'hallMap.zoneVip': 'VIP-зона',
   'hallMap.legendBusy': 'Занят',
   'hallMap.legendSelected': 'Выбрано',
   'hallMap.legendIdle': 'Не выбран',
@@ -253,8 +254,8 @@ export const messagesRu = {
   'booking.partyZoneMismatch':
     'Для компании из нескольких человек выберите места в одной зоне. Уже выбрано: {{current}}, это место: {{attempt}}.',
   'booking.zoneKindVIP': 'VIP',
-  'booking.zoneKindBootCamp': 'BootCamp',
-  'booking.zoneKindGameZone': 'GameZone',
+  'booking.zoneKindBootCamp': 'BootCamp-зона',
+  'booking.zoneKindGameZone': 'Игровая зона',
   'booking.zoneKindOther': 'Прочее',
   'booking.zoneTitle': 'Выбор места',
   'booking.seatViewScheme': 'Схема',
@@ -350,7 +351,7 @@ export const messagesRu = {
     'Этот интервал пересекается с вашей текущей или предстоящей бронью (время везде по Москве). Выберите другое время или отмените ту бронь в «Мои брони».',
   'booking.bannerUpcomingTitle': 'Ближайшая бронь',
   'booking.bannerUpcomingLine': '{{date}} · {{address}} · {{pc}} · {{from}}—{{to}}',
-  'booking.clubPrefix': 'Клуб {{id}}',
+  'booking.clubPrefix': 'Ваш клуб',
   'booking.noData': 'Нет данных',
   'booking.booksLoadError': 'Не удалось загрузить список броней.',
   'booking.termsLoading': 'Загрузка тарифов…',
@@ -431,6 +432,8 @@ export const messagesRu = {
   'notif.todaysBookingTitle': 'Сегодня у вас бронь',
   'notif.upcomingBookingTitle': 'У вас запланирована бронь',
   'notif.todaysBookingAck': 'Я помню',
+  'notif.androidChannelToday': 'Бронь на сегодня',
+  'notif.androidChannelReminders': 'Напоминания о брони',
 
   'feedback.visitTitle': 'Как прошло посещение?',
   'feedback.visitSub': 'Оцените визит по шкале — комментарий по желанию.',

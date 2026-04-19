@@ -25,6 +25,7 @@ import { useLocale } from '../../i18n/LocaleContext';
 import type { ColorPalette } from '../../theme/palettes';
 import { useThemeColors } from '../../theme';
 import type { ProfileStackParamList } from '../../navigation/types';
+import { formatPublicErrorMessage } from '../../utils/publicText';
 
 const TOP_UP_QUICK_AMOUNTS = [100, 200, 500, 1000, 1500] as const;
 
@@ -168,13 +169,7 @@ export function ProfileScreen() {
       setTopUpPromo('');
       Alert.alert('', t('profile.mockTopupSuccess'));
     } catch (e) {
-      const msg =
-        e instanceof ApiError
-          ? e.message
-          : e instanceof Error
-            ? e.message
-            : t('profile.mockTopupError');
-      setTopUpErr(msg);
+      setTopUpErr(formatPublicErrorMessage(e, t, 'profile.mockTopupError'));
     } finally {
       setTopUpBusy(false);
     }

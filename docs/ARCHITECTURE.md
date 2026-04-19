@@ -2,84 +2,117 @@
 
 ## Назначение
 
-Приложение для сети **BlackBears Play**: авторизация на **`vibe.blackbearsplay.ru`**, список клубов, новости (встроенная страница VK), бронирование мест через API iCafe/vibe, локальный чат поддержки по JSON.
+Клиентское приложение для сети **BlackBears Play**: вход и регистрация на бэкенде **`vibe.blackbearsplay.ru`** (и связанных iCafe-эндпоинтах), список клубов, новости (VK / парсинг стены), бронирование ПК, напоминания и обратная связь по визитам, локальный чат поддержки по JSON-базе знаний. Серверная бизнес-логика — на стороне API; приложение — тонкий клиент.
 
-## Стек
+## Стек и библиотеки
 
-| Компонент | Технология |
-|-----------|------------|
-| Платформа | **Expo SDK 51** (React Native 0.74, React 18) |
-| Язык | **TypeScript** (strict, без `extends` от отсутствующего `expo/tsconfig.base` в IDE) |
-| Навигация | `@react-navigation/native`, **bottom tabs** + экран логина |
-| Серверное состояние | `@tanstack/react-query` |
-| HTTP | [`src/api/vibeClient.ts`](../src/api/vibeClient.ts) — разбор `{ code, message, data }` |
-| Сессия | [`src/auth/sessionStorage.ts`](../src/auth/sessionStorage.ts) — JSON в `expo-secure-store` |
-| Подпись брони | `expo-crypto` (MD5), см. [`src/api/bookingKey.ts`](../src/api/bookingKey.ts) |
-| Новости | `react-native-webview` — мобильная версия группы VK |
+| Область | Технология |
+|--------|------------|
+| Платформа | **Expo SDK 51** (React Native 0.74, React 18), TypeScript |
+| Навигация | `@react-navigation/native`, bottom tabs + стеки (профиль, авторизация) |
+| Серверное состояние | `@tanstack/react-query` (в `App.tsx` отключён `refetchOnWindowFocus`, чтобы не сбрасывать ввод при клавиатуре на RN) |
+| Персистентность кэша | Зависимости `@tanstack/react-query-persist-client`, `@tanstack/query-async-storage-persister`, `@react-native-async-storage/async-storage` установлены; черновой конфиг и отбор ключей — в [`src/query/queryClient.ts`](../src/query/queryClient.ts). В корне сейчас используется обычный `QueryClientProvider` из [`App.tsx`](../App.tsx) (без `PersistQueryClientProvider`), то есть **дисковый персист в рантайме не подключён**. |
+| Навигация (натив) | `react-native-screens`, `react-native-safe-area-context`, `react-native-gesture-handler` |
+| UI-ввод даты/времени | `@react-native-community/datetimepicker` |
+| Шрифты | `expo-font` + локальные OTF в `assets/fonts/` |
+| HTTP / API | Слой [`src/api/vibeClient.ts`](../src/api/vibeClient.ts) и узкие модули [`icafeClient.ts`](../src/api/icafeClient.ts), нормализаторы ответов, [`client.ts`](../src/api/client.ts) (`ApiError`) |
+| Сессия | [`src/auth/sessionStorage.ts`](../src/auth/sessionStorage.ts) — данные сессии в `expo-secure-store` |
+| Подписи запросов | `md5`, `expo-crypto` — ключи/подписи для verify/booking (см. `bookingSignConfig`, `verifyKey`) |
+| Локализация | [`src/i18n/`](../src/i18n/) — `LocaleContext`, сообщения `messagesEn` / `messagesRu` |
+| Тема и типографика | [`src/theme/`](../src/theme/) — палитры, шрифты Expo, `ThemeProvider` |
+| Уведомления | `expo-notifications` — напоминания о брони, синхронизация с данными броней ([`TodayBookingNotificationSync`](../src/navigation/TodayBookingNotificationSync.tsx), [`bookingReminders`](../src/notifications/bookingReminders.ts)) |
+| Календарь устройства | `expo-calendar` — опциональное добавление брони в календарь ([`deviceCalendar`](../src/calendar/deviceCalendar.ts)) |
+| Геолокация | `expo-location` — сортировка клубов по расстоянию |
+| WebView | `react-native-webview` — внешние страницы (новости VK, оплата и т.д.) |
+| Прочее Expo | `expo-clipboard`, `expo-constants`, `expo-device`, `expo-haptics`, `expo-linear-gradient`, `expo-splash-screen`, `expo-status-bar` |
+| Web (опционально) | `react-native-web`, `@expo/metro-runtime` — таргет `expo start --web` |
+| Патчи зависимостей | `patch-package` (скрипт `postinstall`) — см. каталог [`patches/`](../patches/) |
+| Сборка / язык | TypeScript ~5.3, Babel (`@babel/core`), Metro через Expo |
+| Тесты | `vitest` — `tests/unit`, `tests/api-live` |
 
-## Экраны
+Конфигурация приложения и переменные окружения: [`app.config.js`](../app.config.js), см. также [`.env.example`](../.env.example).
 
-| Вкладка | Файл | Суть |
-|---------|------|------|
-| Профиль | `src/features/profile/ProfileScreen.tsx` | Аккаунт, member_id, баланс если есть в ответе логина, выход |
-| Клубы | `src/features/cafes/CafesScreen.tsx` | `GET /cafes` |
-| Новости | `src/features/news/NewsScreen.tsx` | WebView `m.vk.com/bbplay__tmb` |
-| Бронь | `src/features/booking/BookingScreen.tsx` | тарифы, доступные ПК, `POST /booking`, список броней |
-| Помощь | `src/features/chat/KnowledgeChatScreen.tsx` | локальный поиск по `assets/knowledge.json` |
+## Структура приложения (высокий уровень)
 
-## Поток данных
+```mermaid
+flowchart TB
+  subgraph providers [Корневые провайдеры App.tsx]
+    Theme[ThemeProvider]
+    Locale[LocaleProvider]
+    RQ[QueryClientProvider]
+    Auth[AuthProvider]
+    Knowledge[KnowledgeProvider]
+    Err[AppErrorBoundary]
+  end
+  Theme --> Locale --> RQ --> Auth --> Knowledge --> Err --> Nav[RootNavigator]
+  Nav --> Tabs[Bottom tabs]
+  Nav --> AuthNav[AuthNavigator]
+```
 
-1. **Логин** — `POST /login` → разбор `data`, опционально токен и `Set-Cookie` → сохранение сессии.
-2. **Клубы / бронь** — запросы к vibe с заголовками сессии, см. [`docs/api-spec.md`](api-spec.md).
-3. **Чат** — только локальная база, без внешних LLM.
+- **`AuthContext`** — состояние входа, сессия, выход.
+- **`KnowledgeContext`** — загрузка базы знаний (локальный JSON и/или URL из `extra.knowledgeJsonUrl`).
+- **`RootNavigator`** — по авторизации показывает либо `AuthNavigator`, либо основные вкладки; deep linking `bbplay://`; обёртки уведомлений и фидбэка по визитам (`VisitFeedbackProvider`, `TodayBookingNotificationSync`, `BookingNotificationListener`).
+- **`useAppBootstrap`** ([`src/query/useAppBootstrap.ts`](../src/query/useAppBootstrap.ts)) — стартовая подгрузка кафе, новостей VK, данных бронирования после готовности auth и базы знаний; до завершения показывается загрузка.
+
+## Основные экраны и фичи
+
+| Область | Путь | Суть |
+|--------|------|------|
+| Профиль | `src/features/profile/` | Профиль, баланс, настройки, внешний вид, напоминания, инсайты (WebView/API) |
+| Авторизация | `src/features/auth/` | Логин, регистрация, верификация |
+| Клубы | `src/features/cafes/` | Список клубов, карта зала (`ClubLayoutCanvas`, `HallMapPanel`, геометрия раскладки) |
+| Новости | `src/features/news/` | VK-стена / видео, модалки |
+| Бронь | `src/features/booking/` | Тарифы, живые ПК, создание брони, баннер «сегодня», утилиты времени |
+| Чат | `src/features/chat/` | Поиск по базе знаний без вызова внешних LLM |
+| Уведомления | `src/notifications/` | Напоминания, отзыв после визита, отбор pending feedback |
+
+Подробнее по контрактам API: [`docs/api-spec.md`](api-spec.md), [`docs/icafe-api.md`](icafe-api.md), [`docs/API_VIBE_LOGIC.md`](API_VIBE_LOGIC.md).
+
+## Поток данных (упрощённо)
+
+1. **Логин / регистрация** — запросы к vibe/iCafe, сохранение сессии и токенов при необходимости.
+2. **Клубы и бронь** — `GET` списков, `POST /booking` с подписью; брони пользователя — пути из конфига (`allBooksPath` и др.).
+3. **Чат** — только локальный поиск по структурированной базе (`assets/knowledge.json` или удалённый JSON); **без** обращения к облачным LLM из приложения.
+
+## Подходы к разработке
+
+- **Типизированный клиент API** с единым разбором ответов и ошибок.
+- **Фичи по папкам** (`features/<area>/`) + общие `api/`, `navigation/`, `theme/`, `i18n/`.
+- **Разделение** UI, запросов (React Query), и чистых утилит (время, геометрия зала, нормализация API).
+- **Ошибки UI** — граница `AppErrorBoundary` на корне навигации.
+- **Патчи** — изменения в `node_modules` фиксируются через `patch-package`, чтобы сборки были воспроизводимыми.
 
 ## AI-инструменты
 
-Промпты — в [`docs/PROMPTS.md`](PROMPTS.md).
+| Инструмент | Роль |
+|------------|------|
+| **Cursor** (Agent / Composer) | Основная среда: генерация и правка кода, рефакторинг, документация. |
+| Модели в Cursor | Зависят от тарифа/настроек Cursor (конкретная модель в репозитории не фиксируется). |
 
-## Референс из архивов Android / iOS
+Полный перечень **промптов пользователя к Cursor Agent** — в [`PROMPTS_ALL.md`](PROMPTS_ALL.md) (генерация: `npm run export:cursor-prompts` и `npm run docs:prompts-md`). Краткое оглавление и ручные дополнения — в [`PROMPTS.md`](PROMPTS.md).
 
-Архивы `BBPlay-android-master` / `BBPlay-ios-dev` — для сверки URL, полей и алгоритма `key` у `POST /booking`, если отличается от текущей реализации.
+Приложение **не** встраивает API-ключи сторонних LLM для пользовательского чата: «бот поддержки» работает на **локальной** базе знаний.
 
-## Сборка APK (Android) и iOS
+## Сборка APK / iOS (EAS)
 
-### Один раз
+Конфигурация — [`eas.json`](../eas.json):
 
-1. `npm install`
-2. Установите [EAS CLI](https://docs.expo.dev/build/setup/): `npm install -g eas-cli`
-3. `eas login`
-4. В каталоге проекта: `eas init` и подставьте **`extra.eas.projectId`** в [`app.config.js`](../app.config.js)
-5. При необходимости скопируйте [`.env.example`](../.env.example) → `.env`
+| Профиль | Назначение |
+|---------|------------|
+| `development` | development client, `distribution: internal` |
+| `preview` | внутренняя раздача; **Android: APK** (`buildType: apk`); iOS без симулятора |
+| `production` | **Android: AAB** (Google Play) |
 
-### Android APK (удобно для теста)
-
-Профиль [`preview`](../eas.json) собирает **APK**:
+Типовой сценарий:
 
 ```bash
+npm install
+npm install -g eas-cli
+eas login
 eas build -p android --profile preview
 ```
 
-Готовую ссылку на скачивание покажет EAS (веб-консоль и письмо).
-
-### Android AAB (Google Play)
-
-```bash
-eas build -p android --profile production
-```
-
-### iOS (TestFlight / App Store)
-
-Нужна учётная запись Apple Developer; настройка credentials через EAS:
-
-```bash
-eas build -p ios --profile preview
-```
-
-или `production` для релиза.
-
-### Локально (без EAS)
-
-Требуются Android Studio / Xcode:
+Локально без EAS (нужны Android Studio / Xcode):
 
 ```bash
 npx expo prebuild
@@ -87,7 +120,9 @@ npx expo run:android
 npx expo run:ios
 ```
 
-| Платформа | Тип | Ссылка |
-|-----------|-----|--------|
-| Android | APK/AAB | _вставить после `eas build`_ |
+`extra.eas.projectId`, bundle id и разрешения — в [`app.config.js`](../app.config.js).
+
+| Платформа | Тип | Ссылка на артефакт |
+|-----------|-----|---------------------|
+| Android | APK (preview) / AAB (production) | _вставить после `eas build`_ |
 | iOS | ipa / TestFlight | _вставить после `eas build`_ |

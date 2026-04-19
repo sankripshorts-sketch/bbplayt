@@ -4,7 +4,6 @@ import { Text } from '../../components/DinText';
 import { useQuery } from '@tanstack/react-query';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuth } from '../../auth/AuthContext';
-import { ApiError } from '../../api/client';
 import { cafesApi } from '../../api/endpoints';
 import { useLocale } from '../../i18n/LocaleContext';
 import type { ColorPalette } from '../../theme/palettes';
@@ -23,6 +22,7 @@ import {
   acknowledgeTodaysBookingNotification,
   isTodaysBookingAcknowledgedForToday,
 } from '../../notifications/todaysBookingHeadsUp';
+import { formatPublicClubLabel, formatPublicErrorMessage, formatPublicPcLabel } from '../../utils/publicText';
 
 type Props = {
   /** Отступ снизу перед контентом */
@@ -99,7 +99,7 @@ export function TodaysBookingBanner({ style }: Props) {
               {
                 onSettled: () => setCancellingKey(null),
                 onError: (err) => {
-                  const msg = err instanceof ApiError ? err.message : t('booking.errorGeneric');
+                  const msg = formatPublicErrorMessage(err, t, 'booking.errorGeneric');
                   Alert.alert(t('booking.errorGeneric'), msg);
                 },
               },
@@ -131,13 +131,15 @@ export function TodaysBookingBanner({ style }: Props) {
         month: 'short',
         timeZone: 'Europe/Moscow',
       });
+      const club = formatPublicClubLabel({ address: line.clubLabel, t });
+      const pc = formatPublicPcLabel(line.pcName, t);
       return (
         <View key={line.key} style={styles.lineRow}>
           <Text style={styles.line}>
             {t('booking.bannerUpcomingLine', {
               date: dateStr,
-              address: line.clubLabel,
-              pc: line.pcName,
+              address: club,
+              pc,
               from,
               to,
             })}
@@ -164,8 +166,8 @@ export function TodaysBookingBanner({ style }: Props) {
       <View key={line.key} style={styles.lineRow}>
         <Text style={styles.line}>
           {t('booking.bannerTodayLine', {
-            address: line.clubLabel,
-            pc: line.pcName,
+            address: formatPublicClubLabel({ address: line.clubLabel, t }),
+            pc: formatPublicPcLabel(line.pcName, t),
             from,
             to,
           })}

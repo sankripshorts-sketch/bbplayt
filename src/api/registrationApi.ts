@@ -20,7 +20,7 @@ export type RegistrationBody = {
   member_confirm: string;
 };
 
-/** Как в официальной доке iCafe Cloud; референсный клиент часто использует без дефиса. */
+/** Как в официальной доке iCafe Cloud; часть клиентов использует base URL без дефиса. */
 const SMS_PATH_DOC = 'request-sms';
 const SMS_PATH_LEGACY = 'requestsms';
 

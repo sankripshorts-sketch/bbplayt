@@ -17,13 +17,13 @@ import { useQuery } from '@tanstack/react-query';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { bookingFlowApi, cafesApi } from '../../api/endpoints';
-import { ApiError } from '../../api/client';
 import { createMember, type RegistrationBody } from '../../api/registrationApi';
 import type { AuthStackParamList } from '../../navigation/AuthNavigator';
 import { useLocale } from '../../i18n/LocaleContext';
 import type { ColorPalette } from '../../theme/palettes';
 import { useTheme, useThemeColors } from '../../theme';
 import { queryKeys } from '../../query/queryKeys';
+import { formatPublicErrorMessage } from '../../utils/publicText';
 import {
   birthdayToIso,
   dateToBirthdayDisplay,
@@ -128,9 +128,7 @@ export function RegisterScreen({ navigation }: Props) {
         memberAccount: body.member_account,
       });
     } catch (e) {
-      const msg =
-        e instanceof ApiError ? e.message : e instanceof Error ? e.message : t('register.errorGeneric');
-      setError(msg);
+      setError(formatPublicErrorMessage(e, t, 'register.errorGeneric'));
     } finally {
       setLoading(false);
     }

@@ -44,7 +44,7 @@ import { nowForBookingCompareMs } from '../../datetime/serverBookingClock';
 
 /** Горизонтальный отступ контента экрана брони; сумма — оценка ширины схемы до `onLayout` в `ClubLayoutCanvas`. */
 const BOOKING_SCROLL_H_PAD = 24;
-/** Фиксированная высота карточек фильтров как на референсе. */
+/** Фиксированная высота карточек фильтров (layout). */
 const FILTER_WHEEL_ROW_HEIGHT = 60;
 /** Компактная вторая строка под адрес/значение фильтра. */
 const FILTER_WHEEL_SUBTITLE_SLOT_HEIGHT = 16;
@@ -186,6 +186,13 @@ import {
 } from './zoneTariffResolve';
 import { pcNamesLooselyEqual } from './pcNameMatch';
 import { formatBookingDurationHuman } from './durationHuman';
+import {
+  formatPublicClubLabel,
+  formatPublicErrorMessage,
+  formatPublicPcLabel,
+  formatPublicPcList,
+  formatPublicZoneLabel,
+} from '../../utils/publicText';
 
 function hourlyPresetLineLabel(
   m: number,
@@ -373,6 +380,9 @@ export function BookingScreen() {
   const { height: windowHeight } = useWindowDimensions();
 
   const formatDateHuman = (iso: string) => formatMoscowCalendarDayLong(iso, locale === 'en' ? 'en' : 'ru');
+  const uiClubLabel = useCallback((address?: string | null) => formatPublicClubLabel({ address, t }), [t]);
+  const uiPcLabel = useCallback((pcName: string) => formatPublicPcLabel(pcName, t), [t]);
+  const uiPcList = useCallback((pcNames: string[]) => formatPublicPcList(pcNames, t), [t]);
 
   const cafesQ = useQuery({
     queryKey: queryKeys.cafes(),
@@ -497,7 +507,7 @@ export function BookingScreen() {
     const eventId = await addBookingEventToCalendar({
       title: `BBplay · ${cafe.address}`,
       location: cafe.address,
-      notes: `PC: ${pcLine}\n${dateStart} ${timeStart} · ${minsNum} min`,
+      notes: `${pcLine}\n${dateStart} ${timeStart} · ${minsNum} min`,
       dateStart,
       timeStart,
       durationMins: minsNum,
@@ -1104,8 +1114,8 @@ export function BookingScreen() {
             Alert.alert(
               t('booking.alertBooking'),
               t('booking.partyZoneMismatch', {
-                current: pcZoneLabel(prev[0]) || '—',
-                attempt: pcZoneLabel(item) || '—',
+                current: formatPublicZoneLabel(pcZoneLabel(prev[0]) || '', t),
+                attempt: formatPublicZoneLabel(pcZoneLabel(item) || '', t),
               }),
             );
             return prev;
@@ -1143,7 +1153,7 @@ export function BookingScreen() {
         onSettled: () => setCancellingBookKey(null),
         onSuccess: () => void cancelVisitFeedbackReminderForRow(icafeId, row),
         onError: (err) => {
-          const msg = err instanceof ApiError ? err.message : t('booking.errorGeneric');
+          const msg = formatPublicErrorMessage(err, t, 'booking.errorGeneric');
           Alert.alert(t('booking.errorGeneric'), msg);
         },
       },
@@ -1240,7 +1250,7 @@ export function BookingScreen() {
       const timeLabel = formatMoscowWallSlotForLocale(slot.dateISO, slot.timeStart, locale === 'en' ? 'en' : 'ru');
       const whenLabel = t('booking.nearestWhenHuman', { date: dateLabel, time: timeLabel });
       const durationLabel = formatBookingDurationHuman(minsNum, locale);
-      const pcsLabel = picked.map((p) => p.pc_name).join(', ') || '—';
+      const pcsLabel = picked.length ? uiPcList(picked.map((p) => p.pc_name)) : '—';
       return {
         slot,
         whenLabel,
@@ -1295,7 +1305,7 @@ export function BookingScreen() {
     },
     onError: (e: unknown) => {
       if (e instanceof Error && e.name === 'AbortError') return;
-      const msg = e instanceof ApiError ? e.message : e instanceof Error ? e.message : t('booking.errorGeneric');
+      const msg = formatPublicErrorMessage(e, t, 'booking.errorGeneric');
       Alert.alert(t('booking.alertBooking'), msg);
     },
   });
@@ -1365,7 +1375,7 @@ export function BookingScreen() {
         if (tariffIds == null) {
           failed.push({
             name: pc.pc_name,
-            err: t('booking.zonePriceMissing', { zone: pcZoneLabel(pc) || '?' }),
+            err: t('booking.zonePriceMissing', { zone: formatPublicZoneLabel(pcZoneLabel(pc) || '', t) }),
           });
         } else {
           priced.push({ pc, tariffIds });
@@ -1383,8 +1393,7 @@ export function BookingScreen() {
       };
 
       const pushBookingError = (pcName: string, e: unknown) => {
-        const errMsg =
-          e instanceof ApiError ? e.message : e instanceof Error ? e.message : t('booking.errorGeneric');
+        const errMsg = formatPublicErrorMessage(e, t, 'booking.errorGeneric');
         failed.push({ name: pcName, err: errMsg });
       };
 
@@ -1463,8 +1472,8 @@ export function BookingScreen() {
         Alert.alert(
           t('booking.partialBookingTitle'),
           t('booking.partialBookingBody', {
-            ok: result.ok.join(', '),
-            failed: result.failed[0].name,
+            ok: uiPcList(result.ok),
+            failed: uiPcLabel(result.failed[0].name),
             msg: result.failed[0].err,
           }),
         );
@@ -1478,7 +1487,7 @@ export function BookingScreen() {
           ...(tariff ? { lastTariff: tariffToSaved(tariff) } : {}),
         });
         if (!partial) {
-          setSuccessPcLine(result.ok.join(', '));
+          setSuccessPcLine(uiPcList(result.ok));
           setSuccessOpen(true);
         }
         try {
@@ -1486,8 +1495,8 @@ export function BookingScreen() {
           const partySuffix = partySize > 1 ? t('notif.partySuffix', { n: partySize }) : '';
           const when = `${dateStart} ${formatMoscowWallSlotForLocale(dateStart, timeStart, locale === 'en' ? 'en' : 'ru')}`;
           const reminderVars = {
-            club: cafe!.address,
-            pc: result.ok.join(', '),
+            club: uiClubLabel(cafe!.address),
+            pc: uiPcList(result.ok),
             when,
             party: partySuffix,
             h: prefs.prepDepartHoursBefore,
@@ -1506,6 +1515,7 @@ export function BookingScreen() {
               prepTitle: t('notif.prepTitle'),
               prepBody: t('notif.prepBody', reminderVars),
             },
+            t('notif.androidChannelReminders'),
             {
               durationMins: minsNum,
               icafeId: cafe!.icafe_id,
@@ -1523,7 +1533,7 @@ export function BookingScreen() {
       refreshCachesAfterBooking();
     },
     onError: (e: unknown) => {
-      const msg = e instanceof ApiError ? e.message : e instanceof Error ? e.message : t('booking.errorGeneric');
+      const msg = formatPublicErrorMessage(e, t, 'booking.errorGeneric');
       Alert.alert(t('booking.alertBooking'), msg);
     },
   });
@@ -2080,7 +2090,7 @@ export function BookingScreen() {
             <MaterialCommunityIcons name="monitor-dashboard" size={22} color={colors.accentBright} />
             <Text style={styles.sessionBannerText}>
               {t('booking.sessionOnPc', {
-                pc: sessionQ.data.pcName,
+                pc: uiPcLabel(sessionQ.data.pcName),
                 detail: sessionQ.data.detailLabel
                   ? t('booking.sessionOnPcDetail', { t: sessionQ.data.detailLabel })
                   : '',
@@ -2173,7 +2183,7 @@ export function BookingScreen() {
                 {seatViewToggle}
                 {structQ.isError ? (
                   <QueryError
-                    message={structQ.error instanceof ApiError ? structQ.error.message : t('booking.errorGeneric')}
+                    message={formatPublicErrorMessage(structQ.error, t, 'booking.errorGeneric')}
                     onRetry={() => void structQ.refetch()}
                     t={t}
                     styles={styles}
@@ -2241,9 +2251,9 @@ export function BookingScreen() {
                           disabled={canSelectPc && slotBusy}
                         >
                           <View style={{ flex: 1 }}>
-                            <Text style={styles.pcName}>{item.pc_name}</Text>
+                            <Text style={styles.pcName}>{uiPcLabel(item.pc_name)}</Text>
                             <Text style={styles.pcSub}>
-                              {(pcZoneLabel(item) || '—')} · {pcStatusLine}
+                              {formatPublicZoneLabel(pcZoneLabel(item) || '', t)} · {pcStatusLine}
                             </Text>
                           </View>
                           {sel ? (
@@ -2290,7 +2300,7 @@ export function BookingScreen() {
               {(() => {
                 const { from, to } = formatIntervalClock(locale, overlapConflict.iv);
                 return t('booking.overlapWarningDetail', {
-                  pc: overlapConflict.pcName,
+                  pc: uiPcLabel(overlapConflict.pcName),
                   from,
                   to,
                 });
@@ -2303,7 +2313,7 @@ export function BookingScreen() {
           <SkeletonBlock height={200} colors={colors} style={{ marginBottom: 12 }} />
         ) : pcsQuery.isError && !pcsQuery.data ? (
           <QueryError
-            message={pcsQuery.error instanceof ApiError ? pcsQuery.error.message : t('booking.errorGeneric')}
+            message={formatPublicErrorMessage(pcsQuery.error, t, 'booking.errorGeneric')}
             onRetry={() => pcsQuery.refetch()}
             t={t}
             styles={styles}
@@ -2611,7 +2621,7 @@ export function BookingScreen() {
               <SkeletonBlock height={120} colors={colors} />
             ) : cafesQ.isError ? (
               <QueryError
-                message={cafesQ.error instanceof ApiError ? cafesQ.error.message : t('booking.errorGeneric')}
+                message={formatPublicErrorMessage(cafesQ.error, t, 'booking.errorGeneric')}
                 onRetry={() => cafesQ.refetch()}
                 t={t}
                 styles={styles}
@@ -2694,7 +2704,7 @@ export function BookingScreen() {
             {pricesQ.isLoading ? <ActivityIndicator color={colors.accentBright} style={{ marginVertical: 12 }} /> : null}
             {pricesQ.isError ? (
               <QueryError
-                message={pricesQ.error instanceof ApiError ? pricesQ.error.message : t('booking.errorGeneric')}
+                message={formatPublicErrorMessage(pricesQ.error, t, 'booking.errorGeneric')}
                 onRetry={() => pricesQ.refetch()}
                 t={t}
                 styles={styles}
@@ -2787,7 +2797,7 @@ export function BookingScreen() {
             {pricesQ.isLoading ? <ActivityIndicator color={colors.accentBright} style={{ marginVertical: 16 }} /> : null}
             {pricesQ.isError ? (
               <QueryError
-                message={pricesQ.error instanceof ApiError ? pricesQ.error.message : t('booking.errorGeneric')}
+                message={formatPublicErrorMessage(pricesQ.error, t, 'booking.errorGeneric')}
                 onRetry={() => pricesQ.refetch()}
                 t={t}
                 styles={styles}
@@ -2842,7 +2852,7 @@ export function BookingScreen() {
           ) : null}
           {cafe && pricesQ.isError ? (
             <QueryError
-              message={pricesQ.error instanceof ApiError ? pricesQ.error.message : t('booking.errorGeneric')}
+              message={formatPublicErrorMessage(pricesQ.error, t, 'booking.errorGeneric')}
               onRetry={() => pricesQ.refetch()}
               t={t}
               styles={styles}
@@ -2939,7 +2949,7 @@ export function BookingScreen() {
         <SafeAreaView style={[styles.fullSheetSafe, { paddingTop: Math.max(insets.top, 12) }]} edges={['bottom']}>
           <Text style={styles.sheetTitle}>{t('booking.occupancyTitle')}</Text>
           {selectedPcs.length ? (
-            <Text style={styles.occPcHint}>{selectedPcs.map((p) => p.pc_name).join(', ')}</Text>
+            <Text style={styles.occPcHint}>{uiPcList(selectedPcs.map((p) => p.pc_name))}</Text>
           ) : null}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.occDaysScroll}>
             <Pressable
@@ -3023,7 +3033,7 @@ export function BookingScreen() {
             <SkeletonBlock height={160} colors={colors} style={{ marginVertical: 16 }} />
           ) : booksQ.isError ? (
             <QueryError
-              message={booksQ.error instanceof ApiError ? booksQ.error.message : t('booking.booksLoadError')}
+              message={formatPublicErrorMessage(booksQ.error, t, 'booking.booksLoadError')}
               onRetry={() => booksQ.refetch()}
               t={t}
               styles={styles}
@@ -3062,12 +3072,7 @@ export function BookingScreen() {
                 );
                 return (
                   <View key={icafe} style={styles.bookBlock}>
-                    <Text style={styles.icafe}>
-                      {(() => {
-                        const label = cafeLabel(icafe, cafeAddressById);
-                        return label === icafe ? t('booking.clubPrefix', { id: icafe }) : label;
-                      })()}
-                    </Text>
+                    <Text style={styles.icafe}>{uiClubLabel(cafeLabel(icafe, cafeAddressById))}</Text>
                     {activeRows.length ? (
                       <Text style={styles.bookingsSectionLabel}>{t('booking.bookingsSectionUpcoming')}</Text>
                     ) : null}
@@ -3446,7 +3451,7 @@ function BookingCard({
         <Text style={styles.userBookPastHint}>{t('booking.bookingPastSubtitle')}</Text>
       ) : null}
       <Text style={variant === 'past' ? styles.userBookPcMuted : styles.userBookPc}>
-        {t('booking.userBookingPlace', { name: row.product_pc_name })}
+        {formatPublicPcLabel(row.product_pc_name, t)}
       </Text>
       <Text style={styles.userBookTime}>{formatMemberBookingIntervalLine(row, locale)}</Text>
       <View style={styles.bookCardActionsRow}>

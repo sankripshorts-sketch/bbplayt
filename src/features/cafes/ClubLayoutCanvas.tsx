@@ -35,6 +35,7 @@ import {
 } from './clubLayoutGeometry';
 import { HallMapStatusLegend } from './HallMapStatusLegend';
 import { HALL_PREVIEW } from './hallMapPreviewTokens';
+import { formatPublicZoneLabel } from '../../utils/publicText';
 
 function hexColor(raw: string | undefined, fallback: string): string {
   if (!raw?.trim()) return fallback;
@@ -402,7 +403,7 @@ export function ClubLayoutCanvas({
                           adjustsFontSizeToFit
                           minimumFontScale={0.72}
                         >
-                          {r.area_name}
+                          {formatPublicZoneLabel(r.area_name, t)}
                         </Text>
                       </View>
                     )}

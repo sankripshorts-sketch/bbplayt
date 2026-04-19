@@ -11,6 +11,7 @@ import { useBookingNowMs } from '../features/booking/useBookingNowMs';
 import { formatIntervalClock, getBannerBookingSections } from '../features/booking/memberBookingsUtils';
 import { requestReminderPermissions } from '../notifications/bookingReminders';
 import { syncTodaysBookingHeadsUpNotification } from '../notifications/todaysBookingHeadsUp';
+import { formatPublicClubLabel, formatPublicPcLabel } from '../utils/publicText';
 
 /**
  * Синхронизирует локальный пуш «сегодня есть бронь» с расписанием и настройками.
@@ -41,10 +42,12 @@ export function TodayBookingNotificationSync() {
     const lines = useToday ? today : otherUpcoming.slice(0, 4);
     const bodyLines = lines.map((line) => {
       const { from, to } = formatIntervalClock(locale, line.iv);
+      const club = formatPublicClubLabel({ address: line.clubLabel, t });
+      const pc = formatPublicPcLabel(line.pcName, t);
       if (useToday) {
         return t('booking.bannerTodayLine', {
-          address: line.clubLabel,
-          pc: line.pcName,
+          address: club,
+          pc,
           from,
           to,
         });
@@ -57,8 +60,8 @@ export function TodayBookingNotificationSync() {
       });
       return t('booking.bannerUpcomingLine', {
         date: dateStr,
-        address: line.clubLabel,
-        pc: line.pcName,
+        address: club,
+        pc,
         from,
         to,
       });
@@ -72,7 +75,7 @@ export function TodayBookingNotificationSync() {
 
     let cancelled = false;
     const run = async () => {
-      await requestReminderPermissions();
+      await requestReminderPermissions(t('notif.androidChannelReminders'));
       const prefs = await loadAppPreferences();
       if (cancelled) return;
       await syncTodaysBookingHeadsUpNotification({
@@ -81,6 +84,7 @@ export function TodayBookingNotificationSync() {
         prefs,
         title: snapshot.title,
         ackLabel: t('notif.todaysBookingAck'),
+        androidChannelName: t('notif.androidChannelToday'),
       });
     };
 

@@ -40,7 +40,7 @@ function extractVibeDataIfEnvelope<T>(parsed: unknown, httpStatus: number): T {
           /^successful\.?$/i.test(msg.trim()) ||
           msg.trim().toLowerCase() === 'succes'));
     if (!ok) {
-      throw new ApiError(env.message || `Код ${env.code}`, httpStatus, {
+      throw new ApiError(env.message || 'Не удалось выполнить запрос', httpStatus, {
         code: env.code,
         message: env.message,
       });
@@ -285,7 +285,7 @@ function parseBookingPostResponse(res: Response, parsed: unknown): unknown {
   ) {
     const env = parsed as VibeEnvelope<unknown>;
     if (!vibeOuterEnvelopeOk(env.code, env.message)) {
-      throw new ApiError(env.message || `Код ${env.code}`, res.status, {
+      throw new ApiError(env.message || 'Не удалось выполнить запрос', res.status, {
         code: env.code,
         message: env.message,
       });
@@ -402,7 +402,7 @@ export async function vibeLogin(
     if (o.member && typeof o.member === 'object' && o.member !== null) {
       const code = o.code;
       if (typeof code === 'number' && code !== 0 && code !== 3) {
-        throw new ApiError(String(o.message ?? `Код ${code}`), res.status, {
+        throw new ApiError(String(o.message ?? 'Не удалось выполнить запрос'), res.status, {
           code,
           message: typeof o.message === 'string' ? o.message : undefined,
         });
@@ -419,7 +419,7 @@ export async function vibeLogin(
     if ('code' in o && typeof (o as VibeEnvelope<unknown>).code === 'number') {
       const env = parsed as VibeEnvelope<Record<string, unknown>>;
       if (env.code !== 0) {
-        throw new ApiError(env.message || `Код ${env.code}`, res.status, {
+        throw new ApiError(env.message || 'Не удалось выполнить запрос', res.status, {
           code: env.code,
           message: env.message,
         });

@@ -28,7 +28,7 @@ export class AppErrorBoundary extends Component<Props, State> {
       return (
         <View style={styles.wrap}>
           <Text style={styles.title}>Что-то пошло не так</Text>
-          <Text style={styles.body}>{err.message || String(err)}</Text>
+          <Text style={styles.body}>Экран не удалось показать. Попробуйте открыть его ещё раз.</Text>
           <Pressable
             style={styles.btn}
             onPress={() => this.setState({ err: null })}

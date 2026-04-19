@@ -16,11 +16,11 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../auth/AuthContext';
-import { ApiError } from '../../api/client';
 import type { AuthStackParamList } from '../../navigation/AuthNavigator';
 import { useLocale } from '../../i18n/LocaleContext';
 import type { ColorPalette } from '../../theme/palettes';
 import { useThemeColors } from '../../theme';
+import { formatPublicErrorMessage } from '../../utils/publicText';
 
 export function LoginScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<AuthStackParamList, 'Login'>>();
@@ -46,9 +46,7 @@ export function LoginScreen() {
     try {
       await login(loginStr.trim(), password);
     } catch (e) {
-      const msg =
-        e instanceof ApiError ? e.message : e instanceof Error ? e.message : t('login.errorGeneric');
-      setError(msg);
+      setError(formatPublicErrorMessage(e, t, 'login.errorGeneric'));
     } finally {
       setLoading(false);
     }

@@ -13,7 +13,8 @@
     "test:unit": "vitest run tests/unit",
     "test:api": "vitest run tests/api-live",
     "test:api:watch": "vitest tests/api-live",
-    "export:cursor-prompts": "node scripts/export-cursor-agent-prompts.mjs"
+    "export:cursor-prompts": "node scripts/export-cursor-agent-prompts.mjs",
+    "docs:prompts-md": "node scripts/json-prompts-to-md.mjs"
   },
   "dependencies": {
     "@expo/metro-runtime": "~3.2.3",

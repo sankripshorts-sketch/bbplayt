@@ -6,6 +6,7 @@ export const messagesEn: Record<MessageKey, string> = {
   'tabs.news': 'News',
   'tabs.booking': 'Booking',
   'tabs.help': 'Help',
+  'common.yourClub': 'Your club',
 
   'login.title': 'BBplay',
   'login.subtitle': 'BlackBears Play',
@@ -128,7 +129,7 @@ export const messagesEn: Record<MessageKey, string> = {
   'chat.category.support': 'Support',
 
   'cafes.title': 'Clubs',
-  'cafes.regHint': 'Club registration: {{id}}',
+  'cafes.regHint': 'Club registration in the app',
   'cafes.loadingIcafe': 'Loading club settings…',
   'cafes.icafeUnavailable': 'Could not load club settings',
   'cafes.loadError': 'Could not load list',
@@ -177,9 +178,9 @@ export const messagesEn: Record<MessageKey, string> = {
   'hallMap.liveLegend':
     '“In use” color shows current occupancy from the club. It is not the same as your selected booking time.',
   'hallMap.resetView': 'Reset floor plan position',
-  'hallMap.zoneBoot': 'BootCamp',
-  'hallMap.zoneGame': 'GameZone',
-  'hallMap.zoneVip': 'VIP',
+  'hallMap.zoneBoot': 'BootCamp zone',
+  'hallMap.zoneGame': 'Game zone',
+  'hallMap.zoneVip': 'VIP zone',
   'hallMap.legendBusy': 'Busy',
   'hallMap.legendSelected': 'Selected',
   'hallMap.legendIdle': 'Not selected',
@@ -252,8 +253,8 @@ export const messagesEn: Record<MessageKey, string> = {
   'booking.partyZoneMismatch':
     'For a group, pick seats in the same zone. Current: {{current}}; this seat: {{attempt}}.',
   'booking.zoneKindVIP': 'VIP',
-  'booking.zoneKindBootCamp': 'BootCamp',
-  'booking.zoneKindGameZone': 'GameZone',
+  'booking.zoneKindBootCamp': 'BootCamp zone',
+  'booking.zoneKindGameZone': 'Game zone',
   'booking.zoneKindOther': 'Other',
   'booking.zoneTitle': 'Choose seat',
   'booking.seatViewScheme': 'Floor plan',
@@ -351,7 +352,7 @@ export const messagesEn: Record<MessageKey, string> = {
     'This time overlaps your current or upcoming booking (all times are Moscow time). Pick another slot or cancel that booking under My bookings.',
   'booking.bannerUpcomingTitle': 'Next booking',
   'booking.bannerUpcomingLine': '{{date}} · {{address}} · {{pc}} · {{from}}—{{to}}',
-  'booking.clubPrefix': 'Club {{id}}',
+  'booking.clubPrefix': 'Your club',
   'booking.noData': 'No data',
   'booking.booksLoadError': 'Could not load bookings.',
   'booking.termsLoading': 'Loading tariffs…',
@@ -433,6 +434,8 @@ export const messagesEn: Record<MessageKey, string> = {
   'notif.todaysBookingTitle': 'You have a booking today',
   'notif.upcomingBookingTitle': 'You have a booking coming up',
   'notif.todaysBookingAck': 'Got it',
+  'notif.androidChannelToday': 'Today booking',
+  'notif.androidChannelReminders': 'Booking reminders',
 
   'feedback.visitTitle': 'How was your visit?',
   'feedback.visitSub': 'Rate your visit — comment is optional.',

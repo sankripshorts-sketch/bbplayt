@@ -31,8 +31,7 @@ export function selectPendingVisitFeedback(
       const key = memberBookingRowStableKey(icafeId, row);
       if (handledKeys.has(key)) continue;
       const nid = Number(icafeId);
-      const clubAddress =
-        Number.isFinite(nid) && addressByIcafe.has(nid) ? addressByIcafe.get(nid)! : `id ${icafeId}`;
+      const clubAddress = Number.isFinite(nid) && addressByIcafe.has(nid) ? addressByIcafe.get(nid)! : '';
       candidates.push({
         item: {
           bookingKey: key,

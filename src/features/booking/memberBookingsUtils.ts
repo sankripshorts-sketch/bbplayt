@@ -47,11 +47,11 @@ export function todayISOMoscow(at: Date = new Date(nowForBookingCompareMs())): s
   return formatISODateMoscow(at);
 }
 
-/** Адрес из списка клубов; если клуба нет в карте — исходный id из ответа all-books. */
+/** Адрес из списка клубов; если не нашли — вернём пустую строку, а UI подставит человекочитаемый fallback. */
 export function cafeLabel(icafeId: string, addressById: Map<number, string>): string {
   const n = Number(icafeId);
   if (Number.isFinite(n) && addressById.has(n)) return addressById.get(n)!;
-  return icafeId;
+  return '';
 }
 
 /** Все брони пользователя, которые попадают на календарный день `todayISO` (YYYY-MM-DD) по Москве. */

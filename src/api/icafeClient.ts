@@ -3,7 +3,7 @@ import { applyServerTimeFromResponse } from '../datetime/serverBookingClock';
 import { getSession } from '../auth/sessionStorage';
 import { ApiError } from './client';
 
-/** База для iCafe-прокси: members, SMS, verify (как в доке + референсном клиенте). */
+/** База для iCafe-прокси: members, SMS, verify (по документации iCafe Cloud). */
 export function getIcafeBaseUrl(): string {
   const fromEnv = process.env.EXPO_PUBLIC_ICAFE_API_BASE_URL;
   const extra = Constants.expoConfig?.extra as { apiBaseUrl?: string; icafeApiBaseUrl?: string } | undefined;
@@ -37,7 +37,10 @@ export function isIcafeProxySuccess(code: number, message: string): boolean {
 
 export function assertIcafeSuccess(parsed: IcafeProxyResponse): void {
   if (isIcafeProxySuccess(parsed.code, parsed.message)) return;
-  throw new ApiError(parsed.message || `Код ${parsed.code}`, 200, { code: parsed.code, message: parsed.message });
+  throw new ApiError(parsed.message || 'Не удалось выполнить запрос', 200, {
+    code: parsed.code,
+    message: parsed.message,
+  });
 }
 
 /**
@@ -51,7 +54,7 @@ export function rejectIcafeGatewayErrorBody(parsed: unknown): void {
   const message = typeof o.message === 'string' ? o.message : '';
   if (o.code === 0) return;
   if (isIcafeProxySuccess(o.code, message)) return;
-  throw new ApiError(message || `Код ${o.code}`, 200, { code: o.code, message });
+  throw new ApiError(message || 'Не удалось выполнить запрос', 200, { code: o.code, message });
 }
 
 function buildUrl(path: string): string {
@@ -267,7 +270,7 @@ export function ensureIcafePostSuccess(raw: IcafeProxyResponse | Record<string, 
   const message = typeof o.message === 'string' ? o.message : '';
   if (Number.isFinite(code) && isIcafeProxySuccess(code, message)) return;
   if (Number.isFinite(code)) {
-    throw new ApiError(message || `Код ${code}`, 200, { code, message });
+    throw new ApiError(message || 'Не удалось выполнить запрос', 200, { code, message });
   }
   throw new ApiError(message || 'Ошибка ответа API', 200);
 }

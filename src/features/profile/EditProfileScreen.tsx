@@ -39,6 +39,7 @@ import {
   normalizePhoneForApi,
   validateBirthdayDdMmYyyy,
 } from '../auth/inputFormatters';
+import { formatPublicErrorMessage } from '../../utils/publicText';
 
 type FullscreenResult =
   | { kind: 'profileSaved' }
@@ -160,12 +161,12 @@ export function EditProfileSection() {
       setFullscreenResult({ kind: 'passwordChanged' });
     },
     onError: (e: unknown) => {
-      let msg =
-        e instanceof ApiError ? e.message : e instanceof Error ? e.message : t('profile.passwordChangeError');
+      const raw = e instanceof ApiError ? e.message : e instanceof Error ? e.message : '';
+      let msg = formatPublicErrorMessage(e, t, 'profile.passwordChangeError');
       if (e instanceof ApiError && e.message === ERR_PASSWORD_CHANGE_UNCONFIRMED) {
         msg = t('profile.passwordChangeUnconfirmed');
       }
-      const low = msg.toLowerCase();
+      const low = raw.toLowerCase();
       if (low.includes('api not allowed')) {
         msg = t('profile.passwordChangeApiBlocked');
       } else if (isWrongOldPasswordMessage(low)) {
@@ -222,9 +223,9 @@ export function EditProfileSection() {
       setFullscreenResult({ kind: 'profileSaved' });
     },
     onError: (e: unknown) => {
-      let msg =
-        e instanceof ApiError ? e.message : e instanceof Error ? e.message : t('profile.saveProfileError');
-      const low = msg.toLowerCase();
+      const raw = e instanceof ApiError ? e.message : e instanceof Error ? e.message : '';
+      let msg = formatPublicErrorMessage(e, t, 'profile.saveProfileError');
+      const low = raw.toLowerCase();
       if (low.includes('api not allowed')) {
         msg = t('profile.saveProfileApiBlocked');
       }

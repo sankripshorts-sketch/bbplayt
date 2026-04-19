@@ -4,7 +4,6 @@ import { Text } from '../../components/DinText';
 import { useQuery } from '@tanstack/react-query';
 import { bookingFlowApi } from '../../api/endpoints';
 import { queryKeys } from '../../query/queryKeys';
-import { ApiError } from '../../api/client';
 import type { CafeItem } from '../../api/types';
 import { useLocale } from '../../i18n/LocaleContext';
 import type { ColorPalette } from '../../theme/palettes';
@@ -13,6 +12,7 @@ import { ClubLayoutCanvas } from './ClubLayoutCanvas';
 import type { PcAvailabilityState } from './clubLayoutGeometry';
 import { SkeletonBlock } from '../ui/SkeletonBlock';
 import { useLivePcsQuery } from '../booking/useLivePcsQuery';
+import { formatPublicErrorMessage } from '../../utils/publicText';
 
 type Props = {
   cafe: CafeItem;
@@ -73,9 +73,7 @@ export function HallMapPanel({ cafe, visible, onClose }: Props) {
             <SkeletonBlock height={220} colors={colors} />
           </View>
         ) : q.isError ? (
-          <Text style={styles.err}>
-            {q.error instanceof ApiError ? q.error.message : t('hallMap.loadError')}
-          </Text>
+          <Text style={styles.err}>{formatPublicErrorMessage(q.error, t, 'hallMap.loadError')}</Text>
         ) : q.data?.rooms?.length ? (
           <ScrollView
             style={styles.mapBodyScroll}

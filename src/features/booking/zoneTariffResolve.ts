@@ -629,7 +629,7 @@ export function packageSavingPercentVsHourly(
 /**
  * Опорная «короткая» ступень сетки: перебираем 60/30/… и все реальные длительности из `prices`, короче сессии.
  */
-function pickReferenceShortTierForGrid(prices: PriceItem[], sessionMins: number): PriceItem | null {
+function pickBaselineShortTierForGrid(prices: PriceItem[], sessionMins: number): PriceItem | null {
   for (const refMins of distinctShortRefMinutesFromPrices(prices, sessionMins)) {
     const tpl = pickHourlyTemplateForSessionMins(prices, refMins);
     if (!tpl) continue;
@@ -652,13 +652,13 @@ export function gridPriceTierSavingPercentVsHourly(
   const tplLong = pickHourlyTemplateForSessionMins(prices, sessionMins);
   if (!tplLong) return null;
   const longTier = matchPriceTierToMinutes(prices, tplLong, sessionMins);
-  const refTier = pickReferenceShortTierForGrid(prices, sessionMins);
-  if (!refTier) return null;
+  const baselineTier = pickBaselineShortTierForGrid(prices, sessionMins);
+  if (!baselineTier) return null;
   const rLong = hourlyRubPerMinuteFromPrice(longTier);
-  const rRef = hourlyRubPerMinuteFromPrice(refTier);
-  if (!Number.isFinite(rLong) || !Number.isFinite(rRef) || rLong <= 0 || rRef <= 0) return null;
+  const rBaseline = hourlyRubPerMinuteFromPrice(baselineTier);
+  if (!Number.isFinite(rLong) || !Number.isFinite(rBaseline) || rLong <= 0 || rBaseline <= 0) return null;
   const payLong = rLong * sessionMins;
-  const payIfShortTariff = rRef * sessionMins;
+  const payIfShortTariff = rBaseline * sessionMins;
   if (payIfShortTariff <= payLong + 0.5) return null;
   const rawPct = ((payIfShortTariff - payLong) / payIfShortTariff) * 100;
   const pct = ceilPercentToMultipleOf5(rawPct);
