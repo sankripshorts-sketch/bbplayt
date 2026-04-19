@@ -5,9 +5,9 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
+import { Text } from '../../components/DinText';
 import type { WebViewNavigation } from 'react-native-webview';
 import { WebView } from 'react-native-webview';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -122,13 +122,13 @@ export function VkVideoEmbedModal({
             onError={onWebError}
             renderLoading={() => (
               <View style={styles.loading}>
-                <ActivityIndicator size="large" color={colors.accent} />
+                <ActivityIndicator size="large" color={colors.accentBright} />
               </View>
             )}
           />
         ) : (
           <View style={styles.loading}>
-            <ActivityIndicator size="large" color={colors.accent} />
+            <ActivityIndicator size="large" color={colors.accentBright} />
           </View>
         )}
       </View>
@@ -147,7 +147,13 @@ function createStyles(colors: ColorPalette, padTop: number) {
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: colors.border,
     },
-    closeBtn: { padding: 8 },
+    closeBtn: {
+      minWidth: 48,
+      minHeight: 48,
+      padding: 8,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
     title: { flex: 1, fontSize: 16, fontWeight: '600', color: colors.text },
     web: { flex: 1 },
     loading: {

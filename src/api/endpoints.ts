@@ -45,15 +45,20 @@ export const bookingFlowApi = {
     mins: number;
     isFindWindow?: boolean;
     priceName?: string;
+    signal?: AbortSignal;
   }): Promise<AvailablePcsData> => {
-    const raw = await vibeGet<unknown>('/available-pcs-for-booking', {
-      cafeId: params.cafeId,
-      dateStart: params.dateStart,
-      timeStart: params.timeStart,
-      mins: params.mins,
-      isFindWindow: params.isFindWindow === undefined ? undefined : params.isFindWindow,
-      priceName: params.priceName,
-    });
+    const raw = await vibeGet<unknown>(
+      '/available-pcs-for-booking',
+      {
+        cafeId: params.cafeId,
+        dateStart: params.dateStart,
+        timeStart: params.timeStart,
+        mins: params.mins,
+        isFindWindow: params.isFindWindow === undefined ? undefined : params.isFindWindow,
+        priceName: params.priceName,
+      },
+      { signal: params.signal },
+    );
     return normalizeAvailablePcsData(raw);
   },
 

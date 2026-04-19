@@ -6,10 +6,11 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   View,
 } from 'react-native';
+import type { TextInput as RnTextInput } from 'react-native';
+import { Text } from '../../components/DinText';
+import { TextInput } from '../../components/DinTextInput';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -33,7 +34,7 @@ export function LoginScreen() {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const passwordRef = useRef<TextInput>(null);
+  const passwordRef = useRef<RnTextInput>(null);
 
   const onSubmit = async () => {
     setError(null);
@@ -213,6 +214,6 @@ function createStyles(colors: ColorPalette) {
       fontWeight: '600',
     },
     registerLink: { marginTop: 20, alignItems: 'center' },
-    registerLinkText: { color: colors.accent, fontSize: 16 },
+    registerLinkText: { color: colors.accentBright, fontSize: 16 },
   });
 }

@@ -1,8 +1,16 @@
 import type { PcListItem, PriceItem, ProductItem } from '../../api/types';
+import { normalizePcZoneKind, type PcZoneKind, pcZoneKindFromPc } from './pcZoneKind';
 import {
+  catalogProductSessionMins,
   hourlyCandidatesForSessionMins,
+  isLikelyTopupOrDepositProduct,
+  matchPriceTierToMinutes,
   parseMinsFromPriceItem,
   parseMinsFromProduct,
+  pickHourlyTemplateForSessionMins,
+  pickProductPackageForZoneKind,
+  shouldChargeViaCatalogProducts,
+  wheelProductPcZoneKind,
   type TariffChoice,
 } from './tariffSelection';
 
@@ -34,6 +42,32 @@ function zoneKeysFuzzyEqual(a: string | undefined | null, b: string | undefined 
   return false;
 }
 
+/** Строки прайса только с явной зоной GameZone (без VIP/BootCamp и без «общих» без group_name). */
+export function priceItemsGameZoneOnly(prices: PriceItem[]): PriceItem[] {
+  return prices.filter((p) => normalizePcZoneKind(p.group_name) === 'GameZone');
+}
+
+/** Пакеты каталога только GameZone — для подписи «выгоднее» в колесе времени/длительности. */
+export function productItemsGameZoneOnly(products: ProductItem[]): ProductItem[] {
+  return products.filter((p) => normalizePcZoneKind(p.group_name) === 'GameZone');
+}
+
+/** Строки почасового прайса под зону (VIP / BootCamp / GameZone); если зональных нет — общие без `group_name`. */
+export function priceItemsForPcZoneKind(prices: PriceItem[], zone: PcZoneKind): PriceItem[] {
+  if (zone === 'Other') return prices;
+  const explicit = prices.filter((p) => normalizePcZoneKind(p.group_name) === zone);
+  if (explicit.length > 0) return explicit;
+  return prices.filter((p) => !p.group_name || String(p.group_name).trim() === '');
+}
+
+/** Пакеты каталога той же зоны; иначе общие без группы — как при сопоставлении с ПК. */
+export function productItemsForPcZoneKind(products: ProductItem[], zone: PcZoneKind): ProductItem[] {
+  if (zone === 'Other') return products;
+  const explicit = products.filter((p) => normalizePcZoneKind(p.group_name) === zone);
+  if (explicit.length > 0) return explicit;
+  return products.filter((p) => !p.group_name || String(p.group_name).trim() === '');
+}
+
 export function pcZoneLabel(pc: PcListItem): string {
   const a = typeof pc.pc_area_name === 'string' ? pc.pc_area_name.trim() : '';
   if (a.length > 0) return a;
@@ -63,11 +97,31 @@ function priceTierSame(a: PriceItem, b: PriceItem): boolean {
   return String(a.duration ?? '') === String(b.duration ?? '');
 }
 
+/**
+ * Цена пакета из каталога. Сначала `product_price` — в выдаче iCafe с участником там часто
+ * фактическая сумма, а `total_price` остаётся витринной/без скидки; иначе `total_price` и запасные поля.
+ */
+export function productRubFromItem(p: ProductItem): number {
+  const o = p as Record<string, unknown>;
+  const candidates: unknown[] = [
+    p.product_price,
+    p.total_price,
+    o.price,
+    o.sum,
+    o.amount,
+    o.product_sum,
+    o.cost,
+  ];
+  for (const raw of candidates) {
+    if (raw == null || raw === '') continue;
+    const n = parseFloat(String(raw).replace(',', '.'));
+    if (Number.isFinite(n) && n > 0) return n;
+  }
+  return NaN;
+}
+
 function parseRubProduct(p: ProductItem): number {
-  const raw = p.total_price ?? p.product_price;
-  if (raw == null || raw === '') return NaN;
-  const n = parseFloat(String(raw).replace(',', '.'));
-  return Number.isFinite(n) ? n : NaN;
+  return productRubFromItem(p);
 }
 
 /**
@@ -108,6 +162,90 @@ function pickByZone<T extends { group_name?: string; price_name?: string }>(cand
 }
 
 /**
+ * Все строки прайса той же зоны, что и {@link pickByZone} (для выбора «лучшей» ступени среди нескольких кандидатов).
+ */
+function priceTiersMatchingPcZone(candidates: PriceItem[], zoneKey: string): PriceItem[] {
+  if (candidates.length === 0) return [];
+  if (!zoneKey) {
+    const u = candidates.filter((c) => !c.group_name || String(c.group_name).trim() === '');
+    return u.length > 0 ? u : [...candidates];
+  }
+  const exact = candidates.filter((c) => normalizeZoneKey(c.group_name) === zoneKey);
+  if (exact.length > 0) return exact;
+  const fuzzy = candidates.filter((c) => zoneKeysFuzzyEqual(c.group_name, zoneKey));
+  if (fuzzy.length > 0) return fuzzy;
+  const ungrouped = candidates.filter((c) => !c.group_name || String(c.group_name).trim() === '');
+  if (ungrouped.length > 0) return ungrouped;
+  const def = candidates.filter((c) => /default/i.test(String(c.price_name ?? '').trim()));
+  if (def.length > 0) return def;
+  return [...candidates];
+}
+
+/**
+ * Среди кандидатов с одинаковой «близостью» к опорным минутам — зона как у пакета и **максимальная** опорная ₽/ч
+ * (не первая строка в ответе API и не заниженная колонка).
+ */
+function pickBestHourlyStickerTierForBaseline(candidates: PriceItem[], zoneKey: string): PriceItem | null {
+  const zoned = priceTiersMatchingPcZone(candidates, zoneKey);
+  if (zoned.length === 0) return null;
+  return pickPriceTierWithMaxHourlyRubForBaseline(zoned);
+}
+
+/**
+ * Ключ зоны для сопоставления строк `prices`: у пакета зона часто только в имени (`<<<GZ`), не в `group_name` —
+ * иначе `zoneKey` пустой и берётся не та ступень / заниженная ₽/ч (~50% вместо ~75%).
+ */
+function zoneKeyForPackageHourlyBaseline(product: ProductItem, zoneFilteredPrices: PriceItem[]): string {
+  const fromProd = normalizeZoneKey(product.group_name);
+  if (fromProd) return fromProd;
+  const wz = wheelProductPcZoneKind(product);
+  const named = zoneFilteredPrices.filter((p) => p.group_name && String(p.group_name).trim() !== '');
+  for (const p of named) {
+    if (normalizePcZoneKind(p.group_name) === wz) return normalizeZoneKey(p.group_name);
+  }
+  if (named.length > 0) return normalizeZoneKey(named[0]!.group_name);
+  return '';
+}
+
+/** Среди ступеней одной длительности — строка с максимальной опорной ₽/ч (стандартная почасовка vs колонка со скидкой). */
+function pickPriceTierWithMaxHourlyRubForBaseline(tiers: PriceItem[]): PriceItem | null {
+  let best: PriceItem | null = null;
+  let bestRub = -1;
+  for (const p of tiers) {
+    const r = hourlyRubForPackageSavingBaseline(p);
+    if (r != null && Number.isFinite(r) && r > bestRub) {
+      bestRub = r;
+      best = p;
+    }
+  }
+  return best;
+}
+
+/**
+ * Опорная строка для «листовой» ₽/ч по зоне: **максимум** {@link hourlyRubForPackageSavingBaseline} среди всех ступеней.
+ * Раньше брали только 60→30 мин — оставалась низкая колонка `total_price` или не находилась строка с `price_price1`
+ * на длинной ступени (~50% вместо ~75%). Каталожное масштабирование короткого пакета тогда подменяло почасовку.
+ */
+function pickMaxHourlyStickerTierForZoneBaseline(prices: PriceItem[], zoneKey: string): PriceItem | null {
+  const zoned = priceTiersMatchingPcZone(prices, zoneKey);
+  if (zoned.length === 0) return null;
+  return pickPriceTierWithMaxHourlyRubForBaseline(zoned);
+}
+
+/** P_база = «цена простого часа» × (сессия в часах), без дешёвой средней с длинной ступени сетки. */
+function hourlyBaselineTotalFromCanonicalZoneSticker(
+  sessionMins: number,
+  prices: PriceItem[],
+  zoneKey: string,
+): number | null {
+  const ref = pickMaxHourlyStickerTierForZoneBaseline(prices, zoneKey);
+  if (!ref) return null;
+  const hourRub = hourlyRubForPackageSavingBaseline(ref);
+  if (hourRub == null || hourRub <= 0) return null;
+  return hourRub * (sessionMins / 60);
+}
+
+/**
  * Находит строку тарифа для выбранного ПК: та же «ступень», что у шаблона (имя + длительность),
  * но с `group_name`, соответствующим зоне ПК (как GameZone vs Bootcamp в реф. Android — через id/группу в каталоге).
  */
@@ -132,14 +270,25 @@ export function resolveTariffForPc(
   }
 
   const tier = template.item;
-  const candidates = products.filter((p) => productTierSame(p, tier));
+  const templateMins = catalogProductSessionMins(tier);
+  const candidates =
+    templateMins != null && templateMins > 0
+      ? products.filter(
+          (p) =>
+            !isLikelyTopupOrDepositProduct(p) && catalogProductSessionMins(p) === templateMins,
+        )
+      : products.filter((p) => productTierSame(p, tier));
   if (candidates.length === 0) return null;
-  const hasAnyGroup = candidates.some((c) => !!c.group_name && String(c.group_name).trim() !== '');
-  if (!hasAnyGroup) {
-    return candidates.some((c) => c.product_id === tier.product_id) ? template : { kind: 'product', item: candidates[0] };
-  }
-  const picked = pickByZone(candidates, zoneKey);
+  const picked = pickProductPackageForZoneKind(candidates, pcZoneKindFromPc(pc));
   return picked ? { kind: 'product', item: picked } : null;
+}
+
+/**
+ * Пакет 3 ч / 5 ч: строка каталога с `group_name` под зону ПК; без группы — если нет зонных строк.
+ * Не подставляет пакет другой зоны (VIP vs GameZone).
+ */
+function pickBookingPackageForPc(pool: ProductItem[], pc: PcListItem): ProductItem | null {
+  return pickProductPackageForZoneKind(pool, pcZoneKindFromPc(pc));
 }
 
 function parseRub(raw: string | undefined): number {
@@ -159,6 +308,26 @@ export function hourlyRubPerMinuteFromPrice(p: PriceItem): number {
   const tierMins = parseMinsFromPriceItem(p, 0);
   if (Number.isFinite(total) && total > 0 && tierMins > 0) return total / tierMins;
   return NaN;
+}
+
+/**
+ * Стоимость по строке прайса для зоны ПК: если ступень совпадает с длительностью сессии —
+ * цена блока из `total_price` (как у пакета в сетке), а не (₽/ч из `price_price1`) × минуты.
+ */
+export function priceBookingRubForResolvedTier(
+  prices: PriceItem[],
+  zoneResolvedTier: PriceItem,
+  bookingMinutes: number,
+): number {
+  const matched = matchPriceTierToMinutes(prices, zoneResolvedTier, bookingMinutes);
+  const tierMins = parseMinsFromPriceItem(matched, bookingMinutes);
+  const block = parseRub(matched.total_price);
+  if (tierMins === bookingMinutes && Number.isFinite(block) && block > 0) {
+    return block;
+  }
+  const rate = hourlyRubPerMinuteFromPrice(matched);
+  if (!Number.isFinite(rate) || rate <= 0) return NaN;
+  return rate * bookingMinutes;
 }
 
 /**
@@ -190,11 +359,11 @@ export function tariffRatePerMinuteRub(t: TariffChoice): number {
 }
 
 /**
- * Пакет из каталога: `total_price` / `product_price` — цена пакета целиком (как в реф. Android для не-hourly продуктов).
+ * Пакет из каталога — цена пакета целиком (та же логика полей, что {@link productRubFromItem}).
  */
 export function productPackagePriceRub(t: TariffChoice): number {
   if (t.kind !== 'product') return NaN;
-  return parseRub(t.item.total_price ?? t.item.product_price);
+  return productRubFromItem(t.item);
 }
 
 export function totalBookingRub(
@@ -206,6 +375,21 @@ export function totalBookingRub(
 ): number {
   if (!template || selectedPcs.length === 0) return NaN;
   if (!Number.isFinite(bookingMinutes) || bookingMinutes <= 0) return NaN;
+
+  /** Длительность из каталога `products` с сервера — цена по зоне ПК, не сетка `prices`. */
+  if (shouldChargeViaCatalogProducts(products, bookingMinutes)) {
+    const poolAll = products.filter((p) => catalogProductSessionMins(p) === bookingMinutes);
+    if (poolAll.length === 0) return NaN;
+    let sum = 0;
+    for (const pc of selectedPcs) {
+      const picked = pickBookingPackageForPc(poolAll, pc);
+      if (!picked) return NaN;
+      const flat = productRubFromItem(picked);
+      if (!Number.isFinite(flat)) return NaN;
+      sum += flat;
+    }
+    return sum;
+  }
 
   if (template.kind === 'product') {
     let sum = 0;
@@ -222,12 +406,490 @@ export function totalBookingRub(
   let sum = 0;
   for (const pc of selectedPcs) {
     const r = resolveTariffForPc(template, pc, prices, products);
-    if (!r) return NaN;
-    const rate = tariffRatePerMinuteRub(r);
-    if (!Number.isFinite(rate)) return NaN;
-    sum += rate * bookingMinutes;
+    if (!r || r.kind !== 'price') return NaN;
+    const rub = priceBookingRubForResolvedTier(prices, r.item, bookingMinutes);
+    if (!Number.isFinite(rub)) return NaN;
+    sum += rub;
   }
   return sum;
+}
+
+function hourlyTotalAndPackageRub(
+  product: ProductItem,
+  prices: PriceItem[],
+): { hourlyTotal: number; pkg: number } | null {
+  if (!prices.length) return null;
+  const sessionMins = parseMinsFromProduct(product, 0);
+  if (!sessionMins || sessionMins <= 0) return null;
+  const cands = hourlyCandidatesForSessionMins(prices, sessionMins);
+  if (cands.length === 0) return null;
+  const zoneKey = normalizeZoneKey(product.group_name);
+  const hourly = pickByZone(cands, zoneKey);
+  if (!hourly) return null;
+  const rate = hourlyRubPerMinuteFromPrice(hourly);
+  const pkg = productRubFromItem(product);
+  if (!Number.isFinite(rate) || rate <= 0 || !Number.isFinite(pkg) || pkg <= 0) return null;
+  const hourlyTotal = rate * sessionMins;
+  return { hourlyTotal, pkg };
+}
+
+/**
+ * Если нет строки прайса «ровно под длительность пакета», сравниваем с почасовкой от короткой ступени
+ * (60 → 30 → 90 → 120 мин) в той же зоне — в API часто нет ровно 60 мин, и выгода не считалась.
+ */
+/** Опорные короткие ступени из сетки (в API не всегда есть 60/30 мин в фиксированном виде). */
+function distinctShortRefMinutesFromPrices(prices: PriceItem[], sessionMins: number): number[] {
+  const extra = new Set<number>();
+  for (const p of prices) {
+    const m = parseMinsFromPriceItem(p, 0);
+    if (m > 0 && m < sessionMins) extra.add(m);
+  }
+  const head = [60, 30, 90, 45, 120].filter((x) => x < sessionMins);
+  const rest = [...extra].filter((x) => !head.includes(x)).sort((a, b) => a - b);
+  return [...head, ...rest];
+}
+
+function hourlyTotalFrom60MinExtrapolation(product: ProductItem, prices: PriceItem[]): number | null {
+  const sessionMins = parseMinsFromProduct(product, 0);
+  if (!sessionMins || sessionMins <= 0 || !prices.length) return null;
+  const zoneKey = zoneKeyForPackageHourlyBaseline(product, prices);
+
+  const canon = hourlyBaselineTotalFromCanonicalZoneSticker(sessionMins, prices, zoneKey);
+  if (canon != null && Number.isFinite(canon) && canon > 0) return canon;
+
+  let bestTotal: number | null = null;
+  for (const refMins of distinctShortRefMinutesFromPrices(prices, sessionMins)) {
+    const cands = hourlyCandidatesForSessionMins(prices, refMins);
+    if (cands.length === 0) continue;
+    const hourly = pickBestHourlyStickerTierForBaseline(cands, zoneKey);
+    if (!hourly) continue;
+    const hourRub = hourlyRubForPackageSavingBaseline(hourly);
+    if (hourRub == null || !Number.isFinite(hourRub) || hourRub <= 0) continue;
+    const total = hourRub * (sessionMins / 60);
+    if (bestTotal == null || total > bestTotal) bestTotal = total;
+  }
+  return bestTotal;
+}
+
+/** Ключ зоны для строк только GameZone (подпись «выгоднее» всегда от листа GZ). */
+function gameZoneBaselineZoneKeyFromPrices(gz: PriceItem[]): string {
+  if (gz.length === 0) return '';
+  const row =
+    gz.find((p) => normalizePcZoneKind(p.group_name) === 'GameZone') ?? gz[0]!;
+  const g = row.group_name?.trim();
+  return g ? normalizeZoneKey(g) : normalizeZoneKey('GameZone');
+}
+
+/**
+ * База P_прив для подписи «выгоднее»: **только** сетка GameZone (₽/ч × часы), не зона пакета (VIP/BC).
+ */
+function hourlyTotalBaselineGameZoneListOnly(product: ProductItem, allPrices: PriceItem[]): number | null {
+  const gz = priceItemsGameZoneOnly(allPrices);
+  if (gz.length === 0) return null;
+  const sessionMins = parseMinsFromProduct(product, 0);
+  if (!sessionMins || sessionMins <= 0) return null;
+  const zoneKey = gameZoneBaselineZoneKeyFromPrices(gz);
+
+  const canon = hourlyBaselineTotalFromCanonicalZoneSticker(sessionMins, gz, zoneKey);
+  if (canon != null && Number.isFinite(canon) && canon > 0) return canon;
+
+  let bestTotal: number | null = null;
+  for (const refMins of distinctShortRefMinutesFromPrices(gz, sessionMins)) {
+    const cands = hourlyCandidatesForSessionMins(gz, refMins);
+    if (cands.length === 0) continue;
+    const hourly = pickBestHourlyStickerTierForBaseline(cands, zoneKey);
+    if (!hourly) continue;
+    const hourRub = hourlyRubForPackageSavingBaseline(hourly);
+    if (hourRub == null || !Number.isFinite(hourRub) || hourRub <= 0) continue;
+    const total = hourRub * (sessionMins / 60);
+    if (bestTotal == null || total > bestTotal) bestTotal = total;
+  }
+  return bestTotal;
+}
+
+/**
+ * Когда в ответе API нет строк `prices` (только каталог `products`), сравниваем длинный пакет
+ * с коротким пакетом той же зоны (60 → 30 мин) линейным масштабированием — иначе процента не бывает.
+ */
+function hourlyTotalFromProductCatalogBench(product: ProductItem, catalog: ProductItem[]): number | null {
+  if (!catalog.length) return null;
+  const sessionMins = parseMinsFromProduct(product, 0);
+  if (!sessionMins || sessionMins <= 0) return null;
+  const zoneKey = normalizeZoneKey(product.group_name);
+
+  const rub = (p: ProductItem) => productRubFromItem(p);
+
+  const tryTier = (mins: number): number | null => {
+    /** Без исключения текущего продукта пул мог содержать только его же → база = цена пакета → 0% выгоды. */
+    const pool = catalog.filter(
+      (p) => parseMinsFromProduct(p, 0) === mins && p.product_id !== product.product_id,
+    );
+    if (pool.length === 0) return null;
+    const row = pickByZone(pool, zoneKey);
+    if (!row) return null;
+    const total = rub(row);
+    if (!Number.isFinite(total) || total <= 0) return null;
+    return total * (sessionMins / mins);
+  };
+
+  const fromShorterPackage =
+    tryTier(60) ??
+    tryTier(30) ??
+    tryTier(90) ??
+    tryTier(120) ??
+    tryTier(180) ??
+    tryTier(240) ??
+    catalogBenchFromShortestSibling(product, catalog, sessionMins, rub);
+
+  return fromShorterPackage;
+}
+
+/** Только длинные пакеты (3 ч / 4 ч / 5 ч): берём самый короткий другой пакет в зоне и линейно масштабируем. */
+function catalogBenchFromShortestSibling(
+  product: ProductItem,
+  catalog: ProductItem[],
+  sessionMins: number,
+  rub: (p: ProductItem) => number,
+): number | null {
+  const rows = catalog
+    .filter((p) => p.product_id !== product.product_id)
+    .map((p) => ({ p, m: parseMinsFromProduct(p, 0), r: rub(p) }))
+    .filter((x) => x.m > 0 && Number.isFinite(x.r) && x.r > 0);
+  if (rows.length === 0) return null;
+  const inZone = rows.filter((x) => zoneKeysFuzzyEqual(x.p.group_name, product.group_name));
+  const pool = inZone.length > 0 ? inZone : rows;
+  const ref = pool.reduce((a, b) => (a.m <= b.m ? a : b));
+  return ref.r * (sessionMins / ref.m);
+}
+
+/**
+ * База для «выгоды»: сколько бы стоила та же сессия по ставке с короткой ступени сетки (60→30→…),
+ * т.е. ₽/час × часы — без завышения через max по другим ступеням/зонам.
+ */
+function hourlyBaselineRubForPackageSavings(
+  product: ProductItem,
+  prices: PriceItem[],
+  catalog: ProductItem[],
+): number | null {
+  if (prices.length > 0) {
+    const ex = hourlyTotalFrom60MinExtrapolation(product, prices);
+    if (ex != null && Number.isFinite(ex) && ex > 0) return ex;
+  }
+  const fromCatalog = hourlyTotalFromProductCatalogBench(product, catalog);
+  if (fromCatalog != null && Number.isFinite(fromCatalog) && fromCatalog > 0) return fromCatalog;
+  return null;
+}
+
+/**
+ * На сколько ₽ пакет дешевле той же длительности по почасовой строке сопоставимой зоны (если в `prices` есть ступень под эти минуты).
+ */
+export function packageSavingVsHourlyRub(product: ProductItem, prices: PriceItem[]): number | null {
+  const r = hourlyTotalAndPackageRub(product, prices);
+  if (!r) return null;
+  const saving = r.hourlyTotal - r.pkg;
+  return saving > 0.5 ? saving : null;
+}
+
+/**
+ * Округление процента выгоды **вверх** до кратного 5 (73,3% → 75%; не «до ближайшего»).
+ */
+export function ceilPercentToMultipleOf5(rawPercent: number): number {
+  if (!Number.isFinite(rawPercent) || rawPercent <= 0) return 0;
+  return Math.ceil(rawPercent / 5) * 5;
+}
+
+/** @deprecated Используйте {@link ceilPercentToMultipleOf5} (теперь то же поведение — вверх до ×5). */
+export const roundPercentNearestMultipleOf5 = ceilPercentToMultipleOf5;
+
+/**
+ * На сколько процентов пакет дешевле почасовки на ту же длительность:
+ * 1) **P_прив** = цена за 1 час × число часов в пакете (приводим 1 ч к длительности пакета);
+ * 2) сырой % = **(P_прив − P_пакет) / P_прив × 100**;
+ * 3) в UI: {@link ceilPercentToMultipleOf5}.
+ * P_прив берётся из опорной короткой ступени (60→30 мин, приоритет `price_price1`).
+ */
+export function packageSavingPercentVsHourly(
+  product: ProductItem,
+  prices: PriceItem[],
+  catalog: ProductItem[] = [],
+): number | null {
+  const pkg = productRubFromItem(product);
+  if (!Number.isFinite(pkg) || pkg <= 0) return null;
+
+  const hourlyTotal = hourlyBaselineRubForPackageSavings(product, prices, catalog);
+  if (hourlyTotal == null || !Number.isFinite(hourlyTotal) || hourlyTotal <= 0) return null;
+
+  const saving = hourlyTotal - pkg;
+  if (saving <= 0.5) return null;
+  const rawPct = (saving / hourlyTotal) * 100;
+  const pct = ceilPercentToMultipleOf5(rawPct);
+  return pct > 0 ? pct : null;
+}
+
+/**
+ * Опорная «короткая» ступень сетки: перебираем 60/30/… и все реальные длительности из `prices`, короче сессии.
+ */
+function pickReferenceShortTierForGrid(prices: PriceItem[], sessionMins: number): PriceItem | null {
+  for (const refMins of distinctShortRefMinutesFromPrices(prices, sessionMins)) {
+    const tpl = pickHourlyTemplateForSessionMins(prices, refMins);
+    if (!tpl) continue;
+    const refTier = matchPriceTierToMinutes(prices, tpl, refMins);
+    const r = hourlyRubPerMinuteFromPrice(refTier);
+    if (Number.isFinite(r) && r > 0) return refTier;
+  }
+  return null;
+}
+
+/**
+ * Ступень длительности только из сетки `prices` (без `products`): на сколько % дешевле оплата по строке этой длительности,
+ * чем если бы ту же сессию считали по минутной ставке короткой ступени (60 → 30 …). Если выгоды нет — null.
+ */
+export function gridPriceTierSavingPercentVsHourly(
+  sessionMins: number,
+  prices: PriceItem[],
+): number | null {
+  if (!prices.length || sessionMins < 60) return null;
+  const tplLong = pickHourlyTemplateForSessionMins(prices, sessionMins);
+  if (!tplLong) return null;
+  const longTier = matchPriceTierToMinutes(prices, tplLong, sessionMins);
+  const refTier = pickReferenceShortTierForGrid(prices, sessionMins);
+  if (!refTier) return null;
+  const rLong = hourlyRubPerMinuteFromPrice(longTier);
+  const rRef = hourlyRubPerMinuteFromPrice(refTier);
+  if (!Number.isFinite(rLong) || !Number.isFinite(rRef) || rLong <= 0 || rRef <= 0) return null;
+  const payLong = rLong * sessionMins;
+  const payIfShortTariff = rRef * sessionMins;
+  if (payIfShortTariff <= payLong + 0.5) return null;
+  const rawPct = ((payIfShortTariff - payLong) / payIfShortTariff) * 100;
+  const pct = ceilPercentToMultipleOf5(rawPct);
+  return pct > 0 ? pct : null;
+}
+
+/**
+ * Опорная ₽/ч по сетке зоны: максимум среди всех ступеней (как {@link pickMaxHourlyStickerTierForZoneBaseline}),
+ * чтобы не терять `price_price1` на строке 180 мин, когда нет 60/30.
+ */
+function pickGameZoneGridRefStickerRow(gzPrices: PriceItem[]): PriceItem | null {
+  if (!gzPrices.length) return null;
+  return pickPriceTierWithMaxHourlyRubForBaseline(gzPrices);
+}
+
+/**
+ * Эффективная «цена за час» с короткой ступени: сначала `price_price1`, иначе из total/duration.
+ */
+function stickerHourlyRubFromGridRefRow(ref: PriceItem): number | null {
+  const ph = parseRub(ref.price_price1);
+  if (Number.isFinite(ph) && ph > 0) return ph;
+  const tierMins = parseMinsFromPriceItem(ref, 0);
+  const total = parseRub(ref.total_price);
+  if (Number.isFinite(total) && total > 0 && tierMins > 0) return (total / tierMins) * 60;
+  return null;
+}
+
+/**
+ * Стоимость «простых» 60 минут по сетке: для строки ровно на 60 мин — `total_price` (цена слота часа),
+ * для 30 мин — эквивалент 60 мин через total/duration.
+ */
+function simpleSixtyMinuteSlotRubFromRef(ref: PriceItem): number | null {
+  const tierMins = parseMinsFromPriceItem(ref, 0);
+  const total = parseRub(ref.total_price);
+  if (tierMins === 60 && Number.isFinite(total) && total > 0) return total;
+  if (tierMins === 30 && Number.isFinite(total) && total > 0) return (total / 30) * 60;
+  return stickerHourlyRubFromGridRefRow(ref);
+}
+
+/**
+ * Один «час» для сравнения с пакетом: сначала явная почасовка `price_price1`, иначе слот из `total_price`
+ * (как {@link simpleSixtyMinuteSlotRubFromRef}). Иначе при разных total и ₽/ч занижалась база (~45% вместо ~75%).
+ */
+function hourlyRubForPackageSavingBaseline(ref: PriceItem): number | null {
+  const ph = parseRub(ref.price_price1);
+  if (Number.isFinite(ph) && ph > 0) return ph;
+  return simpleSixtyMinuteSlotRubFromRef(ref);
+}
+
+/**
+ * GameZone: **₽/ч внутри пакета** = `packageTotalRub / (sessionMins/60)`,
+ * сравнение с **₽ за «простой» час** (строка 60 мин в сетке, иначе 30 → приведение к 60 мин).
+ * Если пакет дешевле — та же формула, что {@link packageSavingPercentVsHourly}: (P_прив − P_факт) / P_прив × 100, затем {@link ceilPercentToMultipleOf5}.
+ * Если сравнение возможно, но выгоды нет — **0** (в UI: «Выгоднее на 0%»).
+ */
+export function gameZonePerHourPackageSavingPercent(
+  sessionMins: number,
+  packageTotalRub: number,
+  gzPrices: PriceItem[],
+): number | null {
+  if (!gzPrices.length || sessionMins < 60) return null;
+  if (!Number.isFinite(packageTotalRub) || packageTotalRub <= 0) return null;
+  const hours = sessionMins / 60;
+  if (hours <= 0) return null;
+
+  const ref = pickGameZoneGridRefStickerRow(gzPrices);
+  if (!ref) return null;
+  const simpleHourRub = hourlyRubForPackageSavingBaseline(ref);
+  if (simpleHourRub == null || simpleHourRub <= 0) return null;
+
+  const baseRub = simpleHourRub * hours;
+  if (packageTotalRub + 0.5 >= baseRub) return 0;
+
+  const rawPct = (1 - packageTotalRub / baseRub) * 100;
+  const pct = ceilPercentToMultipleOf5(rawPct);
+  return pct > 0 ? pct : 0;
+}
+
+/**
+ * Сетка без `products`: цена блока из `total_price` ступени длительности сессии.
+ * @deprecated имя оставлено для тестов; логика = {@link gameZonePerHourPackageSavingPercent}.
+ */
+export function gridGameZoneStickerHoursVsTierLumpPercent(
+  sessionMins: number,
+  gzPrices: PriceItem[],
+): number | null {
+  const tpl = pickHourlyTemplateForSessionMins(gzPrices, sessionMins);
+  if (!tpl) return null;
+  const lumpRow = matchPriceTierToMinutes(gzPrices, tpl, sessionMins);
+  const lumpRub = parseRub(lumpRow.total_price);
+  if (!Number.isFinite(lumpRub) || lumpRub <= 0) return null;
+  return gameZonePerHourPackageSavingPercent(sessionMins, lumpRub, gzPrices);
+}
+
+/** Сетка GameZone: сначала стикер×часы vs lump, затем сравнение короткой/длинной поминутной ступени. */
+export function gameZoneGridWheelSavingPercent(sessionMins: number, gzPrices: PriceItem[]): number | null {
+  if (!gzPrices.length) return null;
+  return (
+    gridGameZoneStickerHoursVsTierLumpPercent(sessionMins, gzPrices) ??
+    gridPriceTierSavingPercentVsHourly(sessionMins, gzPrices)
+  );
+}
+
+/**
+ * Экстраполяция от более коротких пакетов в зоне (и при необходимости по всему каталогу): «если бы платили как за короткий × длина».
+ */
+function percentFromLinearShorterPackages(product: ProductItem, catalog: ProductItem[]): number | null {
+  const pkg = productRubFromItem(product);
+  const M = parseMinsFromProduct(product, 0);
+  if (!Number.isFinite(pkg) || pkg <= 0 || !M) return null;
+
+  const benchFor = (allowAnyZone: boolean): number => {
+    let bestBench = 0;
+    for (const o of catalog) {
+      if (o.product_id === product.product_id) continue;
+      if (!allowAnyZone && !zoneKeysFuzzyEqual(o.group_name, product.group_name)) continue;
+      const m2 = parseMinsFromProduct(o, 0);
+      const p2 = productRubFromItem(o);
+      if (!Number.isFinite(p2) || p2 <= 0 || m2 <= 0 || m2 >= M) continue;
+      const bench = p2 * (M / m2);
+      if (bench > bestBench) bestBench = bench;
+    }
+    return bestBench;
+  };
+
+  const tryPct = (bench: number): number | null => {
+    if (bench - pkg <= 0.5) return null;
+    const pct = ceilPercentToMultipleOf5(((bench - pkg) / bench) * 100);
+    return pct > 0 ? pct : null;
+  };
+
+  return tryPct(benchFor(false)) ?? tryPct(benchFor(true));
+}
+
+/**
+ * Любой другой пакет в каталоге, линейно доведённый до M минут; берём максимум как «альтернативу без этой цены».
+ * Покрывает 3 ч / 4 ч / 5 ч, когда короче текущего пакета нет, но длиннее есть (масштаб вниз с 4 ч→3 ч и т.д.).
+ */
+function percentFromMaxLinearAlternativeAmongCatalog(product: ProductItem, catalog: ProductItem[]): number | null {
+  const pkg = productRubFromItem(product);
+  const M = parseMinsFromProduct(product, 0);
+  if (!Number.isFinite(pkg) || pkg <= 0 || !M) return null;
+  let maxBench = 0;
+  for (const o of catalog) {
+    if (o.product_id === product.product_id) continue;
+    const m2 = parseMinsFromProduct(o, 0);
+    const p2 = productRubFromItem(o);
+    if (!Number.isFinite(p2) || p2 <= 0 || !m2 || m2 === M) continue;
+    const bench = p2 * (M / m2);
+    if (bench > maxBench) maxBench = bench;
+  }
+  if (maxBench - pkg <= 0.5) return null;
+  const pct = ceilPercentToMultipleOf5(((maxBench - pkg) / maxBench) * 100);
+  return pct > 0 ? pct : null;
+}
+
+/**
+ * Эталон для подписи «выгоднее»: пакет **GameZone** той же длительности из каталога.
+ * Цена VIP/BootCamp не подставляется — процент не должен меняться при смене тарифа/зоны в UI.
+ */
+export function wheelGameZoneProductForSavingLabel(product: ProductItem, catalog: ProductItem[]): ProductItem {
+  const sessionMins = catalogProductSessionMins(product) ?? parseMinsFromProduct(product, 0);
+  if (!sessionMins || sessionMins <= 0 || !catalog.length) return product;
+  const pool = catalog.filter(
+    (p) => !isLikelyTopupOrDepositProduct(p) && catalogProductSessionMins(p) === sessionMins,
+  );
+  if (pool.length === 0) return product;
+  return pickProductPackageForZoneKind(pool, 'GameZone') ?? product;
+}
+
+/**
+ * Процент для подписи в колесе: сравнение цены пакета с **листовой почасовкой GameZone** (строки `group_name` GameZone в `prices`),
+ * не с VIP/BootCamp. Цена пакета в числителе — **всегда GameZone** для этой длительности (если есть в `products`), не зона выбранного тарифа.
+ */
+export function packageSavingPercentForWheel(
+  product: ProductItem,
+  prices: PriceItem[],
+  catalog: ProductItem[] = [],
+): number | null {
+  const sessionMins = parseMinsFromProduct(product, 0);
+  if (!sessionMins || sessionMins <= 0) return null;
+
+  const ref = wheelGameZoneProductForSavingLabel(product, catalog);
+  const gzPrices = priceItemsGameZoneOnly(prices);
+  const gzZoneKey = gzPrices.length > 0 ? gameZoneBaselineZoneKeyFromPrices(gzPrices) : '';
+  const gzCatalog = productItemsForPcZoneKind(catalog, 'GameZone');
+  const catalogPool = gzCatalog.length > 0 ? gzCatalog : catalog;
+
+  const pkg = productRubFromItem(ref);
+  if (!Number.isFinite(pkg) || pkg <= 0) return null;
+
+  const hasGridHourlyBaseline =
+    gzPrices.length > 0 && pickMaxHourlyStickerTierForZoneBaseline(gzPrices, gzZoneKey) != null;
+
+  if (gzPrices.length > 0) {
+    const baseEx = hourlyTotalBaselineGameZoneListOnly(ref, prices);
+    if (baseEx != null && Number.isFinite(baseEx) && baseEx > 0) {
+      if (pkg + 0.5 >= baseEx) return 0;
+      const rawPct = (1 - pkg / baseEx) * 100;
+      const pct = ceilPercentToMultipleOf5(rawPct);
+      return pct > 0 ? pct : 0;
+    }
+    const perHourPct = gameZonePerHourPackageSavingPercent(sessionMins, pkg, gzPrices);
+    if (perHourPct != null) return perHourPct;
+  }
+
+  /**
+   * Если в `prices` уже есть строки с опорной ₽/ч, не подменяем почасовку масштабированием короткого пакета
+   * из каталога — иначе получалось ~50% / ~20% вместо сравнения с «листом» ₽/ч × часы.
+   */
+  if (!hasGridHourlyBaseline) {
+    const fromCatalogBench = hourlyTotalFromProductCatalogBench(ref, catalogPool);
+    if (fromCatalogBench != null && Number.isFinite(fromCatalogBench) && fromCatalogBench > pkg + 0.5) {
+      const pct = ceilPercentToMultipleOf5(((fromCatalogBench - pkg) / fromCatalogBench) * 100);
+      if (pct > 0) return pct;
+    }
+
+    const lin = percentFromLinearShorterPackages(ref, catalogPool);
+    if (lin != null) return lin;
+
+    const anyLin = percentFromMaxLinearAlternativeAmongCatalog(ref, catalogPool);
+    if (anyLin != null) return anyLin;
+  }
+
+  /**
+   * Не используем {@link gameZoneGridWheelSavingPercent} здесь: там сравнение **ступени сетки** (lump `total_price`)
+   * с почасовкой, без цены пакета из каталога — на экране получалось «50%» при (P_лист − P_блок_сетки)/P_лист,
+   * хотя нужно (P_лист − P_пакет_каталога)/P_лист.
+   */
+
+  return null;
 }
 
 /**
@@ -246,7 +908,14 @@ export function bookingTariffIdsForApi(
   pc: PcListItem,
   prices: PriceItem[],
   products: ProductItem[],
+  bookingMinutes: number,
 ): BookingTariffApiIds | null {
+  if (shouldChargeViaCatalogProducts(products, bookingMinutes)) {
+    const pool = products.filter((p) => catalogProductSessionMins(p) === bookingMinutes);
+    const picked = pickBookingPackageForPc(pool, pc);
+    if (picked) return { kind: 'product', product_id: picked.product_id };
+    return null;
+  }
   const r = resolveTariffForPc(template, pc, prices, products);
   if (!r) return null;
   if (r.kind === 'product') return { kind: 'product', product_id: r.item.product_id };

@@ -7,10 +7,11 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   View,
 } from 'react-native';
+import type { TextInput as RnTextInput } from 'react-native';
+import { Text } from '../../components/DinText';
+import { TextInput } from '../../components/DinTextInput';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocale } from '../../i18n/LocaleContext';
 import { bestKnowledgeEntry } from '../../knowledge/search';
@@ -28,7 +29,7 @@ export function KnowledgeChatScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const entries = useKnowledgeEntries();
   const listRef = useRef<FlatList<Msg>>(null);
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<RnTextInput>(null);
 
   const [input, setInput] = useState('');
   /** По умолчанию скрыто — больше места под переписку; раскрыть кнопкой «Показать подсказки». */
@@ -180,7 +181,7 @@ function createStyles(colors: ColorPalette) {
     root: { flex: 1, backgroundColor: colors.bg, paddingHorizontal: 16, paddingTop: 12 },
     titleRow: {
       flexDirection: 'row',
-      alignItems: 'flex-start',
+      alignItems: 'center',
       justifyContent: 'space-between',
       marginBottom: 12,
       gap: 12,
@@ -193,14 +194,16 @@ function createStyles(colors: ColorPalette) {
     },
     suggestionsToggle: {
       alignSelf: 'flex-start',
-      paddingVertical: 4,
-      paddingHorizontal: 2,
+      minHeight: 44,
+      paddingVertical: 10,
+      paddingHorizontal: 8,
       marginBottom: 4,
+      justifyContent: 'center',
     },
     suggestionsToggleText: {
       fontSize: 13,
       fontWeight: '600',
-      color: colors.accent,
+      color: colors.accentBright,
     },
     suggestionsLabel: {
       fontSize: 12,

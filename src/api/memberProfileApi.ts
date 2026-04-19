@@ -7,6 +7,7 @@ import {
   icafeGetJsonWithAuth,
   icafePostJsonWithAuth,
   icafePutJsonWithAuth,
+  isIcafeProxySuccess,
 } from './icafeClient';
 import { fetchMemberRowIcafe } from './icafeMemberBalance';
 
@@ -203,29 +204,110 @@ function buildMemberIdJsonValue(memberId: string): string | number {
       : midTrim;
 }
 
+/** Ответ без явного успеха — показываем i18n по этому коду в UI. */
+export const ERR_PASSWORD_CHANGE_UNCONFIRMED = 'ERR_PASSWORD_CHANGE_UNCONFIRMED';
+
+function nestedErrorMessage(raw: Record<string, unknown>): string {
+  const e = raw.error;
+  if (typeof e === 'string' && e.trim()) return e.trim();
+  if (e && typeof e === 'object' && e !== null && 'message' in e) {
+    return String((e as { message?: string }).message ?? '').trim();
+  }
+  return '';
+}
+
+function messageIndicatesPasswordFailure(m: string): boolean {
+  return /wrong|incorrect|invalid|fail|error|неверн|ошибк|не\s*совпада|неправильн|old\s*password|denied|refused/i.test(
+    m,
+  );
+}
+
+function messageIndicatesPasswordSuccess(m: string): boolean {
+  const low = m.trim().toLowerCase();
+  if (!low) return false;
+  if (low === 'success' || low === 'successful' || low === 'ok' || low === 'done') return true;
+  if (
+    (low.includes('password') || low.includes('парол')) &&
+    (low.includes('chang') || low.includes('смен') || low.includes('обнов') || low.includes('updated'))
+  ) {
+    return true;
+  }
+  return false;
+}
+
 /**
- * Пустой JSON и ответ только с текстом ошибки не считаем успешной сменой пароля.
+ * Прокси иногда кладёт конверт `{ code, message }` внутрь `data`, а `code` приходит строкой `"200"`.
+ * Официальный iCafe Cloud: `{ "code": 200, "message": "success", "data": {} }`.
+ */
+function mergePasswordChangeEnvelope(raw: Record<string, unknown>): Record<string, unknown> {
+  const o = { ...raw };
+  const data = raw.data;
+  if (data && typeof data === 'object' && !Array.isArray(data)) {
+    const d = data as Record<string, unknown>;
+    if (
+      typeof d.code === 'number' ||
+      typeof d.code === 'string' ||
+      typeof d.message === 'string' ||
+      typeof d.success === 'boolean'
+    ) {
+      Object.assign(o, d);
+    }
+  }
+  const c = o.code;
+  if (typeof c === 'string' && /^\d+$/.test(c.trim())) {
+    o.code = Number(c.trim());
+  }
+  return o;
+}
+
+/**
+ * Пустой JSON и ответ без явного успеха не считаем сменой пароля (шлюз может отдать 200 «пустышку»).
  */
 function ensureMemberChangePasswordResponseOk(raw: Record<string, unknown>): void {
   if (Object.keys(raw).length === 0) {
     throw new ApiError('Пустой ответ API при смене пароля', 200);
   }
-  if (typeof raw.code === 'number') {
-    ensureIcafePostSuccess(raw);
+
+  const merged = mergePasswordChangeEnvelope(raw);
+
+  const nestedErr = nestedErrorMessage(merged);
+  if (nestedErr) {
+    throw new ApiError(nestedErr, 200);
+  }
+
+  const codeNum =
+    typeof merged.code === 'number' && Number.isFinite(merged.code) ? merged.code : Number.NaN;
+  const message = typeof merged.message === 'string' ? merged.message : '';
+
+  if (Number.isFinite(codeNum)) {
+    if (isIcafeProxySuccess(codeNum, message)) return;
+    if (messageIndicatesPasswordFailure(message)) {
+      throw new ApiError(message, 200);
+    }
+    ensureIcafePostSuccess(merged);
     return;
   }
-  if (typeof raw.message === 'string' && raw.message.trim()) {
-    const m = raw.message.trim();
-    const low = m.toLowerCase();
-    const looksSuccess = low === 'success' || low === 'successful' || low === 'ok';
-    if (
-      !looksSuccess &&
-      /wrong|incorrect|invalid|fail|error|неверн|ошибк|не\s*совпада|неправильн|old\s*password/i.test(m)
-    ) {
+
+  if (typeof merged.message === 'string' && merged.message.trim()) {
+    const m = merged.message.trim();
+    if (messageIndicatesPasswordFailure(m)) {
       throw new ApiError(m, 200);
     }
+    if (messageIndicatesPasswordSuccess(m)) {
+      return;
+    }
+    throw new ApiError(m, 200);
   }
-  ensureIcafeWriteSuccess(raw);
+
+  if (merged.success === true) return;
+  if (merged.status === true) return;
+  if (typeof merged.status === 'string' && ['success', 'ok'].includes(merged.status.trim().toLowerCase())) {
+    return;
+  }
+  if (merged.data === true) return;
+  if (merged.result === true || merged.result === 1) return;
+
+  throw new ApiError(ERR_PASSWORD_CHANGE_UNCONFIRMED, 200);
 }
 
 /**

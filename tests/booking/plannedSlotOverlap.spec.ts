@@ -46,6 +46,59 @@ describe('pcListItemBlocksPlannedSlot', () => {
     expect(pcListItemBlocksPlannedSlot(p, plan!)).toBe(false);
   });
 
+  it('границы строки ПК совпадают с проверяемым слотом и ПК свободен — не блокирует (метаданные find-window)', () => {
+    const plan = plannedInterval('2026-06-15', '16:00', 120);
+    expect(plan).not.toBeNull();
+    const p = basePc({
+      is_using: false,
+      start_date: '2026-06-15',
+      start_time: '16:00:00',
+      end_date: '2026-06-15',
+      end_time: '18:00:00',
+    });
+    expect(pcListItemBlocksPlannedSlot(p, plan!)).toBe(false);
+  });
+
+  it('широкий интервал (вся смена) в find-window: без флага пересечение считается занятостью; с findWindowListSemantics — свободен', () => {
+    const plan = plannedInterval('2026-06-15', '16:00', 60);
+    expect(plan).not.toBeNull();
+    const p = basePc({
+      is_using: false,
+      start_date: '2026-06-15',
+      start_time: '09:00:00',
+      end_date: '2026-06-15',
+      end_time: '23:00:00',
+    });
+    expect(pcListItemBlocksPlannedSlot(p, plan!)).toBe(true);
+    expect(pcListItemBlocksPlannedSlot(p, plan!, undefined, { findWindowListSemantics: true })).toBe(false);
+  });
+
+  it('частичное пересечение с бронью — блокирует даже при findWindowListSemantics', () => {
+    const plan = plannedInterval('2026-06-15', '16:00', 60);
+    expect(plan).not.toBeNull();
+    const p = basePc({
+      is_using: false,
+      start_date: '2026-06-15',
+      start_time: '16:30:00',
+      end_date: '2026-06-15',
+      end_time: '18:00:00',
+    });
+    expect(pcListItemBlocksPlannedSlot(p, plan!, undefined, { findWindowListSemantics: true })).toBe(true);
+  });
+
+  it('те же границы, но ПК занят сессией — блокирует', () => {
+    const plan = plannedInterval('2026-06-15', '16:00', 120);
+    expect(plan).not.toBeNull();
+    const p = basePc({
+      is_using: true,
+      start_date: '2026-06-15',
+      start_time: '16:00:00',
+      end_date: '2026-06-15',
+      end_time: '18:00:00',
+    });
+    expect(pcListItemBlocksPlannedSlot(p, plan!)).toBe(true);
+  });
+
   it('is_using без границ в ответе: занят только если выбранный слот пересекает «сейчас»', () => {
     const plan = plannedInterval('2026-06-15', '12:00', 60);
     expect(plan).not.toBeNull();

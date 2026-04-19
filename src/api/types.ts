@@ -83,6 +83,8 @@ export type ProductItem = {
   duration?: string;
   duration_min?: string;
   is_calc_duration?: boolean;
+  /** Выгода / акция с сервера (отдельное поле iCafe; фрагменты `<<<…>>>` разбираются в UI) */
+  package_hint?: string;
 };
 
 export type TimeTechBreakNormalized = {
@@ -116,8 +118,11 @@ export type MemberBookingRow = {
   product_available_date_local_to: string;
   product_mins: number;
   product_description?: string;
+  /** iCafe: id оффера/брони для отмены; в ответе может быть только `id` рядом с product_id каталога */
   member_offer_id?: number;
   member_account?: string;
+  /** Явный id брони в ответе шлюза (если отличается от product_id каталога) */
+  booking_id?: number;
 };
 
 /** Список броней по клубам: путь задаётся `getAllBooksPath()` (`/all-books-cafes` или `/all-books-member`). */

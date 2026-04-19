@@ -70,11 +70,20 @@ export const localSelectionToServerDateTime = moscowSelectionToServerDateTime;
 
 /**
  * Извлекает момент начала окна из ответа available-pcs (поиск окна или список ПК).
+ *
+ * @param contextDateISO — календарный день запроса (YYYY-MM-DD, МСК), тот же что в `dateStart` к API.
+ *   Нужен, если `time_frame` приходит только с часами (`14:00 – 16:00`) без даты — иначе начало окна не разобрать.
+ * @param contextTimeHHmm — время старта из запроса. Нужен как запасной вариант, когда vibe в `time_frame`
+ *   присылает не интервал, а шаг сетки (`"30"`), а доступность уже подтверждается списком свободных ПК.
  */
-export function windowStartFromAvailablePcs(data: AvailablePcsData): Date | null {
+export function windowStartFromAvailablePcs(
+  data: AvailablePcsData,
+  contextDateISO?: string,
+  contextTimeHHmm?: string,
+): Date | null {
   const tf = data.time_frame?.trim();
   if (tf) {
-    const parsed = parseTimeFrameStart(tf);
+    const parsed = parseTimeFrameStart(tf, contextDateISO);
     if (parsed) return parsed;
   }
 
@@ -85,18 +94,44 @@ export function windowStartFromAvailablePcs(data: AvailablePcsData): Date | null
     if (!w) continue;
     if (!best || w.getTime() < best.getTime()) best = w;
   }
-  return best;
+  if (best) return best;
+
+  if (
+    contextDateISO &&
+    contextTimeHHmm &&
+    (data.pc_list ?? []).some((p) => !p.is_using)
+  ) {
+    return combineServerISODateAndTime(contextDateISO, contextTimeHHmm);
+  }
+  return null;
 }
 
-function parseTimeFrameStart(tf: string): Date | null {
+function wallTimeFromBareClockPart(part: string, contextDateISO: string): Date | null {
+  const date = contextDateISO.trim().slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+  const tm = parseHHmm(part);
+  if (!tm) return null;
+  const t = `${String(tm.h).padStart(2, '0')}:${String(tm.m).padStart(2, '0')}:${String(tm.s).padStart(2, '0')}`;
+  return combineServerISODateAndTime(date, t);
+}
+
+function parseTimeFrameStart(tf: string, contextDateISO?: string): Date | null {
   const dash = /\s*[–—-]\s*/;
   const parts = tf.split(dash).map((x) => x.trim()).filter(Boolean);
   if (parts.length >= 1) {
     const a = parseServerDateTimeString(parts[0]);
     if (a) return a;
+    if (contextDateISO) {
+      const wall = wallTimeFromBareClockPart(parts[0], contextDateISO);
+      if (wall) return wall;
+    }
   }
   const full = parseServerDateTimeString(tf);
   if (full) return full;
+  if (contextDateISO) {
+    const wall = wallTimeFromBareClockPart(tf, contextDateISO);
+    if (wall) return wall;
+  }
   return null;
 }
 
@@ -119,8 +154,12 @@ export function intervalFromMemberRow(row: MemberBookingRow): TimeInterval | nul
   const from = row.product_available_date_local_from?.trim() ?? '';
   const to = row.product_available_date_local_to?.trim() ?? '';
   const a = parseServerDateTimeString(from);
-  const b = parseServerDateTimeString(to);
+  let b = parseServerDateTimeString(to);
   if (!a || !b) return null;
+  // Бронь через полночь: иногда конец приходит с той же календарной датой, что и начало (00:10 < 23:40).
+  if (b.getTime() <= a.getTime()) {
+    b = new Date(b.getTime() + 864e5);
+  }
   if (b.getTime() <= a.getTime()) return null;
   return { start: a, end: b };
 }
@@ -128,6 +167,24 @@ export function intervalFromMemberRow(row: MemberBookingRow): TimeInterval | nul
 export function intervalsOverlap(a: TimeInterval, b: TimeInterval): boolean {
   return a.start.getTime() < b.end.getTime() && b.start.getTime() < a.end.getTime();
 }
+
+function intervalsEqualWall(a: TimeInterval, b: TimeInterval): boolean {
+  return a.start.getTime() === b.start.getTime() && a.end.getTime() === b.end.getTime();
+}
+
+/** `outer` целиком накрывает `inner` по времени (границы включительно). */
+export function intervalFullyCovers(outer: TimeInterval, inner: TimeInterval): boolean {
+  return outer.start.getTime() <= inner.start.getTime() && outer.end.getTime() >= inner.end.getTime();
+}
+
+/** Опции для {@link pcListItemBlocksPlannedSlot} / {@link effectivePcBusyForPlan}. */
+export type PcBusyForPlanOptions = {
+  /**
+   * Ответ `isFindWindow: true`: в списке только кандидаты на слот; широкий `start_*`–`end_*`, полностью
+   * охватывающий план, — рамка доступности, а не чужая бронь (иначе любое пересечение помечало бы ПК занятым).
+   */
+  findWindowListSemantics?: boolean;
+};
 
 /** Пересечение с календарным днём `dayISO` (YYYY-MM-DD) по московским часам. */
 export function intervalTouchesCalendarDay(iv: TimeInterval, dayISO: string): boolean {
@@ -215,9 +272,17 @@ export function pcListItemBlocksPlannedSlot(
   p: PcListItem,
   planIv: TimeInterval,
   nowMs: number = nowForBookingCompareMs(),
+  options?: PcBusyForPlanOptions,
 ): boolean {
   const iv = intervalFromPcBookingFields(p);
-  if (iv) return intervalsOverlap(iv, planIv);
+  if (iv) {
+    // В ответе find-window границы слота часто дублируют проверяемый интервал — это метаданные, не чужая бронь.
+    if (!p.is_using && intervalsEqualWall(iv, planIv)) return false;
+    if (options?.findWindowListSemantics && !p.is_using && intervalFullyCovers(iv, planIv)) {
+      return false;
+    }
+    return intervalsOverlap(iv, planIv);
+  }
   if (p.is_using) {
     const t = nowMs;
     return t >= planIv.start.getTime() && t < planIv.end.getTime();
@@ -230,6 +295,7 @@ export function effectivePcBusyForPlan(
   p: PcListItem,
   planIv: TimeInterval,
   nowMs: number = nowForBookingCompareMs(),
+  options?: PcBusyForPlanOptions,
 ): boolean {
-  return pcListItemBlocksPlannedSlot(p, planIv, nowMs);
+  return pcListItemBlocksPlannedSlot(p, planIv, nowMs, options);
 }

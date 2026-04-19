@@ -134,6 +134,13 @@ export async function syncTodaysBookingHeadsUpNotification(input: {
  * Снять напоминание «бронь на сегодня»: отметить день, отменить scheduled и убрать из шторки.
  * @param presentedNotificationId — `notification.request.identifier` из ответа Expo (тап по пушу); иначе снимаем по нашему id.
  */
+/** Уже нажали «Я помню» в этот календарный день (МСК) — скрыть баннер и не показывать sticky-пуш снова. */
+export async function isTodaysBookingAcknowledgedForToday(): Promise<boolean> {
+  const day = todayISO();
+  const acked = await readDayKey(ACK_STORAGE);
+  return acked === day;
+}
+
 export async function acknowledgeTodaysBookingNotification(
   presentedNotificationId?: string | null,
 ): Promise<void> {

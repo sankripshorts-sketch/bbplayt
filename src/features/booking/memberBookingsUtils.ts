@@ -30,11 +30,14 @@ export type TodayBookingLine = {
   memberOfferId: number;
 };
 
-/** `member_offer_id` из all-books; если 0/нет — `product_id` (иначе отмена с id=0 не проходит). */
+/** `member_offer_id` из all-books; если 0/нет — `booking_id` / `product_id` (иначе отмена с id=0 не проходит). */
 export function memberOfferIdForApi(row: MemberBookingRow): number {
   const mo = row.member_offer_id;
   const n = typeof mo === 'number' ? mo : Number(String(mo ?? '').trim());
   if (Number.isFinite(n) && n > 0) return n;
+  const bid = row.booking_id;
+  const b = typeof bid === 'number' ? bid : Number(String(bid ?? '').trim());
+  if (Number.isFinite(b) && b > 0) return b;
   const pid = row.product_id;
   return typeof pid === 'number' ? pid : Number(pid) || 0;
 }
@@ -44,7 +47,8 @@ export function todayISOMoscow(at: Date = new Date(nowForBookingCompareMs())): s
   return formatISODateMoscow(at);
 }
 
-function cafeLabel(icafeId: string, addressById: Map<number, string>): string {
+/** Адрес из списка клубов; если клуба нет в карте — исходный id из ответа all-books. */
+export function cafeLabel(icafeId: string, addressById: Map<number, string>): string {
   const n = Number(icafeId);
   if (Number.isFinite(n) && addressById.has(n)) return addressById.get(n)!;
   return icafeId;
@@ -236,6 +240,27 @@ export function mergeBookingRowsForCafeOverlap(
   return [...m.values()];
 }
 
+/** Не показывать отмену, если до начала слота осталось не больше этого времени (политика клуба / UX). */
+export const BOOKING_CANCEL_CUTOFF_MS_BEFORE_START = 5 * 60 * 1000;
+
+/**
+ * Окно отмены в UI закрыто: с за 5 минут до начала слота и до его конца (включая идущую сессию).
+ */
+export function isMemberBookingCancelDisabledByCutoff(iv: TimeInterval, nowMs: number): boolean {
+  const msUntilStart = iv.start.getTime() - nowMs;
+  return msUntilStart <= BOOKING_CANCEL_CUTOFF_MS_BEFORE_START;
+}
+
+/** «Повторить» в «Мои брони» для незавершённой брони — только в последние 5 минут до конца слота. */
+export const BOOKING_REPEAT_VISIBLE_MS_BEFORE_END = 5 * 60 * 1000;
+
+export function canShowRepeatMemberBookingRow(row: MemberBookingRow, nowMs: number): boolean {
+  const iv = intervalFromMemberRow(row);
+  if (!iv || bookingIntervalEnded(iv, nowMs)) return false;
+  const msUntilEnd = iv.end.getTime() - nowMs;
+  return msUntilEnd > 0 && msUntilEnd <= BOOKING_REPEAT_VISIBLE_MS_BEFORE_END;
+}
+
 /** Можно ли вызывать POST /booking-cancel для этой строки (ещё не конец слота, есть offer id и member_id). */
 export function canCancelMemberBookingRow(
   row: MemberBookingRow,
@@ -246,10 +271,15 @@ export function canCancelMemberBookingRow(
   const iv = intervalFromMemberRow(row);
   const offerId = memberOfferIdForApi(row);
   if (!iv || bookingIntervalEnded(iv, now)) return false;
+  if (isMemberBookingCancelDisabledByCutoff(iv, now)) return false;
   return offerId > 0;
 }
 
-/** Есть незавершённая бронь (ещё не прошёл конец интервала) — правило «1 аккаунт = 1 активная бронь». */
+/**
+ * Есть ли хотя бы одна незавершённая бронь (конец интервала в будущем).
+ * Для кнопки «Забронировать» используйте {@link findOverlappingOutstandingBooking} — там запрет только при
+ * пересечении выбранного слота с уже существующей бронью по времени, а не «ровно одна бронь на аккаунт».
+ */
 export function hasOutstandingMemberBooking(
   data: AllBooksData | undefined,
   nowMs: number = nowForBookingCompareMs(),

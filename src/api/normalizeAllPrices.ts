@@ -14,7 +14,7 @@ function coerceStr(v: unknown): string | undefined {
 
 /** Числовой id товара для POST /booking: `product_id`, иначе `order_product_id`, иначе суффикс из `p-123` (формат iCafe). */
 function parseCatalogProductId(o: Record<string, unknown>): number | null {
-  const raw = o.product_id ?? o.order_product_id;
+  const raw = o.product_id ?? o.order_product_id ?? o.id;
   if (typeof raw === 'number' && Number.isFinite(raw) && raw > 0) return raw;
   if (typeof raw === 'string') {
     const t = raw.trim();
@@ -29,6 +29,27 @@ function parseCatalogProductId(o: Record<string, unknown>): number | null {
   return null;
 }
 
+/** Длительность сессии в каталоге: разные сборки iCafe/vibe кладут минуты в `duration`, `mins`, `session_mins` и т.д. */
+function coerceProductDurationFields(o: Record<string, unknown>): { duration?: string; duration_min?: string } {
+  const duration =
+    coerceStr(o.duration) ??
+    coerceStr(o.duration_min ?? o.durationMin) ??
+    (typeof o.mins === 'number' && Number.isFinite(o.mins) && o.mins > 0 ? String(Math.floor(o.mins)) : undefined) ??
+    (typeof o.mins === 'string' && /^\d+$/.test(o.mins.trim()) ? o.mins.trim() : undefined) ??
+    (typeof o.session_mins === 'number' &&
+    Number.isFinite(o.session_mins) &&
+    o.session_mins > 0
+      ? String(Math.floor(o.session_mins))
+      : undefined) ??
+    coerceStr(o.sessionMinutes ?? o.duration_minutes ?? o.session_duration_min);
+  const duration_min =
+    coerceStr(o.duration_min ?? o.durationMin ?? o.minutes ?? o.minute_duration) ?? duration;
+  return {
+    ...(duration ? { duration } : {}),
+    ...(duration_min ? { duration_min } : {}),
+  };
+}
+
 function normalizeProduct(raw: unknown): ProductItem | null {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
   const o = raw as Record<string, unknown>;
@@ -37,18 +58,34 @@ function normalizeProduct(raw: unknown): ProductItem | null {
   const product_id = parseCatalogProductId(o);
   if (product_id == null) return null;
   const product_name = coerceStr(o.product_name) ?? '';
-  const group_name = coerceStr(o.group_name ?? o.group ?? o.pc_group_name ?? o.price_pc_group);
+  const group_name = coerceStr(
+    o.group_name ?? o.group ?? o.pc_group_name ?? o.price_pc_group ?? o.product_group_name,
+  );
   const product_type = coerceStr(o.product_type ?? o.productType ?? o.category);
+  const dur = coerceProductDurationFields(o);
+  const package_hint =
+    coerceStr(
+      o.package_hint ??
+        o.benefit ??
+        o.benefits ??
+        o.product_benefit ??
+        o.promo_text ??
+        o.discount_hint ??
+        o.product_info,
+    )?.trim() ?? '';
   const row: ProductItem = {
     product_id,
     product_name,
-    product_price: coerceStr(o.product_price),
-    total_price: coerceStr(o.total_price),
+    /** iCafe в разных инсталляциях шлёт цену в разных полях — без этого подпись «выгоднее» не считается. */
+    product_price: coerceStr(o.product_price ?? o.price ?? o.product_sum),
+    total_price: coerceStr(o.total_price ?? o.sum ?? o.amount ?? o.cost),
     ...(group_name ? { group_name } : {}),
-    duration: coerceStr(o.duration),
-    duration_min: coerceStr(o.duration_min ?? o.durationMin),
+    ...dur,
     ...(product_type ? { product_type } : {}),
   };
+  if (package_hint && package_hint !== product_name.trim()) {
+    row.package_hint = package_hint;
+  }
   if (o.is_calc_duration !== undefined && o.is_calc_duration !== null) {
     row.is_calc_duration =
       typeof o.is_calc_duration === 'boolean'
@@ -66,10 +103,13 @@ function normalizePrice(raw: unknown): PriceItem | null {
   if (!Number.isFinite(price_id) || price_id <= 0) return null;
   const price_name = coerceStr(o.price_name) ?? '';
   const group_name = coerceStr(o.group_name ?? o.group ?? o.pc_group_name ?? o.price_pc_group);
+  const price_price1 =
+    coerceStr(o.price_price1) ??
+    coerceStr(o.price1 ?? o.price_per_hour ?? o.hourly_price ?? o.rate_per_hour ?? o.rate);
   return {
     price_id,
     price_name,
-    price_price1: coerceStr(o.price_price1),
+    ...(price_price1 ? { price_price1 } : {}),
     total_price: coerceStr(o.total_price),
     ...(group_name ? { group_name } : {}),
     duration: coerceStr(o.duration ?? o.duration_min),
@@ -130,9 +170,26 @@ function dedupeByProductId(items: ProductItem[]): ProductItem[] {
 
 export function normalizeAllPricesData(raw: unknown): AllPricesData {
   const empty: AllPricesData = { prices: [], products: [] };
+  /** iCafe: GET .../products иногда отдаёт `{ code, data: [ {...}, ... ] }` — массив товаров без обёртки `items`. */
+  if (Array.isArray(raw)) {
+    return {
+      prices: [],
+      products: dedupeByProductId(
+        raw.map(normalizeProduct).filter((x): x is ProductItem => x != null),
+      ),
+    };
+  }
   let root: unknown = raw;
   if (root && typeof root === 'object' && !Array.isArray(root)) {
     const inner = (root as Record<string, unknown>).data;
+    if (Array.isArray(inner)) {
+      return {
+        prices: [],
+        products: dedupeByProductId(
+          inner.map(normalizeProduct).filter((x): x is ProductItem => x != null),
+        ),
+      };
+    }
     if (inner != null && typeof inner === 'object' && !Array.isArray(inner)) {
       root = inner;
     }

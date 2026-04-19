@@ -34,6 +34,7 @@ module.exports = {
   },
   scheme: 'bbplay',
   plugins: [
+    'expo-font',
     'expo-notifications',
     [
       'expo-calendar',
@@ -77,5 +78,7 @@ module.exports = {
     allBooksPath: process.env.EXPO_PUBLIC_ALL_BOOKS_PATH || '/all-books-cafes',
     /** Опционально: публичный URL JSON базы знаний для чата (формат как assets/knowledge.json) */
     knowledgeJsonUrl: process.env.EXPO_PUBLIC_KNOWLEDGE_JSON_URL || '',
+    /** Опционально: URL формы «отзыв о работе» (экран «Клубы»). Пусто — показывается подсказка. */
+    jobReviewUrl: process.env.EXPO_PUBLIC_JOB_REVIEW_URL || '',
   },
 };

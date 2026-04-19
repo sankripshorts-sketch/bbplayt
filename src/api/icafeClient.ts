@@ -25,8 +25,11 @@ export type IcafeProxyResponse<T = unknown> = {
 /** Коды успеха в стиле ProxyBBResponse (реф. Android). */
 export function isIcafeProxySuccess(code: number, message: string): boolean {
   const m = (message || '').trim();
+  const low = m.toLowerCase();
   if (code === 201) return true;
-  if (code === 200 && m.toLowerCase() === 'success') return true;
+  if (code === 200 && low === 'success') return true;
+  /** Часть прокси/upstream отдаёт `code: 0` при успехе (в т.ч. пустое сообщение). */
+  if (code === 0 && (m === '' || low === 'success' || low === 'ok')) return true;
   if (code === 3 && (m === 'Successful' || m === 'Succes')) return true;
   if (code === 2 && m === 'Award received') return true;
   return false;
@@ -111,8 +114,9 @@ async function icafeAuthHeaders(): Promise<Record<string, string>> {
     return h;
   }
   const session = await getSession();
-  if (session?.authToken) {
-    h.Authorization = `Bearer ${session.authToken}`;
+  const bearer = session?.authToken?.trim() || session?.user?.privateKey?.trim();
+  if (bearer) {
+    h.Authorization = `Bearer ${bearer}`;
   }
   if (session?.cookie) {
     h.Cookie = session.cookie;

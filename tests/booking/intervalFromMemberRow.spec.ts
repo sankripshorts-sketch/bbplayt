@@ -19,4 +19,20 @@ describe('intervalFromMemberRow', () => {
     expect(iv!.start.getTime()).toBe(a!.getTime());
     expect(iv!.end.getTime()).toBe(b!.getTime());
   });
+
+  it('бронь через полночь: конец с той же датой в строке (00:10 после 23:40) — конец на следующий календарный день', () => {
+    const row: MemberBookingRow = {
+      product_id: 1,
+      product_pc_name: 'PC16',
+      product_available_date_local_from: '2026-06-15 23:40:00',
+      product_available_date_local_to: '2026-06-15 00:10:00',
+      product_mins: 30,
+    };
+    const iv = intervalFromMemberRow(row);
+    const start = parseServerDateTimeString('2026-06-15 23:40:00');
+    const end = parseServerDateTimeString('2026-06-16 00:10:00');
+    expect(iv).not.toBeNull();
+    expect(iv!.start.getTime()).toBe(start!.getTime());
+    expect(iv!.end.getTime()).toBe(end!.getTime());
+  });
 });

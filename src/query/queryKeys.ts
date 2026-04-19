@@ -8,6 +8,8 @@ export const queryKeys = {
   structRooms: (cafeId: number) => ['struct-rooms', cafeId] as const,
   allPrices: (p: { cafeId: number; memberId?: string; mins: number; bookingDate: string }) =>
     ['all-prices', p.cafeId, p.memberId ?? '', p.mins, p.bookingDate] as const,
+  /** GET iCafe `/api/v2/cafe/{id}/products` — пакеты брони (Bearer private_key) */
+  cafeBookingProducts: (cafeId: number) => ['cafe-booking-products', cafeId] as const,
   availablePcs: (p: {
     cafeId: number;
     dateStart: string;

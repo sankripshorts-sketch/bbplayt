@@ -1,4 +1,4 @@
-import * as Crypto from 'expo-crypto';
+import { md5HexUtf8 } from './md5Utf8';
 
 /**
  * Подпись для POST /verify (SMS). Как в референсном Android:
@@ -11,7 +11,7 @@ export async function buildVerifySmsKey(params: {
 }): Promise<string> {
   const secret = process.env.EXPO_PUBLIC_VERIFY_SIGN_SECRET ?? '';
   const payload = `${params.memberId}${params.randKey}${params.privateKey}${secret}`;
-  return Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.MD5, payload);
+  return md5HexUtf8(payload);
 }
 
 export function randomNumericKey(): string {

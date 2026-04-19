@@ -7,7 +7,10 @@ export type ColorPalette = {
   text: string;
   muted: string;
   mutedDark: string;
+  /** Заливки кнопок, обводки акцента (как на референсе #006400) */
   accent: string;
+  /** Текст и иконки акцента на тёмном фоне — ярче, чем `accent` */
+  accentBright: string;
   accentSecondary: string;
   accentDim: string;
   accentDark: string;
@@ -28,28 +31,30 @@ export type ColorPalette = {
 export type ThemeName = 'dark' | 'light';
 
 export const palettes: Record<ThemeName, ColorPalette> = {
+  /** Как в прод. приложении Black Bears Play: глубокий графит, карточки чуть светлее, зелёный акцент, BootCamp — пурпурно-розовый */
   dark: {
-    bg: '#050508',
-    card: '#12101c',
-    cardElevated: '#1a1528',
-    text: '#F4F0FF',
-    muted: '#9b8fb8',
-    mutedDark: '#5c5470',
-    accent: '#22e07a',
-    accentSecondary: '#a855f7',
-    accentDim: '#2d1f4a',
-    accentDark: '#0a3d24',
-    accentTextOnButton: '#050508',
-    border: '#2a2438',
-    borderLight: '#4c3f6b',
-    danger: '#f472b6',
-    success: '#22e07a',
-    zoneBg: '#14101f',
-    pcFree: '#1e3d2f',
-    pcBusy: '#7c2d12',
-    pcLiveBusy: '#b45309',
-    pcSelected: '#a855f7',
-    chipOn: '#2d1f4a',
+    bg: '#1b222a',
+    card: '#2c353e',
+    cardElevated: '#343f4a',
+    text: '#ffffff',
+    muted: '#94a3b8',
+    mutedDark: '#64748b',
+    accent: '#006400',
+    accentBright: '#299047',
+    accentSecondary: '#9d174d',
+    accentDim: '#0f260f',
+    accentDark: '#003d00',
+    accentTextOnButton: '#ffffff',
+    border: '#3d4a57',
+    borderLight: '#475569',
+    danger: '#f87171',
+    success: '#22c55e',
+    zoneBg: '#151c24',
+    pcFree: '#1e293b',
+    pcBusy: '#7f1d1d',
+    pcLiveBusy: '#c2410c',
+    pcSelected: '#22c55e',
+    chipOn: '#374151',
   },
   light: {
     bg: '#ffffff',
@@ -58,7 +63,8 @@ export const palettes: Record<ThemeName, ColorPalette> = {
     text: '#0f172a',
     muted: '#64748b',
     mutedDark: '#94a3b8',
-    accent: '#16a34a',
+    accent: '#006400',
+    accentBright: '#15803d',
     accentSecondary: '#7c3aed',
     accentDim: '#ecfdf5',
     accentDark: '#dcfce7',

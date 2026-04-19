@@ -1,0 +1,78 @@
+diff --git a/node_modules/@react-navigation/elements/src/Header/Header.tsx b/node_modules/@react-navigation/elements/src/Header/Header.tsx
+index 0595ff6..0495c04 100644
+--- a/node_modules/@react-navigation/elements/src/Header/Header.tsx
++++ b/node_modules/@react-navigation/elements/src/Header/Header.tsx
+@@ -216,8 +216,8 @@ export default function Header(props: Props) {
+   return (
+     <React.Fragment>
+       <Animated.View
+-        pointerEvents="box-none"
+         style={[
++          { pointerEvents: 'box-none' },
+           StyleSheet.absoluteFill,
+           { zIndex: 0 },
+           backgroundContainerStyle,
+@@ -230,14 +230,18 @@ export default function Header(props: Props) {
+         )}
+       </Animated.View>
+       <Animated.View
+-        pointerEvents="box-none"
+-        style={[{ height, minHeight, maxHeight, opacity, transform }]}
++        style={[
++          { pointerEvents: 'box-none' },
++          { height, minHeight, maxHeight, opacity, transform },
++        ]}
+       >
+-        <View pointerEvents="none" style={{ height: headerStatusBarHeight }} />
+-        <View pointerEvents="box-none" style={styles.content}>
++        <View
++          style={{ height: headerStatusBarHeight, pointerEvents: 'none' }}
++        />
++        <View style={[styles.content, { pointerEvents: 'box-none' }]}>
+           <Animated.View
+-            pointerEvents="box-none"
+             style={[
++              { pointerEvents: 'box-none' },
+               styles.left,
+               headerTitleAlign === 'center' && styles.expand,
+               { marginStart: insets.left },
+@@ -247,8 +251,8 @@ export default function Header(props: Props) {
+             {leftButton}
+           </Animated.View>
+           <Animated.View
+-            pointerEvents="box-none"
+             style={[
++              { pointerEvents: 'box-none' },
+               styles.title,
+               {
+                 // Avoid the title from going offscreen or overlapping buttons
+@@ -279,8 +283,8 @@ export default function Header(props: Props) {
+             })}
+           </Animated.View>
+           <Animated.View
+-            pointerEvents="box-none"
+             style={[
++              { pointerEvents: 'box-none' },
+               styles.right,
+               styles.expand,
+               { marginEnd: insets.right },
+diff --git a/node_modules/@react-navigation/elements/src/ResourceSavingView.tsx b/node_modules/@react-navigation/elements/src/ResourceSavingView.tsx
+index 1d45386..33ed3cd 100644
+--- a/node_modules/@react-navigation/elements/src/ResourceSavingView.tsx
++++ b/node_modules/@react-navigation/elements/src/ResourceSavingView.tsx
+@@ -21,11 +21,13 @@ export default function ResourceSavingScene({
+         // @ts-expect-error: hidden exists on web, but not in React Native
+         hidden={!visible}
+         style={[
+-          { display: visible ? 'flex' : 'none' },
++          {
++            display: visible ? 'flex' : 'none',
++            pointerEvents: visible ? 'auto' : 'none',
++          },
+           styles.container,
+           style,
+         ]}
+-        pointerEvents={visible ? 'auto' : 'none'}
+         {...rest}
+       >
+         {children}

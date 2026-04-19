@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Text } from '../../components/DinText';
 import { useQuery } from '@tanstack/react-query';
 import { bookingFlowApi } from '../../api/endpoints';
 import { queryKeys } from '../../query/queryKeys';
@@ -8,7 +9,6 @@ import type { CafeItem } from '../../api/types';
 import { useLocale } from '../../i18n/LocaleContext';
 import type { ColorPalette } from '../../theme/palettes';
 import { useThemeColors } from '../../theme';
-import { getHallMapAxisScaleForClub, getHallMapOffsetsForClub } from '../../config/clubLayoutConfig';
 import { ClubLayoutCanvas } from './ClubLayoutCanvas';
 import type { PcAvailabilityState } from './clubLayoutGeometry';
 import { SkeletonBlock } from '../ui/SkeletonBlock';
@@ -77,18 +77,24 @@ export function HallMapPanel({ cafe, visible, onClose }: Props) {
             {q.error instanceof ApiError ? q.error.message : t('hallMap.loadError')}
           </Text>
         ) : q.data?.rooms?.length ? (
-          <View style={styles.mapBody}>
+          <ScrollView
+            style={styles.mapBodyScroll}
+            contentContainerStyle={styles.mapBodyContent}
+            keyboardShouldPersistTaps="handled"
+            nestedScrollEnabled
+            showsVerticalScrollIndicator
+          >
             <Text style={styles.liveHint}>{t('hallMap.liveLegend')}</Text>
             <ClubLayoutCanvas
               rooms={q.data.rooms}
               colors={colors}
               icafeId={cafe.icafe_id}
               pcAvailability={liveQ.isError ? undefined : pcAvailability}
-              horizontalPadding={32}
-              layoutOffsetPx={getHallMapOffsetsForClub(cafe.icafe_id)}
-              axisScale={getHallMapAxisScaleForClub(cafe.icafe_id)}
+              horizontalPadding={12}
+              minHeight={300}
+              embedPreviewChrome
             />
-          </View>
+          </ScrollView>
         ) : (
           <Text style={styles.empty}>{t('hallMap.emptyZones')}</Text>
         )}
@@ -110,9 +116,16 @@ function createStyles(colors: ColorPalette) {
       borderBottomColor: colors.border,
     },
     headerTitle: { flex: 1, color: colors.text, fontSize: 16, fontWeight: '600', marginRight: 8 },
-    closeBtn: { paddingVertical: 8, paddingHorizontal: 12 },
-    closeText: { color: colors.accent, fontWeight: '600' },
-    mapBody: { flex: 1, paddingHorizontal: 16, paddingTop: 8 },
+    closeBtn: {
+      minHeight: 44,
+      minWidth: 44,
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      justifyContent: 'center',
+    },
+    closeText: { color: colors.accentBright, fontWeight: '600' },
+    mapBodyScroll: { flex: 1, paddingHorizontal: 16, paddingTop: 8 },
+    mapBodyContent: { paddingBottom: 28 },
     liveHint: { fontSize: 12, color: colors.muted, marginBottom: 8, lineHeight: 17 },
     skeletonWrap: { padding: 16 },
     err: { color: colors.danger, padding: 20 },

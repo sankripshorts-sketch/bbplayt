@@ -29,17 +29,17 @@ export function useAppBootstrap() {
     void (async () => {
       try {
         const prefs = await loadAppPreferences();
-        void qc.prefetchQuery({
-          queryKey: queryKeys.vkWallFirstPage(),
-          queryFn: () => fetchVkWallVideoPage(0),
-          staleTime: Infinity,
-        });
 
         const tasks: Promise<unknown>[] = [
           qc.fetchQuery({
             queryKey: queryKeys.cafes(),
             queryFn: () => cafesApi.list(),
             staleTime: 10 * 60 * 1000,
+          }),
+          qc.fetchQuery({
+            queryKey: queryKeys.vkWallFirstPage(),
+            queryFn: () => fetchVkWallVideoPage(0),
+            staleTime: Infinity,
           }),
         ];
 

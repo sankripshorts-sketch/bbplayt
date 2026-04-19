@@ -7,6 +7,11 @@ export type BuildBookingTimeSlotsOptions = {
   stepMins?: number;
   /** Техперерыв: не предлагать старт слота внутри окна [start, start+duration) */
   techBreak?: TimeTechBreakNormalized | null;
+  /**
+   * Для календарного «сегодня» (МСК): по умолчанию сетка только с ближайшего допустимого слота после «сейчас».
+   * Если `true` — полный день 00:00–24:00 (поиск «ближайшее окно» с «Без разницы» по дню).
+   */
+  fullDayIgnoreNow?: boolean;
 };
 
 function isBreakSlot(totalMins: number, tech: TimeTechBreakNormalized | null | undefined): boolean {
@@ -16,8 +21,42 @@ function isBreakSlot(totalMins: number, tech: TimeTechBreakNormalized | null | u
   return totalMins > a && totalMins < b;
 }
 
+/** Минуты от полуночи МСК: первый узел сетки `step` ≥ «сейчас» (для отсечения прошедшего времени в сегодняшнем дне). */
+export function moscowSnappedNextGridStartMins(bookingNowMs: number, step: number): number {
+  let startM = moscowWallTotalMinutesFromInstant(new Date(bookingNowMs));
+  const mod = startM % step;
+  if (mod >= 1 && mod <= step - 1) startM += step - mod;
+  else if (mod > step - 1) startM += step * 2 - mod;
+  return startM;
+}
+
+/**
+ * Индекс колеса времени по умолчанию: для не-сегодня — 0; для сегодня с полной сеткой — первый слот ≥ «сейчас»;
+ * для сегодня с усечённой сеткой — 0 (первый элемент уже после «сейчас»).
+ */
+export function defaultTimeSlotWheelIndex(
+  timeSlots: readonly string[],
+  effectiveDateISO: string,
+  bookingNowMs: number,
+  stepMins: number,
+  fullDayGridOnToday: boolean,
+): number {
+  if (!timeSlots.length) return 0;
+  const today = formatISODateMoscow(new Date(bookingNowMs));
+  if (effectiveDateISO !== today) return 0;
+  if (!fullDayGridOnToday) return 0;
+  const target = moscowSnappedNextGridStartMins(bookingNowMs, stepMins);
+  for (let i = 0; i < timeSlots.length; i++) {
+    const [h, m] = timeSlots[i].split(':').map(Number);
+    const tt = h * 60 + m;
+    if (tt >= target) return i;
+  }
+  return Math.max(0, timeSlots.length - 1);
+}
+
 /**
  * Слоты времени для брони: шаг из API (`step_start_booking`), техперерыв из `time_tech_break`.
+ * Для **сегодня** (МСК): по умолчанию только слоты не раньше «сейчас»; для **любого другого дня** — весь день.
  */
 export function buildBookingTimeSlots(forDateISO: string, options?: BuildBookingTimeSlotsOptions): string[] {
   const step = (() => {
@@ -29,12 +68,10 @@ export function buildBookingTimeSlots(forDateISO: string, options?: BuildBooking
 
   const now = new Date(nowForBookingCompareMs());
   const isToday = formatISODateMoscow(now) === forDateISO;
+  const clipToNow = isToday && !options?.fullDayIgnoreNow;
   let startM = 0;
-  if (isToday) {
-    startM = moscowWallTotalMinutesFromInstant(now);
-    const mod = startM % step;
-    if (mod >= 1 && mod <= step - 1) startM += step - mod;
-    else if (mod > step - 1) startM += step * 2 - mod;
+  if (clipToNow) {
+    startM = moscowSnappedNextGridStartMins(nowForBookingCompareMs(), step);
   }
   const out: string[] = [];
   for (let m = startM; m < 24 * 60; m += step) {

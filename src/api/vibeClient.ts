@@ -88,12 +88,14 @@ async function authHeaders(): Promise<HeadersInit> {
 
 export async function vibeGet<T>(
   path: string,
-  searchParams?: Record<string, string | number | boolean | undefined>
+  searchParams?: Record<string, string | number | boolean | undefined>,
+  init?: { signal?: AbortSignal },
 ): Promise<T> {
   const url = buildUrl(path, searchParams);
   const res = await fetch(url, {
     method: 'GET',
     headers: await authHeaders(),
+    signal: init?.signal,
   });
   return parseVibeBody<T>(res);
 }

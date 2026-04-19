@@ -40,7 +40,7 @@ export async function findNearestAcrossClubs(
   for (const r of settled) {
     if (r.status !== 'fulfilled') continue;
     const { cafe, data } = r.value;
-    const windowStart = windowStartFromAvailablePcs(data);
+    const windowStart = windowStartFromAvailablePcs(data, params.dateStart, params.timeStart);
     if (!windowStart) continue;
     const hasFree = (data.pc_list ?? []).some((p) => !p.is_using);
     if (!hasFree) continue;

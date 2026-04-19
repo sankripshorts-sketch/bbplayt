@@ -1,4 +1,4 @@
-import * as Crypto from 'expo-crypto';
+import { md5HexUtf8 } from './md5Utf8';
 import { getBookingKeyMode } from '../config/bookingSignConfig';
 import { getContestSignSecret } from '../config/contestSignSecret';
 
@@ -25,19 +25,19 @@ export async function buildBookingKey(params: {
   if (mode === 'android') {
     const pk = params.privateKey?.trim() ?? '';
     const payload = `${params.memberId}${params.randKey}${pk}${secret}`;
-    return Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.MD5, payload);
+    return md5HexUtf8(payload);
   }
 
   if (mode === 'rand_secret') {
     const payload = `${params.randKey}${secret}`;
-    return Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.MD5, payload);
+    return md5HexUtf8(payload);
   }
 
   /* legacy_concat */
   const payload = secret
     ? `${params.randKey}${secret}`
     : `${params.randKey}|${params.memberId}|${params.memberAccount}|${params.icafeId}|${params.pcName}|${params.startDate}|${params.startTime}|${params.mins}`;
-  return Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.MD5, payload);
+  return md5HexUtf8(payload);
 }
 
 /**
@@ -62,17 +62,17 @@ export async function buildCancelBookingKey(params: {
   if (mode === 'android') {
     const pk = params.privateKey?.trim() ?? '';
     const payload = `${params.memberId}${params.randKey}${pk}${secret}`;
-    return Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.MD5, payload);
+    return md5HexUtf8(payload);
   }
 
   if (mode === 'rand_secret') {
     const payload = `${params.randKey}${secret}`;
-    return Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.MD5, payload);
+    return md5HexUtf8(payload);
   }
 
   /* legacy_concat */
   const payload = secret
     ? `${params.randKey}${secret}`
     : `${params.randKey}|${params.memberId}|${params.memberAccount}|${params.icafeId}|${params.pcName}|${params.memberOfferId}|cancel`;
-  return Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.MD5, payload);
+  return md5HexUtf8(payload);
 }

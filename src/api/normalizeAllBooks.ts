@@ -30,6 +30,7 @@ function coerceMemberBookingRow(x: unknown): MemberBookingRow | null {
     product_id = coerceNumber(o.id, NaN);
   }
   if (!Number.isFinite(product_id)) return null;
+  const catalogProductId = coerceNumber(o.product_id, NaN);
   const product_pc_name = String(
     o.product_pc_name ?? o.pc_name ?? o.pcName ?? o.product_name ?? '',
   );
@@ -55,10 +56,21 @@ function coerceMemberBookingRow(x: unknown): MemberBookingRow | null {
     product_mins,
   };
   if (o.product_description != null) row.product_description = String(o.product_description);
-  if (o.member_offer_id != null) {
-    const m = coerceNumber(o.member_offer_id, NaN);
-    if (Number.isFinite(m)) row.member_offer_id = m;
+  const explicitOffer = coerceNumber(o.member_offer_id, NaN);
+  const bookingRef = coerceNumber(o.booking_id ?? o.offer_id, NaN);
+  const idNum = coerceNumber(o.id, NaN);
+  const offerForCancel = Number.isFinite(explicitOffer)
+    ? explicitOffer
+    : Number.isFinite(bookingRef)
+      ? bookingRef
+      : Number.isFinite(idNum) && idNum > 0 && idNum !== catalogProductId
+        ? idNum
+        : NaN;
+  if (Number.isFinite(offerForCancel) && offerForCancel > 0) {
+    row.member_offer_id = offerForCancel;
   }
+  const bid = coerceNumber(o.booking_id, NaN);
+  if (Number.isFinite(bid) && bid > 0) row.booking_id = bid;
   if (o.member_account != null) row.member_account = String(o.member_account);
   return row;
 }

@@ -35,11 +35,15 @@ export function TabSettingsButton() {
 function createStyles(colors: { border: string; card: string }) {
   return StyleSheet.create({
     iconBtn: {
+      minWidth: 48,
+      minHeight: 48,
       padding: 10,
       borderRadius: 12,
       borderWidth: 1,
       borderColor: colors.border,
       backgroundColor: colors.card,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     iconBtnPressed: { opacity: 0.85 },
   });

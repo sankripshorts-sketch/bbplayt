@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../components/DinText';
 import type { MessageKey } from '../i18n/messagesRu';
 import { useLocale } from '../i18n/LocaleContext';
 import { useThemeColors } from '../theme';

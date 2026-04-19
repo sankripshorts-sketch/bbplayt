@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   coerceAxisToZoneLocal,
+  formatPcLabelForHallMap,
   pcOffsetsInZonePixels,
   PC_CHIP_LAYOUT_UNITS,
 } from '../../src/features/cafes/clubLayoutGeometry';
@@ -52,6 +53,17 @@ describe('pcOffsetsInZonePixels', () => {
     expect(out[0]!.left).toBeCloseTo((50 + offsetX) * sx, 5);
   });
 
+  it('keeps PC chips square when zone maps with different sx and sy', () => {
+    const out = pcOffsetsInZonePixels([pc(0, 0)], zoneW, zoneH, 160, 400, 0);
+    expect(out).toHaveLength(1);
+    const sx = 160 / zoneW;
+    const sy = 400 / zoneH;
+    const u = Math.min(sx, sy);
+    expect(out[0]!.chipW).toBeCloseTo(PC_CHIP_LAYOUT_UNITS * u, 5);
+    expect(out[0]!.chipH).toBeCloseTo(PC_CHIP_LAYOUT_UNITS * u, 5);
+    expect(out[0]!.chipW).toBeCloseTo(out[0]!.chipH, 5);
+  });
+
   it('plan-absolute PCs when area_frame_x is 0: strips min so cluster fits zone', () => {
     const out = pcOffsetsInZonePixels(
       [pc(500, 600, 'PC01'), pc(620, 720, 'PC02')],
@@ -69,6 +81,14 @@ describe('pcOffsetsInZonePixels', () => {
     const rel1 = 120;
     const offsetX = (zoneW - (rel1 - rel0 + PC_CHIP_LAYOUT_UNITS)) / 2 - rel0;
     expect(out[0]!.left).toBeCloseTo((rel0 + offsetX) * sx, 5);
+  });
+});
+
+describe('formatPcLabelForHallMap', () => {
+  it('strips PC prefix and leading zeros in numeric labels', () => {
+    expect(formatPcLabelForHallMap('PC9')).toBe('9');
+    expect(formatPcLabelForHallMap('PC09')).toBe('9');
+    expect(formatPcLabelForHallMap('pc 12')).toBe('12');
   });
 });
 

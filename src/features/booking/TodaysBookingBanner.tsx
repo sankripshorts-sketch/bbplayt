@@ -1,5 +1,6 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../../components/DinText';
 import { useQuery } from '@tanstack/react-query';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuth } from '../../auth/AuthContext';
@@ -10,6 +11,7 @@ import type { ColorPalette } from '../../theme/palettes';
 import { useThemeColors } from '../../theme';
 import { queryKeys } from '../../query/queryKeys';
 import {
+  isMemberBookingCancelDisabledByCutoff,
   formatIntervalClock,
   getBannerBookingSections,
   type TodayBookingLine,
@@ -17,7 +19,10 @@ import {
 import { useMemberBooksQuery } from './useMemberBooksQuery';
 import { useCancelBookingMutation } from './useCancelBookingMutation';
 import { useBookingNowMs } from './useBookingNowMs';
-import { acknowledgeTodaysBookingNotification } from '../../notifications/todaysBookingHeadsUp';
+import {
+  acknowledgeTodaysBookingNotification,
+  isTodaysBookingAcknowledgedForToday,
+} from '../../notifications/todaysBookingHeadsUp';
 
 type Props = {
   /** Отступ снизу перед контентом */
@@ -47,6 +52,24 @@ export function TodaysBookingBanner({ style }: Props) {
   }, [cafesQ.data]);
 
   const nowMs = useBookingNowMs();
+  const [ackLoaded, setAckLoaded] = useState(false);
+  const [hideAfterAck, setHideAfterAck] = useState(false);
+
+  useEffect(() => {
+    if (!user?.memberAccount?.trim()) return;
+    let cancelled = false;
+    setAckLoaded(false);
+    void isTodaysBookingAcknowledgedForToday().then((acked) => {
+      if (!cancelled) {
+        setHideAfterAck(acked);
+        setAckLoaded(true);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.memberAccount]);
+
   const { todayLines, upcomingLines } = useMemo(() => {
     const { today, otherUpcoming } = getBannerBookingSections(booksQ.data, addressById, nowMs);
     return {
@@ -89,6 +112,8 @@ export function TodaysBookingBanner({ style }: Props) {
   );
 
   if (!user?.memberAccount?.trim()) return null;
+  if (!ackLoaded) return null;
+  if (hideAfterAck) return null;
   if (!todayLines.length && !upcomingLines.length) return null;
 
   const renderLine = (line: (typeof todayLines)[0], withDate: boolean) => {
@@ -96,7 +121,8 @@ export function TodaysBookingBanner({ style }: Props) {
     const canCancel =
       line.iv.end.getTime() > nowMs &&
       line.memberOfferId > 0 &&
-      !!user?.memberId?.trim();
+      !!user?.memberId?.trim() &&
+      !isMemberBookingCancelDisabledByCutoff(line.iv, nowMs);
 
     if (withDate) {
       const dateStr = line.iv.start.toLocaleDateString(locale === 'en' ? 'en-US' : 'ru-RU', {
@@ -125,7 +151,7 @@ export function TodaysBookingBanner({ style }: Props) {
               accessibilityLabel={t('booking.cancelBooking')}
             >
               {cancellingKey === line.key ? (
-                <ActivityIndicator size="small" color={colors.accent} />
+                <ActivityIndicator size="small" color={colors.accentBright} />
               ) : (
                 <Text style={styles.cancelBtnText}>{t('booking.cancelBooking')}</Text>
               )}
@@ -153,7 +179,7 @@ export function TodaysBookingBanner({ style }: Props) {
             accessibilityLabel={t('booking.cancelBooking')}
           >
             {cancellingKey === line.key ? (
-              <ActivityIndicator size="small" color={colors.accent} />
+              <ActivityIndicator size="small" color={colors.accentBright} />
             ) : (
               <Text style={styles.cancelBtnText}>{t('booking.cancelBooking')}</Text>
             )}
@@ -165,7 +191,7 @@ export function TodaysBookingBanner({ style }: Props) {
 
   return (
     <View style={[styles.wrap, style]}>
-      <MaterialCommunityIcons name="calendar-check" size={22} color={colors.accent} />
+      <MaterialCommunityIcons name="calendar-check" size={22} color={colors.accentBright} />
       <View style={styles.textCol}>
         {todayLines.length ? (
           <>
@@ -183,7 +209,12 @@ export function TodaysBookingBanner({ style }: Props) {
         ) : null}
         <Pressable
           style={({ pressed }) => [styles.ackBtn, pressed && styles.ackBtnPressed]}
-          onPress={() => void acknowledgeTodaysBookingNotification()}
+          onPress={() => {
+            void (async () => {
+              await acknowledgeTodaysBookingNotification();
+              setHideAfterAck(true);
+            })();
+          }}
           accessibilityRole="button"
         >
           <Text style={styles.ackBtnText}>{t('notif.todaysBookingAck')}</Text>
@@ -199,9 +230,9 @@ function createStyles(colors: ColorPalette) {
       flexDirection: 'row',
       alignItems: 'flex-start',
       gap: 10,
-      paddingVertical: 10,
+      paddingVertical: 8,
       paddingHorizontal: 12,
-      marginBottom: 10,
+      marginBottom: 6,
       borderRadius: 14,
       borderWidth: 1,
       borderColor: colors.accent,
@@ -226,14 +257,16 @@ function createStyles(colors: ColorPalette) {
     },
     line: { flex: 1, fontSize: 14, color: colors.text, lineHeight: 20, fontWeight: '600' },
     cancelBtn: {
-      paddingVertical: 4,
-      paddingHorizontal: 8,
+      minHeight: 40,
+      paddingVertical: 8,
+      paddingHorizontal: 10,
       borderRadius: 8,
       borderWidth: 1,
       borderColor: colors.accent,
+      justifyContent: 'center',
     },
     cancelBtnPressed: { opacity: 0.85 },
-    cancelBtnText: { fontSize: 12, fontWeight: '700', color: colors.accent },
+    cancelBtnText: { fontSize: 12, fontWeight: '700', color: colors.accentBright },
     ackBtn: {
       alignSelf: 'flex-start',
       marginTop: 10,

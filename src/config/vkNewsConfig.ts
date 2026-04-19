@@ -59,9 +59,23 @@ export function getVkNewsWebViewUrl(): string {
   return `https://m.vk.com/club${id}`;
 }
 
-/** Прямая ссылка на запись стены (для «Открыть в VK»). */
+/** Прямая ссылка на запись стены (десктоп). */
 export function getVkWallPostUrl(ownerId: number, postId: number): string {
   return `https://vk.com/wall${ownerId}_${postId}`;
+}
+
+/**
+ * Мобильная страница записи — удобнее для лайков и комментариев в браузере / приложении VK.
+ */
+export function getVkWallPostMobileUrl(ownerId: number, postId: number): string {
+  return `https://m.vk.com/wall${ownerId}_${postId}`;
+}
+
+/** URL аватарки сообщества для карточек. Иначе в UI — локальный assets/icon.png. */
+export function getVkCommunityAvatarUri(): string | null {
+  const u = process.env.EXPO_PUBLIC_VK_GROUP_AVATAR_URL?.trim();
+  if (u && /^https?:\/\//i.test(u)) return u;
+  return null;
 }
 
 /**

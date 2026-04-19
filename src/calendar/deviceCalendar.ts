@@ -1,5 +1,17 @@
-import * as Calendar from 'expo-calendar';
 import { Platform } from 'react-native';
+
+type ExpoCalendarModule = typeof import('expo-calendar');
+
+/** На web нативного модуля нет — статический import ломает загрузку бандла. */
+async function getCalendarModule(): Promise<ExpoCalendarModule | null> {
+  if (Platform.OS === 'web') return null;
+  try {
+    return await import('expo-calendar');
+  } catch (e) {
+    if (__DEV__) console.warn('[deviceCalendar] expo-calendar load failed', e);
+    return null;
+  }
+}
 
 function deviceTimeZone(): string | undefined {
   try {
@@ -18,7 +30,7 @@ function parseLocalStart(dateISO: string, timeHHmm: string): Date {
 }
 
 /** Только Android: создать локальный календарь, если нет доступного для записи. */
-async function ensureBbplayCalendarId(): Promise<string | null> {
+async function ensureBbplayCalendarId(Calendar: ExpoCalendarModule): Promise<string | null> {
   if (Platform.OS !== 'android') return null;
   const title = 'BBplay';
   const cals = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
@@ -45,7 +57,7 @@ async function ensureBbplayCalendarId(): Promise<string | null> {
   }
 }
 
-async function resolveWritableCalendarId(): Promise<string | null> {
+async function resolveWritableCalendarId(Calendar: ExpoCalendarModule): Promise<string | null> {
   if (Platform.OS === 'ios') {
     try {
       const def = await Calendar.getDefaultCalendarAsync();
@@ -59,17 +71,24 @@ async function resolveWritableCalendarId(): Promise<string | null> {
   const primary = writable.find((c) => c.isPrimary) ?? writable[0];
   if (primary?.id) return primary.id;
   if (Platform.OS === 'android') {
-    const created = await ensureBbplayCalendarId();
+    const created = await ensureBbplayCalendarId(Calendar);
     if (created) return created;
   }
   return cals[0]?.id ?? null;
 }
 
-export async function ensureCalendarPermission(): Promise<boolean> {
+async function ensureCalendarPermissionWithModule(Calendar: ExpoCalendarModule): Promise<boolean> {
   const { status } = await Calendar.getCalendarPermissionsAsync();
   if (status === 'granted') return true;
   const req = await Calendar.requestCalendarPermissionsAsync();
   return req.status === 'granted';
+}
+
+/** Для UI после неудачного добавления события; на web — `null`. */
+export async function getCalendarPermissionsAsyncSafe(): Promise<{ status: string } | null> {
+  const Calendar = await getCalendarModule();
+  if (!Calendar) return null;
+  return Calendar.getCalendarPermissionsAsync();
 }
 
 export type BookingCalendarPayload = {
@@ -85,9 +104,11 @@ export type BookingCalendarPayload = {
 
 /** Возвращает id события или null при отказе / ошибке. */
 export async function addBookingEventToCalendar(payload: BookingCalendarPayload): Promise<string | null> {
-  const ok = await ensureCalendarPermission();
+  const Calendar = await getCalendarModule();
+  if (!Calendar) return null;
+  const ok = await ensureCalendarPermissionWithModule(Calendar);
   if (!ok) return null;
-  const calendarId = await resolveWritableCalendarId();
+  const calendarId = await resolveWritableCalendarId(Calendar);
   if (!calendarId) return null;
   const start = payload.startDate ?? parseLocalStart(payload.dateStart, payload.timeStart);
   const end = new Date(start.getTime() + Math.max(1, payload.durationMins) * 60 * 1000);

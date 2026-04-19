@@ -8,10 +8,10 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   View,
 } from 'react-native';
+import { Text } from '../../components/DinText';
+import { TextInput } from '../../components/DinTextInput';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,13 +21,37 @@ import { TodaysBookingBanner } from '../booking/TodaysBookingBanner';
 import { fetchMemberTopupBonus, memberTopupSmartFlow } from '../../api/memberMoneyApi';
 import { ApiError } from '../../api/client';
 import { useAuth } from '../../auth/AuthContext';
-import { getAllBooksPath } from '../../config/vibePaths';
 import { useLocale } from '../../i18n/LocaleContext';
 import type { ColorPalette } from '../../theme/palettes';
 import { useThemeColors } from '../../theme';
 import type { ProfileStackParamList } from '../../navigation/types';
 
 const TOP_UP_QUICK_AMOUNTS = [100, 200, 500, 1000, 1500] as const;
+
+/**
+ * Акцент уровня суммы — только из палитры темы (полоска слева), фон нейтральный:
+ * читаемость и единый вид со всем приложением, без «неоновых» прямоугольников.
+ */
+function topUpTierStripeColor(
+  amount: (typeof TOP_UP_QUICK_AMOUNTS)[number],
+  palette: ColorPalette,
+): string {
+  const order: Record<(typeof TOP_UP_QUICK_AMOUNTS)[number], number> = {
+    100: 0,
+    200: 1,
+    500: 2,
+    1000: 3,
+    1500: 4,
+  };
+  const stripes: string[] = [
+    palette.pcFree,
+    palette.accentSecondary,
+    palette.accent,
+    palette.pcLiveBusy,
+    palette.danger,
+  ];
+  return stripes[order[amount] ?? 0] ?? palette.accent;
+}
 
 export function ProfileScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
@@ -62,7 +86,7 @@ export function ProfileScreen() {
         const { icafe_id } = await bookingFlowApi.icafeIdForMember();
         const cafeId = Number(String(icafe_id).trim());
         if (!Number.isFinite(cafeId)) {
-          throw new ApiError('icafe-id-for-member: некорректный club id', 0);
+          throw new ApiError(t('profile.topUpPrepareError'), 0);
         }
         const entries = await Promise.all(
           TOP_UP_QUICK_AMOUNTS.map(async (amount) => {
@@ -130,7 +154,7 @@ export function ProfileScreen() {
       const { icafe_id } = await bookingFlowApi.icafeIdForMember();
       const cafeId = Number(String(icafe_id).trim());
       if (!Number.isFinite(cafeId)) {
-        throw new ApiError('icafe-id-for-member: некорректный club id', 0);
+        throw new ApiError(t('profile.topUpPrepareError'), 0);
       }
       await memberTopupSmartFlow({
         cafeId,
@@ -211,7 +235,7 @@ export function ProfileScreen() {
               style={({ pressed }) => [styles.actionCard, pressed && styles.actionCardPressed]}
               onPress={() => navigation.navigate('BalanceHistory')}
             >
-              <MaterialCommunityIcons name="cash-multiple" size={22} color={colors.accent} />
+              <MaterialCommunityIcons name="cash-multiple" size={22} color={colors.accentBright} />
               <View style={styles.actionCardText}>
                 <Text style={styles.actionCardTitle}>{t('profile.ctaBalanceHistory')}</Text>
               </View>
@@ -221,7 +245,7 @@ export function ProfileScreen() {
               style={({ pressed }) => [styles.actionCard, pressed && styles.actionCardPressed]}
               onPress={() => navigation.navigate('GameSessions')}
             >
-              <MaterialCommunityIcons name="controller-classic-outline" size={22} color={colors.accent} />
+              <MaterialCommunityIcons name="controller-classic-outline" size={22} color={colors.accentBright} />
               <View style={styles.actionCardText}>
                 <Text style={styles.actionCardTitle}>{t('profile.ctaGameSessions')}</Text>
               </View>
@@ -232,7 +256,7 @@ export function ProfileScreen() {
               onPress={() => navigation.navigate('CustomerAnalysis')}
               disabled={!user?.memberAccount}
             >
-              <MaterialCommunityIcons name="chart-line" size={22} color={colors.accent} />
+              <MaterialCommunityIcons name="chart-line" size={22} color={colors.accentBright} />
               <View style={styles.actionCardText}>
                 <Text style={styles.actionCardTitle}>{t('profile.ctaCustomerAnalysis')}</Text>
               </View>
@@ -242,21 +266,13 @@ export function ProfileScreen() {
               style={({ pressed }) => [styles.actionCard, pressed && styles.actionCardPressed]}
               onPress={() => navigation.navigate('Ranking')}
             >
-              <MaterialCommunityIcons name="trophy-outline" size={22} color={colors.accent} />
+              <MaterialCommunityIcons name="trophy-outline" size={22} color={colors.accentBright} />
               <View style={styles.actionCardText}>
                 <Text style={styles.actionCardTitle}>{t('profile.ctaRanking')}</Text>
               </View>
               <MaterialCommunityIcons name="chevron-right" size={22} color={colors.muted} />
             </Pressable>
           </>
-        ) : null}
-
-        {__DEV__ ? (
-          <View style={styles.card}>
-            <Text style={styles.devBooksPath}>
-              {t('profile.devAllBooksPath')} {getAllBooksPath()}
-            </Text>
-          </View>
         ) : null}
 
         <Pressable onPress={() => logout()} style={styles.out}>
@@ -299,6 +315,9 @@ export function ProfileScreen() {
                 </View>
                 {TOP_UP_QUICK_AMOUNTS.map((amount, idx) => {
                   const bonus = topUpBonusByAmount[amount];
+                  const tierStripe = topUpTierStripeColor(amount, colors);
+                  const bonusOk =
+                    !topUpBonusPreviewLoading && bonus !== undefined && bonus !== null;
                   const bonusText = (() => {
                     if (topUpBonusPreviewLoading) return t('profile.topUpBonusLoading');
                     if (bonus === undefined || bonus === null) return t('profile.topUpBonusUnavailable');
@@ -310,8 +329,29 @@ export function ProfileScreen() {
                       key={amount}
                       style={[styles.bonusTableRow, isLast && styles.bonusTableRowLast]}
                     >
-                      <Text style={styles.bonusTableCell}>{amount} ₽</Text>
-                      <Text style={[styles.bonusTableCell, styles.bonusTableCellRight]}>{bonusText}</Text>
+                      <View style={styles.bonusTableAmountCell}>
+                        <View
+                          style={[
+                            styles.bonusAmountBar,
+                            {
+                              borderLeftColor: tierStripe,
+                            },
+                          ]}
+                        >
+                          <Text style={[styles.bonusAmountBarText, { color: colors.text }]}>
+                            {`${amount}\u00a0₽`}
+                          </Text>
+                        </View>
+                      </View>
+                      <Text
+                        style={[
+                          styles.bonusTableCell,
+                          styles.bonusTableCellRight,
+                          { color: bonusOk ? colors.text : colors.muted },
+                        ]}
+                      >
+                        {bonusText}
+                      </Text>
                     </View>
                   );
                 })}
@@ -319,19 +359,25 @@ export function ProfileScreen() {
             ) : null}
             <Text style={styles.inputLabel}>{t('profile.topUpAmountLabel')}</Text>
             <View style={styles.quickAmountsRow}>
-              {TOP_UP_QUICK_AMOUNTS.map((n) => (
-                <Pressable
-                  key={n}
-                  style={({ pressed }) => [
-                    styles.quickAmountChip,
-                    pressed && styles.quickAmountChipPressed,
-                  ]}
-                  onPress={() => setTopUpAmount(String(n))}
-                  disabled={topUpBusy}
-                >
-                  <Text style={styles.quickAmountChipText}>{n} ₽</Text>
-                </Pressable>
-              ))}
+              {TOP_UP_QUICK_AMOUNTS.map((n) => {
+                const tierStripe = topUpTierStripeColor(n, colors);
+                return (
+                  <Pressable
+                    key={n}
+                    style={({ pressed }) => [
+                      styles.quickAmountChip,
+                      { borderLeftColor: tierStripe },
+                      pressed && styles.quickAmountChipPressed,
+                    ]}
+                    onPress={() => setTopUpAmount(String(n))}
+                    disabled={topUpBusy}
+                  >
+                    <Text style={[styles.quickAmountChipText, { color: colors.text }]}>
+                      {`${n}\u00a0₽`}
+                    </Text>
+                  </Pressable>
+                );
+              })}
             </View>
             <TextInput
               style={styles.input}
@@ -383,7 +429,7 @@ function createStyles(colors: ColorPalette) {
     scroll: { padding: 20, paddingBottom: 40 },
     headerRow: {
       flexDirection: 'row',
-      alignItems: 'flex-start',
+      alignItems: 'center',
       justifyContent: 'space-between',
       marginBottom: 16,
       gap: 12,
@@ -393,11 +439,15 @@ function createStyles(colors: ColorPalette) {
     heroAccount: { fontSize: 24, fontWeight: '800', color: colors.text },
     heroHint: { color: colors.muted, fontSize: 14, lineHeight: 20, marginTop: 4 },
     iconBtn: {
+      minWidth: 48,
+      minHeight: 48,
       padding: 10,
       borderRadius: 12,
       borderWidth: 1,
       borderColor: colors.border,
       backgroundColor: colors.card,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     iconBtnPressed: { opacity: 0.85 },
     balanceCard: {
@@ -409,30 +459,42 @@ function createStyles(colors: ColorPalette) {
       borderColor: colors.border,
     },
     balanceCardLabel: { fontSize: 13, fontWeight: '700', color: colors.muted, marginBottom: 8 },
-    balanceCardValue: { fontSize: 32, fontWeight: '800', color: colors.accent },
-    bonusHint: { marginTop: 10, fontSize: 14, color: colors.muted, fontWeight: '600' },
+    balanceCardValue: { fontSize: 32, fontWeight: '800', color: colors.text },
+    bonusHint: { marginTop: 10, fontSize: 14, color: colors.accentBright, fontWeight: '600' },
     quickAmountsRow: {
       flexDirection: 'row',
-      flexWrap: 'wrap',
+      flexWrap: 'nowrap',
       gap: 8,
       marginBottom: 10,
     },
     quickAmountChip: {
+      flex: 1,
+      minWidth: 0,
       paddingVertical: 8,
-      paddingHorizontal: 12,
+      paddingHorizontal: 4,
       borderRadius: 10,
       borderWidth: 1,
+      borderLeftWidth: 4,
+      backgroundColor: colors.chipOn,
       borderColor: colors.border,
-      backgroundColor: colors.card,
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
     },
     quickAmountChipPressed: { opacity: 0.88 },
-    quickAmountChipText: { color: colors.accent, fontWeight: '700', fontSize: 14 },
+    quickAmountChipText: {
+      fontWeight: '700',
+      fontSize: 14,
+      lineHeight: 18,
+      textAlign: 'center',
+      ...(Platform.OS === 'android' ? { includeFontPadding: false } : null),
+    },
     sectionTitle: {
       fontSize: 13,
       fontWeight: '700',
       letterSpacing: 0.6,
       textTransform: 'uppercase',
-      color: colors.muted,
+      color: colors.accentBright,
       marginBottom: 10,
     },
     actionCard: {
@@ -481,7 +543,6 @@ function createStyles(colors: ColorPalette) {
       marginTop: 4,
     },
     outText: { color: colors.danger, fontWeight: '600' },
-    devBooksPath: { color: colors.muted, fontSize: 12, lineHeight: 18 },
     modalBackdrop: {
       flex: 1,
       justifyContent: 'flex-end',
@@ -525,13 +586,40 @@ function createStyles(colors: ColorPalette) {
     },
     bonusTableRow: {
       flexDirection: 'row',
+      alignItems: 'center',
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     },
     bonusTableRowLast: { borderBottomWidth: 0 },
+    bonusTableAmountCell: {
+      flex: 1,
+      justifyContent: 'center',
+      paddingVertical: 3,
+      paddingLeft: 8,
+      paddingRight: 4,
+    },
+    bonusAmountBar: {
+      alignSelf: 'flex-start',
+      borderRadius: 8,
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+      justifyContent: 'center',
+      minWidth: 88,
+      borderWidth: 1,
+      borderLeftWidth: 4,
+      backgroundColor: colors.chipOn,
+      borderColor: colors.border,
+      overflow: 'hidden',
+    },
+    bonusAmountBarText: {
+      fontSize: 14,
+      lineHeight: 18,
+      fontWeight: '700',
+      ...(Platform.OS === 'android' ? { includeFontPadding: false } : null),
+    },
     bonusTableCell: {
       flex: 1,
-      paddingVertical: 10,
+      paddingVertical: 6,
       paddingHorizontal: 12,
       fontSize: 14,
       color: colors.text,
@@ -552,7 +640,7 @@ function createStyles(colors: ColorPalette) {
       marginBottom: 12,
     },
     modalTitle: { color: colors.text, fontSize: 18, fontWeight: '800', flex: 1 },
-    modalClose: { color: colors.accent, fontSize: 16, fontWeight: '600' },
+    modalClose: { color: colors.accentBright, fontSize: 16, fontWeight: '600' },
     modalHint: { color: colors.muted, fontSize: 12, lineHeight: 18, marginBottom: 14 },
     inputLabel: { color: colors.muted, fontSize: 13, fontWeight: '600', marginBottom: 6 },
     input: {

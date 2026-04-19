@@ -1,20 +1,22 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import {
   ActivityIndicator,
   FlatList,
   Image,
+  type ImageSourcePropType,
   Linking,
   Platform,
   Pressable,
   RefreshControl,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
+import { Text } from '../../components/DinText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { TabSettingsButton } from '../../components/TabSettingsButton';
-import { getVkWallPostUrl } from '../../config/vkNewsConfig';
+import { getVkCommunityAvatarUri, getVkWallPostMobileUrl } from '../../config/vkNewsConfig';
 import { useLocale } from '../../i18n/LocaleContext';
 import type { ColorPalette } from '../../theme/palettes';
 import { useThemeColors } from '../../theme';
@@ -23,7 +25,10 @@ import { TodaysBookingBanner } from '../booking/TodaysBookingBanner';
 import { fetchVkWallVideoPage } from './fetchVkWallVideoPosts';
 import type { VkWallFetchResult } from './fetchVkWallVideoPosts';
 import { VkVideoEmbedModal } from './VkVideoEmbedModal';
+import { getLikedPostKeys, toggleLikedPostKey } from './vkNewsLikesStorage';
 import { buildVkVideoEmbedUrl, type VkWallPost } from './vkWallHtmlParser';
+
+const DEFAULT_NEWS_AVATAR = require('../../../assets/icon.png') as ImageSourcePropType;
 
 function formatPostDate(ts: number, locale: string): string {
   if (!ts) return '';
@@ -55,6 +60,9 @@ function mergeTailPosts(prev: VkWallPost[], more: VkWallPost[]): VkWallPost[] {
   return merged;
 }
 
+/** Интервал появления следующей карточки (первая показывается сразу). */
+const POST_REVEAL_STAGGER_MS = 110;
+
 export function NewsScreen() {
   const colors = useThemeColors();
   const { t, locale } = useLocale();
@@ -79,8 +87,23 @@ export function NewsScreen() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [videoEmbedUri, setVideoEmbedUri] = useState<string | null>(null);
   const [videoTitle, setVideoTitle] = useState('');
+  const [likedKeys, setLikedKeys] = useState<Set<string>>(() => new Set());
 
   const loadingMoreRef = useRef(false);
+
+  const avatarSource = useMemo<ImageSourcePropType>(() => {
+    const uri = getVkCommunityAvatarUri();
+    return uri ? { uri } : DEFAULT_NEWS_AVATAR;
+  }, []);
+
+  const communityTitle = useMemo(
+    () => process.env.EXPO_PUBLIC_VK_GROUP_TITLE?.trim() || t('news.communityName'),
+    [t],
+  );
+
+  useEffect(() => {
+    void getLikedPostKeys().then(setLikedKeys);
+  }, []);
 
   const mapErr = useCallback((e: unknown) => {
     const code = errorCodeOf(e);
@@ -99,6 +122,40 @@ export function NewsScreen() {
     if (tailPosts.length === 0) return head;
     return mergeTailPosts(head, tailPosts);
   }, [vkFirst.data?.posts, tailPosts]);
+
+  /** Смена «первой страницы» из react-query — сбрасываем пошаговое появление. */
+  const feedHeadSignature = useMemo(
+    () => `${vkFirst.dataUpdatedAt ?? 0}-${vkFirst.data?.posts?.[0]?.key ?? 'none'}`,
+    [vkFirst.data?.posts, vkFirst.dataUpdatedAt],
+  );
+
+  const [visiblePostCount, setVisiblePostCount] = useState(0);
+  const prevHeadSigRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (prevHeadSigRef.current !== null && prevHeadSigRef.current !== feedHeadSignature) {
+      setVisiblePostCount(0);
+    }
+    prevHeadSigRef.current = feedHeadSignature;
+  }, [feedHeadSignature]);
+
+  useEffect(() => {
+    if (posts.length === 0) {
+      setVisiblePostCount(0);
+      return;
+    }
+    if (visiblePostCount >= posts.length) return;
+    const delay = visiblePostCount === 0 ? 0 : POST_REVEAL_STAGGER_MS;
+    const id = setTimeout(() => {
+      setVisiblePostCount((c) => Math.min(c + 1, posts.length));
+    }, delay);
+    return () => clearTimeout(id);
+  }, [posts.length, visiblePostCount]);
+
+  const displayedPosts = useMemo(
+    () => posts.slice(0, visiblePostCount),
+    [posts, visiblePostCount],
+  );
 
   useEffect(() => {
     if (!vkFirst.data) return;
@@ -135,7 +192,15 @@ export function NewsScreen() {
   }, [vkFirst]);
 
   const onEndReached = useCallback(() => {
-    if (loadingFirst || refreshing || nextOffset === null || loadingMoreRef.current) return;
+    if (
+      loadingFirst ||
+      refreshing ||
+      nextOffset === null ||
+      loadingMoreRef.current ||
+      visiblePostCount < posts.length
+    ) {
+      return;
+    }
     loadingMoreRef.current = true;
     setLoadingMore(true);
     const off = nextOffset;
@@ -151,11 +216,21 @@ export function NewsScreen() {
         setLoadingMore(false);
         loadingMoreRef.current = false;
       });
-  }, [loadingFirst, nextOffset, refreshing]);
+  }, [loadingFirst, nextOffset, posts.length, refreshing, visiblePostCount]);
 
   const openPostUrl = useCallback((p: VkWallPost) => {
-    const url = getVkWallPostUrl(p.ownerId, p.postId);
-    void Linking.openURL(url);
+    void Linking.openURL(getVkWallPostMobileUrl(p.ownerId, p.postId));
+  }, []);
+
+  const onToggleLike = useCallback((key: string) => {
+    void toggleLikedPostKey(key).then((liked) => {
+      setLikedKeys((prev) => {
+        const next = new Set(prev);
+        if (liked) next.add(key);
+        else next.delete(key);
+        return next;
+      });
+    });
   }, []);
 
   const openVideo = useCallback((p: VkWallPost) => {
@@ -192,41 +267,87 @@ export function NewsScreen() {
   );
 
   const renderItem = useCallback(
-    ({ item }: { item: VkWallPost }) => (
-      <View style={styles.card}>
-        <Pressable
-          onPress={() => openPostUrl(item)}
-          accessibilityRole="button"
-          accessibilityLabel={item.text.slice(0, 120) || t('news.title')}
-        >
-          {item.previewUrl ? (
-            <Image
-              source={{ uri: item.previewUrl }}
-              style={styles.preview}
-              resizeMode="cover"
-              accessibilityIgnoresInvertColors
-            />
-          ) : null}
-          {item.text ? (
-            <Text style={styles.postText}>{item.text}</Text>
-          ) : (
-            <Text style={styles.postTextMuted}>—</Text>
-          )}
-          <Text style={styles.date}>{formatPostDate(item.dateUnix, locale)}</Text>
-        </Pressable>
-        {item.video ? (
+    ({ item }: { item: VkWallPost }) => {
+      const liked = likedKeys.has(item.key);
+      return (
+        <View style={styles.card}>
+          <View style={styles.postHeader}>
+            <Image source={avatarSource} style={styles.avatar} accessibilityIgnoresInvertColors />
+            <View style={styles.postHeaderText}>
+              <Text style={styles.authorName} numberOfLines={1}>
+                {communityTitle}
+              </Text>
+              <Text style={styles.postDate}>{formatPostDate(item.dateUnix, locale)}</Text>
+            </View>
+          </View>
           <Pressable
-            style={styles.videoBtn}
-            onPress={() => openVideo(item)}
+            onPress={() => openPostUrl(item)}
             accessibilityRole="button"
-            accessibilityLabel={t('news.watchVideo')}
+            accessibilityLabel={item.text.slice(0, 120) || t('news.title')}
           >
-            <Text style={styles.videoBtnText}>{t('news.watchVideo')}</Text>
+            {item.previewUrl ? (
+              <Image
+                source={{ uri: item.previewUrl }}
+                style={styles.preview}
+                resizeMode="cover"
+                accessibilityIgnoresInvertColors
+              />
+            ) : null}
+            {item.text ? (
+              <Text style={styles.postText}>{item.text}</Text>
+            ) : (
+              <Text style={styles.postTextMuted}>—</Text>
+            )}
           </Pressable>
-        ) : null}
-      </View>
-    ),
-    [locale, openPostUrl, openVideo, styles, t],
+          {item.video ? (
+            <Pressable
+              style={styles.videoBtn}
+              onPress={() => openVideo(item)}
+              accessibilityRole="button"
+              accessibilityLabel={t('news.watchVideo')}
+            >
+              <Text style={styles.videoBtnText}>{t('news.watchVideo')}</Text>
+            </Pressable>
+          ) : null}
+          <View style={styles.actionsRow}>
+            <Pressable
+              style={styles.likeBtn}
+              onPress={() => onToggleLike(item.key)}
+              accessibilityRole="button"
+              accessibilityLabel={t('news.likeA11y')}
+            >
+              <MaterialCommunityIcons
+                name={liked ? 'heart' : 'heart-outline'}
+                size={24}
+                color={liked ? colors.danger : colors.muted}
+              />
+            </Pressable>
+            <Pressable
+              style={styles.commentBtn}
+              onPress={() => openPostUrl(item)}
+              accessibilityRole="button"
+              accessibilityLabel={t('news.writeComment')}
+            >
+              <MaterialCommunityIcons name="comment-outline" size={22} color={colors.muted} />
+              <Text style={styles.commentBtnText}>{t('news.writeComment')}</Text>
+            </Pressable>
+          </View>
+        </View>
+      );
+    },
+    [
+      avatarSource,
+      colors.danger,
+      colors.muted,
+      communityTitle,
+      likedKeys,
+      locale,
+      onToggleLike,
+      openPostUrl,
+      openVideo,
+      styles,
+      t,
+    ],
   );
 
   if (loadingFirst && posts.length === 0) {
@@ -234,7 +355,7 @@ export function NewsScreen() {
       <SafeAreaView style={styles.root} edges={['top']}>
         {listHeader}
         <View style={styles.centerFill}>
-          <ActivityIndicator size="large" color={colors.accent} />
+          <ActivityIndicator size="large" color={colors.accentBright} />
           <Text style={styles.hint}>{t('news.scanning')}</Text>
         </View>
       </SafeAreaView>
@@ -258,7 +379,7 @@ export function NewsScreen() {
   return (
     <SafeAreaView style={styles.root} edges={['top']}>
       <FlatList
-        data={posts}
+        data={displayedPosts}
         keyExtractor={(item) => item.key}
         renderItem={renderItem}
         ListHeaderComponent={listHeader}
@@ -267,19 +388,21 @@ export function NewsScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={colors.accent}
+            tintColor={colors.accentBright}
             colors={Platform.OS === 'android' ? [colors.accent] : undefined}
           />
         }
         onEndReached={onEndReached}
         onEndReachedThreshold={0.4}
         ListEmptyComponent={
-          !loadingFirst ? <Text style={styles.empty}>{t('news.empty')}</Text> : null
+          !loadingFirst && posts.length === 0 ? (
+            <Text style={styles.empty}>{t('news.empty')}</Text>
+          ) : null
         }
         ListFooterComponent={
           loadingMore ? (
             <View style={styles.footer}>
-              <ActivityIndicator size="small" color={colors.accent} />
+              <ActivityIndicator size="small" color={colors.accentBright} />
             </View>
           ) : null
         }
@@ -301,7 +424,7 @@ function createStyles(colors: ColorPalette) {
     root: { flex: 1, backgroundColor: colors.bg },
     headerRow: {
       flexDirection: 'row',
-      alignItems: 'flex-start',
+      alignItems: 'center',
       justifyContent: 'space-between',
       paddingHorizontal: 20,
       paddingTop: 4,
@@ -338,6 +461,21 @@ function createStyles(colors: ColorPalette) {
       borderWidth: 1,
       borderColor: colors.border,
     },
+    postHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 12,
+      gap: 10,
+    },
+    avatar: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: colors.bg,
+    },
+    postHeaderText: { flex: 1, minWidth: 0 },
+    authorName: { color: colors.text, fontSize: 15, fontWeight: '700' },
+    postDate: { color: colors.muted, fontSize: 13, marginTop: 2 },
     preview: {
       width: '100%',
       aspectRatio: 16 / 9,
@@ -347,7 +485,35 @@ function createStyles(colors: ColorPalette) {
     },
     postText: { color: colors.text, fontSize: 15, lineHeight: 22 },
     postTextMuted: { color: colors.muted, fontSize: 15 },
-    date: { color: colors.muted, fontSize: 12, marginTop: 8 },
+    actionsRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: 12,
+      paddingTop: 12,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.border,
+      gap: 6,
+    },
+    likeBtn: {
+      minWidth: 48,
+      minHeight: 48,
+      paddingVertical: 8,
+      paddingHorizontal: 8,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    commentBtn: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+      borderRadius: 10,
+      backgroundColor: colors.cardElevated,
+      minWidth: 0,
+    },
+    commentBtnText: { color: colors.muted, fontSize: 14, flex: 1 },
     videoBtn: {
       alignSelf: 'flex-start',
       marginTop: 12,

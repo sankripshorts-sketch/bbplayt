@@ -1,10 +1,24 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
+import * as Haptics from 'expo-haptics';
+import { Text } from '../../components/DinText';
+import { TextInput } from '../../components/DinTextInput';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { bookingFlowApi } from '../../api/endpoints';
 import { ApiError } from '../../api/client';
 import {
+  ERR_PASSWORD_CHANGE_UNCONFIRMED,
   changeMemberPassword,
   loadMemberProfile,
   saveMemberProfile,
@@ -26,6 +40,11 @@ import {
   validateBirthdayDdMmYyyy,
 } from '../auth/inputFormatters';
 
+type FullscreenResult =
+  | { kind: 'profileSaved' }
+  | { kind: 'passwordChanged' }
+  | { kind: 'error'; title: string; detail: string };
+
 function isWrongOldPasswordMessage(msgLower: string): boolean {
   return (
     msgLower.includes('old password') ||
@@ -37,6 +56,25 @@ function isWrongOldPasswordMessage(msgLower: string): boolean {
     (msgLower.includes('неверн') && msgLower.includes('парол')) ||
     msgLower.includes('не совпада') ||
     (msgLower.includes('текущ') && msgLower.includes('парол'))
+  );
+}
+
+/** Полноэкранное редактирование профиля (из настроек). */
+export function EditProfileScreen() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
+  return (
+    <KeyboardAvoidingView
+      style={styles.screenFlex}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <SafeAreaView style={styles.screenRoot} edges={['bottom']}>
+        <ScrollView contentContainerStyle={styles.screenScroll} keyboardShouldPersistTaps="handled">
+          <EditProfileSection />
+        </ScrollView>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -53,12 +91,15 @@ export function EditProfileSection() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [birthday, setBirthday] = useState('');
-  const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [oldPwdVisible, setOldPwdVisible] = useState(false);
   const [newPwdVisible, setNewPwdVisible] = useState(false);
+  const [fullscreenResult, setFullscreenResult] = useState<FullscreenResult | null>(null);
+  /** Не перезаписывать поля при refetch — иначе сбрасывается фокус и клавиатура. */
+  const hydratedMemberKeyRef = useRef<string | null>(null);
+
+  const closeFullscreen = useCallback(() => setFullscreenResult(null), []);
 
   const icafeQ = useQuery({
     queryKey: queryKeys.icafeIdForMember(),
@@ -82,14 +123,22 @@ export function EditProfileSection() {
   });
 
   useEffect(() => {
+    const mid = user?.memberId;
+    if (!mid) {
+      hydratedMemberKeyRef.current = null;
+      return;
+    }
     const d = profileQ.data;
     if (!d) return;
+    const key = String(mid);
+    if (hydratedMemberKeyRef.current === key) return;
+    hydratedMemberKeyRef.current = key;
     setFirstName(d.member_first_name);
     setLastName(d.member_last_name);
     setEmail(d.member_email);
     setPhone(formatRuPhoneInput(d.member_phone));
     setBirthday(d.member_birthday_display ? formatBirthdayInput(d.member_birthday_display) : '');
-  }, [profileQ.data]);
+  }, [profileQ.data, user?.memberId]);
 
   const changePwdMut = useMutation({
     mutationFn: async () => {
@@ -104,24 +153,25 @@ export function EditProfileSection() {
         newPassword,
       });
     },
-    onSuccess: async () => {
+    onSuccess: () => {
       setOldPassword('');
       setNewPassword('');
-      setConfirmNewPassword('');
-      setShowPasswordChange(false);
-      await logout();
-      Alert.alert(t('verify.alertTitle'), t('profile.passwordChangeSuccess'));
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      setFullscreenResult({ kind: 'passwordChanged' });
     },
     onError: (e: unknown) => {
       let msg =
         e instanceof ApiError ? e.message : e instanceof Error ? e.message : t('profile.passwordChangeError');
+      if (e instanceof ApiError && e.message === ERR_PASSWORD_CHANGE_UNCONFIRMED) {
+        msg = t('profile.passwordChangeUnconfirmed');
+      }
       const low = msg.toLowerCase();
-      if (low.includes('api not allowed') || low.includes('not allowed')) {
-        msg = t('profile.insightApiNotAllowed');
+      if (low.includes('api not allowed')) {
+        msg = t('profile.passwordChangeApiBlocked');
       } else if (isWrongOldPasswordMessage(low)) {
         msg = t('profile.passwordChangeWrongOld');
       }
-      Alert.alert(t('profile.passwordChangeError'), msg);
+      setFullscreenResult({ kind: 'error', title: t('profile.passwordChangeError'), detail: msg });
     },
   });
 
@@ -168,16 +218,17 @@ export function EditProfileSection() {
       await qc.invalidateQueries({ queryKey: ['edit-profile', user.memberId] });
     },
     onSuccess: () => {
-      Alert.alert(t('profile.saveProfileSuccess'));
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      setFullscreenResult({ kind: 'profileSaved' });
     },
     onError: (e: unknown) => {
       let msg =
         e instanceof ApiError ? e.message : e instanceof Error ? e.message : t('profile.saveProfileError');
       const low = msg.toLowerCase();
-      if (low.includes('api not allowed') || low.includes('not allowed')) {
-        msg = t('profile.insightApiNotAllowed');
+      if (low.includes('api not allowed')) {
+        msg = t('profile.saveProfileApiBlocked');
       }
-      Alert.alert(t('profile.saveProfileError'), msg);
+      setFullscreenResult({ kind: 'error', title: t('profile.saveProfileError'), detail: msg });
     },
   });
 
@@ -191,26 +242,23 @@ export function EditProfileSection() {
 
   const onChangePasswordPress = useCallback(() => {
     if (!oldPassword) {
-      Alert.alert(t('verify.alertTitle'), t('profile.passwordChangeOldRequired'));
+      setFullscreenResult({
+        kind: 'error',
+        title: t('verify.alertTitle'),
+        detail: t('profile.passwordChangeOldRequired'),
+      });
       return;
     }
     if (!newPassword || newPassword.length < 4) {
-      Alert.alert(t('verify.alertTitle'), t('profile.passwordChangeNewInvalid'));
-      return;
-    }
-    if (newPassword !== confirmNewPassword) {
-      Alert.alert(t('verify.alertTitle'), t('profile.passwordChangeMismatch'));
+      setFullscreenResult({
+        kind: 'error',
+        title: t('verify.alertTitle'),
+        detail: t('profile.passwordChangeNewInvalid'),
+      });
       return;
     }
     changePwdMut.mutate();
-  }, [changePwdMut, confirmNewPassword, newPassword, oldPassword, t]);
-
-  const onPasswordChangeCancel = useCallback(() => {
-    setShowPasswordChange(false);
-    setOldPassword('');
-    setNewPassword('');
-    setConfirmNewPassword('');
-  }, []);
+  }, [changePwdMut, newPassword, oldPassword, t]);
 
   if (!user?.memberId) {
     return null;
@@ -219,7 +267,7 @@ export function EditProfileSection() {
   if (icafeQ.isLoading || (icafeQ.isSuccess && profileQ.isLoading)) {
     return (
       <View style={styles.embeddedBlock}>
-        <ActivityIndicator color={colors.accent} size="large" />
+        <ActivityIndicator color={colors.accentBright} size="large" />
       </View>
     );
   }
@@ -247,131 +295,136 @@ export function EditProfileSection() {
   }
 
   return (
-    <View style={styles.embeddedForm}>
-        <Text style={styles.label}>{t('profile.fieldLogin')}</Text>
-        <TextInput
-          style={[styles.input, styles.inputReadOnly]}
-          value={user.memberAccount ?? ''}
-          editable={false}
-          selectTextOnFocus={false}
-        />
-        <Text style={styles.hintMuted}>{t('profile.fieldLoginHint')}</Text>
+    <>
+      <Modal
+        visible={fullscreenResult !== null}
+        animationType="fade"
+        transparent
+        presentationStyle={Platform.OS === 'ios' ? 'overFullScreen' : undefined}
+        onRequestClose={closeFullscreen}
+      >
+        <View style={styles.resultOverlay}>
+          <View style={styles.resultCard}>
+            {fullscreenResult?.kind === 'profileSaved' ? (
+              <>
+                <Text style={styles.resultTitle}>{t('profile.saveProfileSuccessTitle')}</Text>
+                <Text style={styles.resultDescr}>{t('profile.saveProfileSuccess')}</Text>
+                <Pressable style={styles.resultBtn} onPress={closeFullscreen}>
+                  <Text style={styles.resultBtnText}>{t('booking.successOk')}</Text>
+                </Pressable>
+              </>
+            ) : fullscreenResult?.kind === 'passwordChanged' ? (
+              <>
+                <Text style={styles.resultTitle}>{t('profile.passwordChangeSuccessTitle')}</Text>
+                <Text style={styles.resultDescr}>{t('profile.passwordChangeSuccessBody')}</Text>
+                <Pressable
+                  style={styles.resultBtnSecondary}
+                  onPress={() => {
+                    closeFullscreen();
+                    void logout();
+                  }}
+                >
+                  <Text style={styles.resultBtnSecondaryText}>{t('profile.passwordChangeExit')}</Text>
+                </Pressable>
+                <Pressable style={styles.resultBtn} onPress={closeFullscreen}>
+                  <Text style={styles.resultBtnText}>{t('profile.passwordChangeContinueSession')}</Text>
+                </Pressable>
+              </>
+            ) : fullscreenResult?.kind === 'error' ? (
+              <>
+                <Text style={styles.resultTitle}>{fullscreenResult.title}</Text>
+                <Text style={styles.resultDescr}>{fullscreenResult.detail}</Text>
+                <Pressable style={styles.resultBtn} onPress={closeFullscreen}>
+                  <Text style={styles.resultBtnText}>{t('booking.successOk')}</Text>
+                </Pressable>
+              </>
+            ) : null}
+          </View>
+        </View>
+      </Modal>
 
-        <Text style={styles.label}>{t('profile.passwordSection')}</Text>
-        {!showPasswordChange ? (
+      <View style={styles.embeddedForm}>
+        <Text style={styles.sectionHeading}>{t('profile.fieldLogin')}</Text>
+        <View style={styles.loginDisplay}>
+          <Text style={styles.loginDisplayText} selectable={false}>
+            {user.memberAccount ?? ''}
+          </Text>
+        </View>
+
+        <View style={styles.sectionGap} />
+
+        <Text style={styles.sectionHeading}>{t('profile.sectionPassword')}</Text>
+
+        <Text style={styles.label}>{t('profile.fieldOldPassword')}</Text>
+        <View style={styles.passwordRow}>
+          <TextInput
+            style={styles.inputFlex}
+            value={oldPassword}
+            onChangeText={setOldPassword}
+            secureTextEntry={!oldPwdVisible}
+            autoCapitalize="none"
+            autoCorrect={false}
+            textContentType="password"
+            placeholderTextColor={colors.muted}
+          />
           <Pressable
-            style={[styles.secondaryBtn, saveMut.isPending && styles.secondaryBtnDisabled]}
-            onPress={() => setShowPasswordChange(true)}
-            disabled={saveMut.isPending}
+            style={({ pressed }) => [styles.eyeBtn, pressed && styles.eyeBtnPressed]}
+            onPress={() => setOldPwdVisible((v) => !v)}
+            accessibilityRole="button"
+            accessibilityLabel={oldPwdVisible ? t('login.hidePassword') : t('login.showPassword')}
           >
-            <Text style={styles.secondaryBtnText}>{t('profile.passwordChangeButton')}</Text>
+            <MaterialCommunityIcons
+              name={oldPwdVisible ? 'eye-off-outline' : 'eye-outline'}
+              size={24}
+              color={colors.muted}
+            />
           </Pressable>
-        ) : (
-          <>
-            <Text style={styles.passwordHint}>{t('profile.passwordChangeHint')}</Text>
+        </View>
 
-            <Text style={styles.label}>{t('profile.fieldOldPassword')}</Text>
-            <View style={styles.passwordRow}>
-              <TextInput
-                style={styles.inputFlex}
-                value={oldPassword}
-                onChangeText={setOldPassword}
-                secureTextEntry={!oldPwdVisible}
-                autoCapitalize="none"
-                autoCorrect={false}
-                textContentType="password"
-                placeholderTextColor={colors.muted}
-              />
-              <Pressable
-                style={({ pressed }) => [styles.eyeBtn, pressed && styles.eyeBtnPressed]}
-                onPress={() => setOldPwdVisible((v) => !v)}
-                accessibilityRole="button"
-                accessibilityLabel={oldPwdVisible ? t('login.hidePassword') : t('login.showPassword')}
-              >
-                <MaterialCommunityIcons
-                  name={oldPwdVisible ? 'eye-off-outline' : 'eye-outline'}
-                  size={24}
-                  color={colors.muted}
-                />
-              </Pressable>
-            </View>
+        <Text style={styles.label}>{t('profile.fieldNewPassword')}</Text>
+        <View style={styles.passwordRow}>
+          <TextInput
+            style={styles.inputFlex}
+            value={newPassword}
+            onChangeText={setNewPassword}
+            secureTextEntry={!newPwdVisible}
+            autoCapitalize="none"
+            autoCorrect={false}
+            textContentType="newPassword"
+            placeholderTextColor={colors.muted}
+          />
+          <Pressable
+            style={({ pressed }) => [styles.eyeBtn, pressed && styles.eyeBtnPressed]}
+            onPress={() => setNewPwdVisible((v) => !v)}
+            accessibilityRole="button"
+            accessibilityLabel={newPwdVisible ? t('login.hidePassword') : t('login.showPassword')}
+          >
+            <MaterialCommunityIcons
+              name={newPwdVisible ? 'eye-off-outline' : 'eye-outline'}
+              size={24}
+              color={colors.muted}
+            />
+          </Pressable>
+        </View>
 
-            <Text style={styles.label}>{t('profile.fieldNewPassword')}</Text>
-            <View style={styles.passwordRow}>
-              <TextInput
-                style={styles.inputFlex}
-                value={newPassword}
-                onChangeText={setNewPassword}
-                secureTextEntry={!newPwdVisible}
-                autoCapitalize="none"
-                autoCorrect={false}
-                textContentType="newPassword"
-                placeholderTextColor={colors.muted}
-              />
-              <Pressable
-                style={({ pressed }) => [styles.eyeBtn, pressed && styles.eyeBtnPressed]}
-                onPress={() => setNewPwdVisible((v) => !v)}
-                accessibilityRole="button"
-                accessibilityLabel={newPwdVisible ? t('login.hidePassword') : t('login.showPassword')}
-              >
-                <MaterialCommunityIcons
-                  name={newPwdVisible ? 'eye-off-outline' : 'eye-outline'}
-                  size={24}
-                  color={colors.muted}
-                />
-              </Pressable>
-            </View>
+        <Pressable
+          style={[
+            styles.secondaryBtn,
+            (changePwdMut.isPending || saveMut.isPending) && styles.secondaryBtnDisabled,
+          ]}
+          onPress={onChangePasswordPress}
+          disabled={changePwdMut.isPending || saveMut.isPending}
+        >
+          {changePwdMut.isPending ? (
+            <ActivityIndicator color={colors.accentBright} size="small" />
+          ) : (
+            <Text style={styles.secondaryBtnText}>{t('profile.passwordChangeButton')}</Text>
+          )}
+        </Pressable>
 
-            <Text style={styles.label}>{t('profile.fieldConfirmNewPassword')}</Text>
-            <View style={styles.passwordRow}>
-              <TextInput
-                style={styles.inputFlex}
-                value={confirmNewPassword}
-                onChangeText={setConfirmNewPassword}
-                secureTextEntry={!newPwdVisible}
-                autoCapitalize="none"
-                autoCorrect={false}
-                textContentType="newPassword"
-                placeholderTextColor={colors.muted}
-              />
-              <Pressable
-                style={({ pressed }) => [styles.eyeBtn, pressed && styles.eyeBtnPressed]}
-                onPress={() => setNewPwdVisible((v) => !v)}
-                accessibilityRole="button"
-                accessibilityLabel={newPwdVisible ? t('login.hidePassword') : t('login.showPassword')}
-              >
-                <MaterialCommunityIcons
-                  name={newPwdVisible ? 'eye-off-outline' : 'eye-outline'}
-                  size={24}
-                  color={colors.muted}
-                />
-              </Pressable>
-            </View>
+        <View style={styles.sectionGapLarge} />
 
-            <Pressable
-              style={[
-                styles.secondaryBtn,
-                (changePwdMut.isPending || saveMut.isPending) && styles.secondaryBtnDisabled,
-              ]}
-              onPress={onChangePasswordPress}
-              disabled={changePwdMut.isPending || saveMut.isPending}
-            >
-              {changePwdMut.isPending ? (
-                <ActivityIndicator color={colors.accent} size="small" />
-              ) : (
-                <Text style={styles.secondaryBtnText}>{t('profile.passwordChangeButton')}</Text>
-              )}
-            </Pressable>
-
-            <Pressable
-              style={styles.passwordChangeCancel}
-              onPress={onPasswordChangeCancel}
-              disabled={changePwdMut.isPending}
-            >
-              <Text style={styles.passwordChangeCancelText}>{t('profile.passwordChangeClose')}</Text>
-            </Pressable>
-          </>
-        )}
+        <Text style={styles.sectionHeading}>{t('profile.sectionProfileData')}</Text>
 
         <Text style={styles.label}>{t('profile.fieldFirstName')}</Text>
         <TextInput
@@ -417,12 +470,16 @@ export function EditProfileSection() {
             <Text style={styles.saveBtnText}>{t('profile.saveProfile')}</Text>
           )}
         </Pressable>
-    </View>
+      </View>
+    </>
   );
 }
 
 function createStyles(colors: ColorPalette) {
   return StyleSheet.create({
+    screenFlex: { flex: 1 },
+    screenRoot: { flex: 1, backgroundColor: colors.bg },
+    screenScroll: { paddingHorizontal: 12, paddingTop: 8, paddingBottom: 8 },
     embeddedBlock: {
       alignItems: 'center',
       justifyContent: 'center',
@@ -434,20 +491,87 @@ function createStyles(colors: ColorPalette) {
       borderWidth: 1,
       borderColor: colors.border,
     },
-    embeddedForm: { marginBottom: 8 },
+    embeddedForm: { marginBottom: 4 },
+    /** Как `booking.successOverlay` / `successCard` — полноэкранный итог. */
+    resultOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.95)',
+      justifyContent: 'center',
+      padding: 24,
+    },
+    resultCard: { alignItems: 'center' },
+    resultTitle: {
+      color: colors.text,
+      fontSize: 26,
+      fontWeight: '700',
+      textAlign: 'center',
+      lineHeight: 34,
+    },
+    resultDescr: {
+      color: colors.muted,
+      fontSize: 18,
+      textAlign: 'center',
+      marginTop: 24,
+      lineHeight: 26,
+    },
+    resultBtnSecondary: {
+      marginTop: 20,
+      borderRadius: 12,
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.card,
+      minWidth: 220,
+      alignItems: 'center',
+    },
+    resultBtnSecondaryText: { color: colors.accentBright, fontWeight: '600', fontSize: 16 },
+    resultBtn: {
+      marginTop: 16,
+      backgroundColor: colors.success,
+      borderRadius: 12,
+      paddingVertical: 14,
+      paddingHorizontal: 48,
+      minWidth: 220,
+      alignItems: 'center',
+    },
+    resultBtnText: { color: colors.accentTextOnButton, fontWeight: '700', fontSize: 18 },
+    sectionHeading: {
+      fontSize: 13,
+      fontWeight: '700',
+      letterSpacing: 0.6,
+      textTransform: 'uppercase',
+      color: colors.accentBright,
+      marginBottom: 4,
+      marginTop: 0,
+    },
+    sectionGap: { height: 8 },
+    sectionGapLarge: { height: 10 },
+    loginDisplay: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 12,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      backgroundColor: colors.zoneBg,
+    },
+    loginDisplayText: {
+      fontSize: 16,
+      color: colors.muted,
+    },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, backgroundColor: colors.bg },
     err: { color: colors.danger, textAlign: 'center', marginBottom: 16 },
     retry: { paddingVertical: 12, paddingHorizontal: 20, borderRadius: 12, backgroundColor: colors.accent },
     retryText: { color: colors.accentTextOnButton, fontWeight: '700' },
-    label: { color: colors.muted, fontSize: 13, marginBottom: 6, marginTop: 12 },
+    /** Между полями: marginTop + одна строка подписи (~18) + marginBottom — как между двумя полями пароля. */
+    label: { color: colors.muted, fontSize: 13, marginBottom: 3, marginTop: 6, lineHeight: 17 },
     hintMuted: { color: colors.mutedDark, fontSize: 12, marginTop: 6 },
-    passwordHint: { color: colors.muted, fontSize: 14, marginBottom: 10, lineHeight: 20 },
     input: {
       borderWidth: 1,
       borderColor: colors.border,
       borderRadius: 12,
-      paddingHorizontal: 14,
-      paddingVertical: 12,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
       fontSize: 16,
       color: colors.text,
       backgroundColor: colors.card,
@@ -467,17 +591,18 @@ function createStyles(colors: ColorPalette) {
     },
     inputFlex: {
       flex: 1,
-      paddingHorizontal: 14,
-      paddingVertical: 12,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
       fontSize: 16,
       color: colors.text,
     },
-    eyeBtn: { padding: 10, justifyContent: 'center', alignItems: 'center' },
+    eyeBtn: { padding: 6, justifyContent: 'center', alignItems: 'center' },
     eyeBtnPressed: { opacity: 0.7 },
     secondaryBtn: {
-      marginTop: 4,
-      paddingVertical: 14,
-      paddingHorizontal: 16,
+      /** Как расстояние между двумя полями пароля: label.marginTop + lineHeight + label.marginBottom */
+      marginTop: 6 + 17 + 3,
+      paddingVertical: 9,
+      paddingHorizontal: 14,
       borderRadius: 12,
       borderWidth: 1,
       borderColor: colors.border,
@@ -485,17 +610,11 @@ function createStyles(colors: ColorPalette) {
       backgroundColor: colors.card,
     },
     secondaryBtnDisabled: { opacity: 0.6 },
-    secondaryBtnText: { color: colors.accent, fontWeight: '700', fontSize: 15 },
-    passwordChangeCancel: {
-      marginTop: 10,
-      paddingVertical: 10,
-      alignItems: 'center',
-    },
-    passwordChangeCancelText: { color: colors.muted, fontSize: 15 },
+    secondaryBtnText: { color: colors.accentBright, fontWeight: '700', fontSize: 15 },
     saveBtn: {
-      marginTop: 28,
+      marginTop: 8,
       backgroundColor: colors.accent,
-      paddingVertical: 16,
+      paddingVertical: 11,
       borderRadius: 12,
       alignItems: 'center',
     },

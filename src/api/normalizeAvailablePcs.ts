@@ -7,6 +7,23 @@ function coerceStr(v: unknown): string | undefined {
   return undefined;
 }
 
+function coerceBooleanLike(v: unknown): boolean | null {
+  if (typeof v === 'boolean') return v;
+  if (typeof v === 'number') {
+    if (!Number.isFinite(v)) return null;
+    return v !== 0;
+  }
+  if (typeof v === 'string') {
+    const s = v.trim().toLowerCase();
+    if (!s) return null;
+    if (['1', 'true', 'yes', 'y', 'on'].includes(s)) return true;
+    if (['0', 'false', 'no', 'n', 'off'].includes(s)) return false;
+    const n = Number(s);
+    if (Number.isFinite(n)) return n !== 0;
+  }
+  return null;
+}
+
 function normalizePc(raw: unknown): PcListItem | null {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
   const o = raw as Record<string, unknown>;
@@ -20,9 +37,10 @@ function normalizePc(raw: unknown): PcListItem | null {
   const pc_area = coerceStr(o.pc_area);
   const pc_area_name = (areaFromFields ?? groupName ?? pc_area ?? '').trim() || '';
 
-  let is_using = Boolean(o.is_using);
-  if (typeof o.is_available === 'boolean') {
-    is_using = !o.is_available;
+  let is_using = coerceBooleanLike(o.is_using) ?? false;
+  const isAvailable = coerceBooleanLike(o.is_available);
+  if (isAvailable != null) {
+    is_using = !isAvailable;
   }
 
   const row: PcListItem = {

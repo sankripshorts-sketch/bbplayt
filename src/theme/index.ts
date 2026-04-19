@@ -1,14 +1,17 @@
 export { ThemeProvider, useTheme, useThemeColors } from './ThemeContext';
+export { fonts, useAppFonts } from './appFonts';
+export { applyDefaultTypography } from './applyDefaultTypography';
 
 /** Статичная палитра для экранов, импортирующих `colors` напрямую (как в прежнем theme.ts) */
 export const colors = {
-  bg: '#141824',
-  card: '#1e2433',
-  text: '#f0f2f7',
-  muted: '#8b93a7',
-  accent: '#6c5ce7',
-  accentDim: '#4b3bb0',
-  border: '#2a3145',
-  danger: '#e74c3c',
-  success: '#27ae60',
+  bg: '#1b222a',
+  card: '#2c353e',
+  text: '#ffffff',
+  muted: '#94a3b8',
+  accent: '#006400',
+  accentBright: '#299047',
+  accentDim: '#0f260f',
+  border: '#3d4a57',
+  danger: '#f87171',
+  success: '#22c55e',
 };

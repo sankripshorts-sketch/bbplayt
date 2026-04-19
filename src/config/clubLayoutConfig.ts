@@ -1,266 +1,367 @@
-export type ClubLayoutOffsets = { x: number; y: number };
+import type { StructRoom } from '../api/types';
+import { normalizePcZoneKind } from '../features/booking/pcZoneKind';
+import { areaFrameExtentHeight, coerceLayoutNum } from '../features/cafes/clubLayoutGeometry';
 
-export type ClubLayoutAxisScale = { x: number; y: number };
+export type HallMapXY = { x: number; y: number };
+export type HallMapPcScale = number | HallMapXY;
 
-function parseOffsetEnv(key: string): number {
-  const v = process.env[key];
-  if (v == null || String(v).trim() === '') return 0;
-  const n = parseFloat(String(v).replace(',', '.'));
-  return Number.isFinite(n) ? n : 0;
-}
+/** Каноническая схема: три колонки BootCamp | GameZone | VIP без опоры на «мировые» area_frame_x/y из iCafe. */
+export type CanonicalColumnsConfig = {
+  enabled?: boolean;
+  /** Отступ от края canvas (px). */
+  paddingPx?: number;
+  /** Горизонтальный зазор между колонками (px). */
+  columnGapPx?: number;
+  /**
+   * Доля ширины боковой колонки от доступной ширины (после padding и двух gap).
+   * Центр = 1 − 2×side. Типично 0.16–0.24.
+   */
+  sideWidthFraction?: number;
+  /** Отступ заголовка зоны сверху (px). */
+  topInsetPx?: number;
+  /** Отступ снизу внутри canvas (px). По умолчанию = topInsetPx — симметрия полей карты. */
+  bottomInsetPx?: number;
+};
 
-function parsePositiveScaleEnv(key: string, fallback = 1): number {
-  const v = process.env[key];
-  if (v == null || String(v).trim() === '') return fallback;
-  const n = parseFloat(String(v).replace(',', '.'));
-  if (!Number.isFinite(n) || n <= 0) return fallback;
-  return n;
-}
+export type HallMapTweak = {
+  /** Три колонки по зонам; при enabled игнорируются «мировые» координаты зон из API. */
+  canonicalColumns?: CanonicalColumnsConfig;
+  /** Сдвиг зоны в px после масштаба (как в экспорте zone_drag_px). */
+  zoneOffsets: Record<string, HallMapXY>;
+  /** Множители ширины/высоты зоны (zone_xy). */
+  zoneSizeXY: Record<string, HallMapXY>;
+  /** Множители позиции левого верхнего угла (zone_pos_xy). */
+  zonePosXY: Record<string, HallMapXY>;
+  /** Доп. сдвиг чипа ПК в px (pc_drag). */
+  pcOffsets: Record<string, HallMapXY>;
+  /** Множители позиции чипа внутри зоны (pc_xy). */
+  pcXY: Record<string, HallMapXY>;
+  /** Масштаб размера чипа (pc_scale). */
+  pcScale: Record<string, HallMapPcScale>;
+};
 
-/**
- * Доп. сдвиг схемы зала по X/Y (px на холсте), после привязки к данным structRooms (min/max bbox).
- * Отрицательное X — влево, отрицательное Y — вверх.
- * Задаётся в .env: EXPO_PUBLIC_HALL_MAP_OFFSET_X, EXPO_PUBLIC_HALL_MAP_OFFSET_Y
- */
-export function getHallMapOffsetXPx(): number {
-  return parseOffsetEnv('EXPO_PUBLIC_HALL_MAP_OFFSET_X');
-}
+const ZERO: HallMapXY = { x: 0, y: 0 };
+const ONE: HallMapXY = { x: 1, y: 1 };
 
-export function getHallMapOffsetYPx(): number {
-  return parseOffsetEnv('EXPO_PUBLIC_HALL_MAP_OFFSET_Y');
-}
-
-/**
- * Базовые смещения из env. Для точной подгонки конкретного клуба см. `getHallMapOffsetsForClub`.
- */
-export function getHallMapOffsetsBase(): ClubLayoutOffsets {
-  return { x: getHallMapOffsetXPx(), y: getHallMapOffsetYPx() };
-}
-
-function parseClubOffsetsJson(): Record<string, { x?: number; y?: number }> {
-  const raw = process.env.EXPO_PUBLIC_HALL_MAP_CLUB_OFFSETS_JSON;
-  if (raw == null || String(raw).trim() === '') return {};
+function parseJsonEnv<T>(raw: string | undefined): T | undefined {
+  if (!raw?.trim()) return undefined;
   try {
-    const parsed = JSON.parse(String(raw)) as unknown;
-    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-      return parsed as Record<string, { x?: number; y?: number }>;
-    }
+    return JSON.parse(raw) as T;
   } catch {
-    /* ignore */
+    return undefined;
   }
-  return {};
+}
+
+function mergeXY(base: Record<string, HallMapXY>, over?: Record<string, HallMapXY>): Record<string, HallMapXY> {
+  if (!over) return { ...base };
+  return { ...base, ...over };
+}
+
+function mergePcScale(
+  base: Record<string, HallMapPcScale>,
+  over?: Record<string, HallMapPcScale>,
+): Record<string, HallMapPcScale> {
+  if (!over) return { ...base };
+  return { ...base, ...over };
+}
+
+const EMPTY: HallMapTweak = {
+  zoneOffsets: {},
+  zoneSizeXY: {},
+  zonePosXY: {},
+  pcOffsets: {},
+  pcXY: {},
+  pcScale: {},
+};
+
+function clamp(n: number, lo: number, hi: number): number {
+  return Math.min(hi, Math.max(lo, n));
 }
 
 /**
- * Смещения для отрисовки: база из env + опционально дельта для `icafe_id` из
- * EXPO_PUBLIC_HALL_MAP_CLUB_OFFSETS_JSON, например: `{"12345":{"x":-2,"y":1}}`.
+ * Отступы и зазоры канонической схемы масштабируются с шириной canvas (реф. 420px),
+ * чтобы на узком экране промежутки не казались огромными, на широком — не статичными.
  */
-export function getHallMapOffsetsForClub(icafeId: number | undefined): ClubLayoutOffsets {
-  const base = getHallMapOffsetsBase();
-  if (icafeId == null || !Number.isFinite(icafeId) || icafeId <= 0) return base;
-  const row = parseClubOffsetsJson()[String(icafeId)];
-  if (!row) return base;
-  const dx = row.x;
-  const dy = row.y;
+export type CanonicalLayoutOpts = {
+  /** Экран брони: уже поля/зазоры и ниже потолок высоты ряда — компактнее схема и меньше риск обрезки по краям. */
+  bookingCompact?: boolean;
+};
+
+export function getResponsiveCanonicalSpacing(
+  canvasW: number,
+  cfg: CanonicalColumnsConfig,
+  layoutOpts?: CanonicalLayoutOpts,
+): { pad: number; gap: number; topInset: number; bottomInset: number } {
+  const refW = 420;
+  const scale = clamp(canvasW / refW, 0.62, 1.45);
+  const basePad = cfg.paddingPx ?? 14;
+  const baseGap = cfg.columnGapPx ?? 10;
+  const baseTop = cfg.topInsetPx ?? 6;
+  const baseBottom = cfg.bottomInsetPx ?? baseTop;
+  const compact = layoutOpts?.bookingCompact === true;
+  const cm = compact ? 0.78 : 1;
+  const pad = clamp(basePad * scale * cm, compact ? 4 : 5, compact ? 20 : 26);
+  const gap = clamp(baseGap * scale * cm, compact ? 2 : 3, compact ? 14 : 20);
+  const topInset = clamp(baseTop * scale * (compact ? 0.72 : 1), compact ? 2 : 3, compact ? 12 : 16);
+  const bottomInset = clamp(baseBottom * scale * (compact ? 0.72 : 1), compact ? 2 : 3, compact ? 12 : 16);
+  return { pad, gap, topInset, bottomInset };
+}
+
+/** Ширины колонок BootCamp | GameZone | VIP — как в {@link computeCanonicalZoneFrames}. */
+export function getCanonicalColumnLayout(
+  canvasW: number,
+  cfg: CanonicalColumnsConfig | undefined,
+  layoutOpts?: CanonicalLayoutOpts,
+): { pad: number; gap: number; sideW: number; centerW: number } | null {
+  if (!cfg?.enabled) return null;
+  const { pad, gap } = getResponsiveCanonicalSpacing(canvasW, cfg, layoutOpts);
+  const sideFrac = clamp(cfg.sideWidthFraction ?? 0.2, 0.08, 0.42);
+  const inner = Math.max(0, canvasW - 2 * pad - 2 * gap);
+  const sideW = inner * sideFrac;
+  const centerW = Math.max(0, inner - 2 * sideW);
+  return { pad, gap, sideW, centerW };
+}
+
+function mergeCanonical(a?: CanonicalColumnsConfig, b?: CanonicalColumnsConfig): CanonicalColumnsConfig | undefined {
+  if (!a && !b) return undefined;
+  return { ...a, ...b };
+}
+
+/** iCafe 87375 — канонические три колонки; координаты ПК внутри зоны по-прежнему из API + {@link pcOffsetsInZonePixels}. */
+const ICAFE_87375: HallMapTweak = {
+  canonicalColumns: {
+    enabled: true,
+    paddingPx: 10,
+    columnGapPx: 10,
+    /** Шире BootCamp / VIP, уже слот под центр (GameZone). Достаточно ширины под подпись «BootCamp». */
+    sideWidthFraction: 0.23,
+    topInsetPx: 6,
+  },
+  zoneOffsets: {},
+  zoneSizeXY: {
+    BootCamp: { x: 1, y: 1 },
+    /** Квадрат GameZone: ширина слота × x; высота = ширине. x ближе к 1 — крупнее по ширине и высоте одинаково. */
+    GameZone: { x: 0.97, y: 1 },
+    VIP: { x: 1, y: 1 },
+  },
+  zonePosXY: {},
+  pcOffsets: {},
+  pcXY: {},
+  pcScale: {},
+};
+
+const BAKED_BY_ICAFE: Record<string, HallMapTweak> = {
+  '87375': ICAFE_87375,
+};
+
+function envOverlay(base: HallMapTweak): HallMapTweak {
   return {
-    x: base.x + (typeof dx === 'number' && Number.isFinite(dx) ? dx : 0),
-    y: base.y + (typeof dy === 'number' && Number.isFinite(dy) ? dy : 0),
+    canonicalColumns: mergeCanonical(
+      base.canonicalColumns,
+      parseJsonEnv<CanonicalColumnsConfig>(process.env.EXPO_PUBLIC_HALL_MAP_CANONICAL_COLUMNS_JSON),
+    ),
+    zoneOffsets: mergeXY(base.zoneOffsets, parseJsonEnv(process.env.EXPO_PUBLIC_HALL_MAP_ZONE_OFFSETS_JSON)),
+    zoneSizeXY: mergeXY(base.zoneSizeXY, parseJsonEnv(process.env.EXPO_PUBLIC_HALL_MAP_ZONE_XY_SCALE_JSON)),
+    zonePosXY: mergeXY(base.zonePosXY, parseJsonEnv(process.env.EXPO_PUBLIC_HALL_MAP_ZONE_POS_XY_SCALE_JSON)),
+    pcOffsets: mergeXY(base.pcOffsets, parseJsonEnv(process.env.EXPO_PUBLIC_HALL_MAP_PC_OFFSETS_JSON)),
+    pcXY: mergeXY(base.pcXY, parseJsonEnv(process.env.EXPO_PUBLIC_HALL_MAP_PC_XY_SCALE_JSON)),
+    pcScale: mergePcScale(base.pcScale, parseJsonEnv(process.env.EXPO_PUBLIC_HALL_MAP_PC_SCALE_JSON)),
   };
 }
 
 /**
- * Поправка «кривой» схемы iCafe: масштаб логических координат по осям **после** расчёта `scale = canvasW/maxX`.
- * Унифицированный множитель на все координаты в коде не даёт эффекта (сокращается с `scale`);
- * раздельные kx/ky поджимают или растягивают план по X и Y независимо (когда единицы API по осям не совпадают).
- * .env: EXPO_PUBLIC_HALL_MAP_AXIS_SCALE_X, EXPO_PUBLIC_HALL_MAP_AXIS_SCALE_Y (по умолчанию 1).
+ * Правки схемы зала: встроенные по `icafe_id` + переопределение из EXPO_PUBLIC_HALL_MAP_* при сборке.
  */
-export function getHallMapAxisScaleBase(): ClubLayoutAxisScale {
-  return {
-    x: parsePositiveScaleEnv('EXPO_PUBLIC_HALL_MAP_AXIS_SCALE_X', 1),
-    y: parsePositiveScaleEnv('EXPO_PUBLIC_HALL_MAP_AXIS_SCALE_Y', 1),
-  };
+export function getHallMapTweak(icafeId?: number): HallMapTweak {
+  const id = icafeId != null && Number.isFinite(icafeId) ? String(Math.trunc(icafeId)) : '';
+  const baked = id ? BAKED_BY_ICAFE[id] : undefined;
+  return envOverlay(baked ?? EMPTY);
 }
 
-function parseClubAxisScaleJson(): Record<string, { x?: number; y?: number }> {
-  const raw = process.env.EXPO_PUBLIC_HALL_MAP_CLUB_AXIS_SCALE_JSON;
-  if (raw == null || String(raw).trim() === '') return {};
-  try {
-    const parsed = JSON.parse(String(raw)) as unknown;
-    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-      return parsed as Record<string, { x?: number; y?: number }>;
-    }
-  } catch {
-    /* ignore */
+function xyFromMap(m: Record<string, HallMapXY>, key: string, fallback: HallMapXY): HallMapXY {
+  const direct = m[key];
+  if (direct && typeof direct.x === 'number' && typeof direct.y === 'number') return direct;
+  const lk = key.toLowerCase();
+  for (const [k, v] of Object.entries(m)) {
+    if (k.toLowerCase() === lk && typeof v.x === 'number' && typeof v.y === 'number') return v;
   }
-  return {};
-}
-
-/**
- * База из env и при необходимости переопределение по `icafe_id`:
- * `EXPO_PUBLIC_HALL_MAP_CLUB_AXIS_SCALE_JSON`, например `{"12345":{"x":1.02,"y":0.98}}`.
- * Неуказанная ось в объекте клуба берётся из базы env.
- */
-export function getHallMapAxisScaleForClub(icafeId: number | undefined): ClubLayoutAxisScale {
-  const base = getHallMapAxisScaleBase();
-  if (icafeId == null || !Number.isFinite(icafeId) || icafeId <= 0) return base;
-  const row = parseClubAxisScaleJson()[String(icafeId)];
-  if (!row) return base;
-  const x =
-    typeof row.x === 'number' && Number.isFinite(row.x) && row.x > 0 ? row.x : base.x;
-  const y =
-    typeof row.y === 'number' && Number.isFinite(row.y) && row.y > 0 ? row.y : base.y;
-  return { x, y };
-}
-
-function compressZoneKey(raw: string | undefined | null): string {
-  return String(raw ?? '')
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-zа-яё0-9]/gi, '');
-}
-
-function parseZoneNudgeJson(): Record<string, { x?: number; y?: number }> {
-  const raw = process.env.EXPO_PUBLIC_HALL_MAP_ZONE_OFFSETS_JSON;
-  if (raw == null || String(raw).trim() === '') return {};
-  try {
-    const parsed = JSON.parse(String(raw)) as unknown;
-    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-      return parsed as Record<string, { x?: number; y?: number }>;
-    }
-  } catch {
-    /* ignore */
-  }
-  return {};
-}
-
-/**
- * Доп. сдвиг **только** прямоугольника зоны по X/Y (px на холсте), по имени зоны из structRooms.
- * По умолчанию без сдвига; подгонка — через `EXPO_PUBLIC_HALL_MAP_ZONE_OFFSETS_JSON`, например `{"GameZone":{"x":40}}` (положительный X — вправо).
- */
-export function getHallMapZoneNudgePx(areaName: string | undefined): ClubLayoutOffsets {
-  const map = parseZoneNudgeJson();
-  const keys = [compressZoneKey(areaName), String(areaName ?? '').trim().toLowerCase()];
-  for (const k of keys) {
-    if (!k) continue;
-    const row = map[k] ?? map[k.replace(/\s+/g, '')];
-    if (row) {
-      const dx = row.x;
-      const dy = row.y;
-      return {
-        x: typeof dx === 'number' && Number.isFinite(dx) ? dx : 0,
-        y: typeof dy === 'number' && Number.isFinite(dy) ? dy : 0,
-      };
-    }
-  }
-  return { x: 0, y: 0 };
-}
-
-function parsePositive(n: unknown, fallback: number): number {
-  if (typeof n === 'number' && Number.isFinite(n) && n > 0) return n;
   return fallback;
 }
 
-function parseZoneXYScaleJson(): Record<string, { x?: number; y?: number }> {
-  const raw = process.env.EXPO_PUBLIC_HALL_MAP_ZONE_XY_SCALE_JSON;
-  if (raw == null || String(raw).trim() === '') return {};
-  try {
-    const parsed = JSON.parse(String(raw)) as unknown;
-    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-      return parsed as Record<string, { x?: number; y?: number }>;
-    }
-  } catch {
-    /* ignore */
+function pcScaleFromMap(m: Record<string, HallMapPcScale>, key: string, fallback: HallMapPcScale): HallMapPcScale {
+  const direct = m[key];
+  if (direct !== undefined) return direct;
+  const lk = key.toLowerCase();
+  for (const [k, v] of Object.entries(m)) {
+    if (k.toLowerCase() === lk) return v;
   }
-  return {};
+  return fallback;
 }
+
+export type ZonePixelFrame = {
+  left: number;
+  top: number;
+  w: number;
+  h: number;
+  extentH: number;
+  aw: number;
+  ax: number;
+  ay: number;
+  zoneName: string;
+};
 
 /**
- * Доп. масштаб по осям **внутри зоны** (после base kx/ky клуба), по имени зоны из structRooms.
- * `EXPO_PUBLIC_HALL_MAP_ZONE_XY_SCALE_JSON`, например `{"gamezone":{"x":1.02,"y":0.98}}`.
+ * Три колонки по типу зоны: BootCamp (0), GameZone (1), VIP (2); прочее — центр.
+ * Позиции зон не берутся из area_frame_x/y; ПК внутри зоны по-прежнему через логические aw / extentH.
  */
-export function getHallMapZoneXYScaleFromEnv(areaName: string | undefined): ClubLayoutAxisScale {
-  const map = parseZoneXYScaleJson();
-  const keys = [compressZoneKey(areaName), String(areaName ?? '').trim().toLowerCase()];
-  for (const k of keys) {
-    if (!k) continue;
-    const row = map[k] ?? map[k.replace(/\s+/g, '')];
-    if (row) {
-      return {
-        x: parsePositive(row.x, 1),
-        y: parsePositive(row.y, 1),
-      };
-    }
-  }
-  return { x: 1, y: 1 };
-}
+export function computeCanonicalZoneFrames(
+  rooms: StructRoom[],
+  canvasW: number,
+  minHeight: number,
+  tweak: HallMapTweak,
+  layoutOpts?: CanonicalLayoutOpts,
+): { frames: ZonePixelFrame[]; canvasH: number } | null {
+  const cfg = tweak.canonicalColumns;
+  if (!cfg?.enabled || !rooms.length) return null;
 
-function normalizePcMapKey(raw: string | undefined | null): string {
-  return String(raw ?? '')
-    .trim()
-    .toLowerCase();
-}
+  const { pad, gap, topInset, bottomInset } = getResponsiveCanonicalSpacing(canvasW, cfg, layoutOpts);
+  const sideFrac = clamp(cfg.sideWidthFraction ?? 0.2, 0.08, 0.42);
 
-function parsePcOffsetsJson(): Record<string, { x?: number; y?: number }> {
-  const raw = process.env.EXPO_PUBLIC_HALL_MAP_PC_OFFSETS_JSON;
-  if (raw == null || String(raw).trim() === '') return {};
-  try {
-    const parsed = JSON.parse(String(raw)) as unknown;
-    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-      return parsed as Record<string, { x?: number; y?: number }>;
-    }
-  } catch {
-    /* ignore */
-  }
-  return {};
-}
+  const inner = Math.max(0, canvasW - 2 * pad - 2 * gap);
+  const sideW = inner * sideFrac;
+  const centerW = Math.max(0, inner - 2 * sideW);
 
-/**
- * Доп. сдвиг чипа ПК в px на холсте (после расчёта позиций в зоне).
- * `EXPO_PUBLIC_HALL_MAP_PC_OFFSETS_JSON`, например `{"pc09":{"x":2,"y":-4},"pc 10":{"x":0,"y":1}}` — ключи без учёта регистра.
- */
-export function getHallMapPcNudgePx(pcName: string | undefined): ClubLayoutOffsets {
-  const map = parsePcOffsetsJson();
-  const k = normalizePcMapKey(pcName);
-  if (!k) return { x: 0, y: 0 };
-  const row = map[k] ?? map[pcName?.trim() ?? ''];
-  if (!row) return { x: 0, y: 0 };
-  const dx = row.x;
-  const dy = row.y;
-  return {
-    x: typeof dx === 'number' && Number.isFinite(dx) ? dx : 0,
-    y: typeof dy === 'number' && Number.isFinite(dy) ? dy : 0,
+  const slots: { left: number; w: number }[] = [
+    { left: pad, w: sideW },
+    { left: pad + sideW + gap, w: centerW },
+    { left: pad + sideW + gap + centerW + gap, w: sideW },
+  ];
+
+  const slotIndexForRoom = (room: StructRoom): 0 | 1 | 2 => {
+    const k = normalizePcZoneKind(String(room.area_name ?? ''));
+    if (k === 'BootCamp') return 0;
+    if (k === 'GameZone') return 1;
+    if (k === 'VIP') return 2;
+    return 1;
   };
-}
 
-function parsePcScaleJson(): Record<string, number> {
-  const raw = process.env.EXPO_PUBLIC_HALL_MAP_PC_SCALE_JSON;
-  if (raw == null || String(raw).trim() === '') return {};
-  try {
-    const parsed = JSON.parse(String(raw)) as unknown;
-    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-      const out: Record<string, number> = {};
-      for (const [k, v] of Object.entries(parsed)) {
-        const nk = normalizePcMapKey(k);
-        if (!nk) continue;
-        const n = typeof v === 'number' ? v : parseFloat(String(v).replace(',', '.'));
-        if (Number.isFinite(n) && n > 0) out[nk] = n;
-      }
-      return out;
-    }
-  } catch {
-    /* ignore */
+  const naturalRowHeights = rooms.map((room) => {
+    const slot = slots[slotIndexForRoom(room)]!;
+    const aw = coerceLayoutNum(room.area_frame_width);
+    const extentH = areaFrameExtentHeight(room);
+    const zoneName = String(room.area_name ?? '');
+    const size = xyFromMap(tweak.zoneSizeXY, zoneName, ONE);
+    const slotW = Math.max(1e-6, slot.w * size.x);
+    const scaleW = slotW / Math.max(aw, 1);
+    return extentH * size.y * scaleW;
+  });
+
+  /** Сторона квадрата GameZone (как `aspect-ratio: 1/1` в HTML) — высота ряда не меньше этого. */
+  let gameZoneSquareSide = 0;
+  for (const room of rooms) {
+    if (normalizePcZoneKind(String(room.area_name ?? '')) !== 'GameZone') continue;
+    const slot = slots[1]!;
+    const zoneName = String(room.area_name ?? '');
+    const size = xyFromMap(tweak.zoneSizeXY, zoneName, ONE);
+    gameZoneSquareSide = Math.max(gameZoneSquareSide, slot.w * size.x);
   }
-  return {};
+
+  let innerH = Math.max(
+    Math.max(0, minHeight - topInset),
+    naturalRowHeights.length ? Math.max(...naturalRowHeights) : 0,
+    gameZoneSquareSide,
+  );
+
+  /** Ниже ряд зон на экране брони: центральный «квадрат» уже → меньше высота всей схемы. */
+  if (layoutOpts?.bookingCompact) {
+    const softCap = Math.floor(canvasW * 0.62);
+    innerH = Math.max(gameZoneSquareSide, Math.min(innerH, softCap));
+  }
+
+  const frames: ZonePixelFrame[] = rooms.map((room) => {
+    const slot = slots[slotIndexForRoom(room)]!;
+    const aw = coerceLayoutNum(room.area_frame_width);
+    const extentH = areaFrameExtentHeight(room);
+    const ax = coerceLayoutNum(room.area_frame_x);
+    const ay = coerceLayoutNum(room.area_frame_y);
+    const zoneName = String(room.area_name ?? '');
+    const size = xyFromMap(tweak.zoneSizeXY, zoneName, ONE);
+    const off = xyFromMap(tweak.zoneOffsets, zoneName, ZERO);
+    const slotW = slot.w * size.x;
+    const wFrame = Math.max(1, slotW);
+    const kind = normalizePcZoneKind(zoneName);
+    /** BootCamp/VIP — на всю высоту ряда; GameZone — квадрат со стороной = ширине рамки (как в макете HTML). */
+    const hBody =
+      kind === 'GameZone' ? wFrame : innerH * size.y;
+    const left = slot.left + (slot.w - slotW) / 2 + off.x;
+    /**
+     * Как в `preview/hall-zones-colors.html`: `align-items: flex-start` — верхние границы всех зон на одной линии.
+     * Не центрировать зону по вертикали в innerH (иначе более низкая GameZone «уезжает» вниз относительно боковых).
+     */
+    const top = topInset + off.y;
+    return {
+      left,
+      top,
+      w: wFrame,
+      h: Math.max(1, hBody),
+      extentH,
+      aw,
+      ax,
+      ay,
+      zoneName,
+    };
+  });
+
+  const cw = Math.max(1, canvasW);
+  const clampedFrames = frames.map((f) => {
+    const leftC = Math.max(0, Math.min(f.left, cw - 1));
+    const wC = Math.max(1, Math.min(f.w, cw - leftC));
+    return { ...f, left: leftC, w: wC };
+  });
+
+  const canvasH = topInset + innerH + bottomInset;
+  return { frames: clampedFrames, canvasH };
 }
 
-/**
- * Множитель размера чипа ПК (1 = по умолчанию).
- * `EXPO_PUBLIC_HALL_MAP_PC_SCALE_JSON`, например `{"pc09":1.1}`.
- */
-export function getHallMapPcScaleFromEnv(pcName: string | undefined): number {
-  const map = parsePcScaleJson();
-  const k = normalizePcMapKey(pcName);
-  if (!k) return 1;
-  const v = map[k];
-  return typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : 1;
+export function computeZonePixelFrame(room: StructRoom, scale: number, tweak: HallMapTweak): ZonePixelFrame {
+  const zoneName = String(room.area_name ?? '');
+  const ax = coerceLayoutNum(room.area_frame_x);
+  const ay = coerceLayoutNum(room.area_frame_y);
+  const aw = coerceLayoutNum(room.area_frame_width);
+  const extentH = areaFrameExtentHeight(room);
+  const pos = xyFromMap(tweak.zonePosXY, zoneName, ONE);
+  const size = xyFromMap(tweak.zoneSizeXY, zoneName, ONE);
+  const off = xyFromMap(tweak.zoneOffsets, zoneName, ZERO);
+  const left = ax * scale * pos.x + off.x;
+  const top = ay * scale * pos.y + off.y;
+  const w = aw * scale * size.x;
+  const h = extentH * scale * size.y;
+  return { left, top, w, h, extentH, aw, ax, ay, zoneName };
+}
+
+export function applyPcHallTweaks(
+  pcName: string,
+  left: number,
+  top: number,
+  chipW: number,
+  chipH: number,
+  tweak: HallMapTweak,
+): { left: number; top: number; chipW: number; chipH: number } {
+  const xy = xyFromMap(tweak.pcXY, pcName, ONE);
+  const drag = xyFromMap(tweak.pcOffsets, pcName, ZERO);
+  const sc = pcScaleFromMap(tweak.pcScale, pcName, 1);
+  let sx = 1;
+  let sy = 1;
+  if (typeof sc === 'number' && Number.isFinite(sc)) {
+    sx = sy = sc;
+  } else if (sc && typeof sc === 'object') {
+    sx = typeof sc.x === 'number' && Number.isFinite(sc.x) ? sc.x : 1;
+    sy = typeof sc.y === 'number' && Number.isFinite(sc.y) ? sc.y : 1;
+  }
+  return {
+    left: left * xy.x + drag.x,
+    top: top * xy.y + drag.y,
+    chipW: chipW * sx,
+    chipH: chipH * sy,
+  };
 }

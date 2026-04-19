@@ -7,10 +7,10 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   View,
 } from 'react-native';
+import { Text } from '../../components/DinText';
+import { TextInput } from '../../components/DinTextInput';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
@@ -148,7 +148,7 @@ export function RegisterScreen({ navigation }: Props) {
 
           <Text style={styles.label}>{t('register.clubLabel')}</Text>
           {cafesListQ.isLoading ? (
-            <ActivityIndicator color={colors.accent} />
+            <ActivityIndicator color={colors.accentBright} />
           ) : (
             <View style={styles.chips}>
               <Pressable
@@ -345,7 +345,7 @@ function BirthdayField({
             accessibilityRole="button"
             accessibilityLabel={pickerOpenLabel}
           >
-            <MaterialCommunityIcons name="calendar-month-outline" size={24} color={colors.accent} />
+            <MaterialCommunityIcons name="calendar-month-outline" size={24} color={colors.accentBright} />
           </Pressable>
         ) : null}
       </View>
@@ -379,7 +379,7 @@ function BirthdayField({
                 style={[styles.pickerCloseBtn, { borderColor: colors.border }]}
                 onPress={() => setPickerOpen(false)}
               >
-                <Text style={[styles.pickerCloseText, { color: colors.accent }]}>{pickerCloseLabel}</Text>
+                <Text style={[styles.pickerCloseText, { color: colors.accentBright }]}>{pickerCloseLabel}</Text>
               </Pressable>
             </Pressable>
           </Pressable>
@@ -523,7 +523,7 @@ function createStyles(colors: ColorPalette) {
     buttonPressed: { opacity: 0.88 },
     buttonText: { color: '#fff', fontSize: 17, fontWeight: '600' },
     link: { marginTop: 20, alignItems: 'center' },
-    linkText: { color: colors.accent, fontSize: 16 },
+    linkText: { color: colors.accentBright, fontSize: 16 },
     inputRow: {
       flexDirection: 'row',
       alignItems: 'center',

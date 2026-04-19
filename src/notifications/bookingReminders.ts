@@ -3,6 +3,8 @@ import { Platform } from 'react-native';
 import { parseServerDateTimeString } from '../datetime/mskTime';
 import { nowForBookingCompareMs } from '../datetime/serverBookingClock';
 import type { AppPreferences } from '../preferences/appPreferences';
+import type { MemberBookingRow } from '../api/types';
+import { intervalFromMemberRow } from '../features/booking/bookingTimeUtils';
 
 const ANDROID_CHANNEL_ID = 'booking-reminders';
 export const BOOKING_NOTIFICATION_DATA_KIND = 'booking';
@@ -46,14 +48,42 @@ function bookingStartInstant(dateISO: string, timeHHmm: string): Date | null {
   return parseServerDateTimeString(raw);
 }
 
+/** Отменяет напоминания о предстоящей брони (не трогает уже запланированные «оцените визит» — у каждой брони свой слот). */
 export async function cancelBookingScheduledReminders(): Promise<void> {
   const all = await Notifications.getAllScheduledNotificationsAsync();
   for (const r of all) {
-    const data = r.content.data as { kind?: string } | undefined;
-    if (data?.kind === BOOKING_NOTIFICATION_DATA_KIND) {
+    const data = r.content.data as { kind?: string; reminderKind?: BookingReminderKind } | undefined;
+    if (data?.kind === BOOKING_NOTIFICATION_DATA_KIND && data.reminderKind !== 'visitFeedback') {
       await Notifications.cancelScheduledNotificationAsync(r.identifier);
     }
   }
+}
+
+/** Снять локальный пуш «оцените визит» после отмены брони (совпадение по клубу и началу слота). */
+export async function cancelVisitFeedbackReminderForBookingSlot(meta: {
+  icafeId: number;
+  visitStartMs: number;
+}): Promise<void> {
+  const all = await Notifications.getAllScheduledNotificationsAsync();
+  for (const r of all) {
+    const data = r.content.data as {
+      kind?: string;
+      reminderKind?: BookingReminderKind;
+      icafeId?: number;
+      visitStartMs?: number;
+    } | undefined;
+    if (data?.kind !== BOOKING_NOTIFICATION_DATA_KIND) continue;
+    if (data.reminderKind !== 'visitFeedback') continue;
+    if (data.icafeId === meta.icafeId && data.visitStartMs === meta.visitStartMs) {
+      await Notifications.cancelScheduledNotificationAsync(r.identifier);
+    }
+  }
+}
+
+export async function cancelVisitFeedbackReminderForRow(icafeId: number, row: MemberBookingRow): Promise<void> {
+  const iv = intervalFromMemberRow(row);
+  if (!iv) return;
+  await cancelVisitFeedbackReminderForBookingSlot({ icafeId, visitStartMs: iv.start.getTime() });
 }
 
 export type BookingReminderKind =
@@ -70,18 +100,30 @@ async function scheduleAt(
   title: string,
   body: string,
   reminderKind: BookingReminderKind,
+  extraData?: Record<string, string | number | boolean | null | undefined>,
 ): Promise<void> {
   if (date.getTime() <= nowForBookingCompareMs() + 5000) return;
+  const baseData: Record<string, unknown> = {
+    kind: BOOKING_NOTIFICATION_DATA_KIND,
+    url: BOOKING_DEEP_LINK,
+    reminderKind,
+  };
+  if (extraData) {
+    for (const [k, v] of Object.entries(extraData)) {
+      if (v !== undefined && v !== null) baseData[k] = v;
+    }
+  }
+  const identifier =
+    reminderKind === 'visitFeedback' && typeof extraData?.visitStartMs === 'number' && extraData?.icafeId != null
+      ? `visit-feedback-${extraData.icafeId}-${extraData.visitStartMs}`
+      : undefined;
   await Notifications.scheduleNotificationAsync({
+    ...(identifier ? { identifier } : {}),
     content: {
       title,
       body,
       sound: true,
-      data: {
-        kind: BOOKING_NOTIFICATION_DATA_KIND,
-        url: BOOKING_DEEP_LINK,
-        reminderKind,
-      },
+      data: baseData,
       ...(Platform.OS === 'android' ? { channelId: ANDROID_CHANNEL_ID } : {}),
     },
     trigger: date,
@@ -111,6 +153,7 @@ export async function scheduleBookingRemindersFromPrefs(
   messages: BookingReminderMessages,
   followUp?: {
     durationMins: number;
+    icafeId: number;
     followUpMessages: BookingFollowUpMessages;
   },
 ): Promise<void> {
@@ -145,9 +188,12 @@ export async function scheduleBookingRemindersFromPrefs(
 
   await scheduleAt(start, messages.startTitle, messages.startBody, 'start');
 
-  if (followUp && followUp.durationMins > 0) {
+  if (followUp && followUp.durationMins > 0 && Number.isFinite(followUp.icafeId)) {
     const end = new Date(start.getTime() + followUp.durationMins * 60 * 1000);
     const fu = followUp.followUpMessages;
-    await scheduleAt(end, fu.visitTitle, fu.visitBody, 'visitFeedback');
+    await scheduleAt(end, fu.visitTitle, fu.visitBody, 'visitFeedback', {
+      icafeId: followUp.icafeId,
+      visitStartMs: start.getTime(),
+    });
   }
 }

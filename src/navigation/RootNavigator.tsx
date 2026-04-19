@@ -12,7 +12,7 @@ import { CafesScreen } from '../features/cafes/CafesScreen';
 import { NewsScreen } from '../features/news/NewsScreen';
 import { BookingScreen } from '../features/booking/BookingScreen';
 import { KnowledgeChatScreen } from '../features/chat/KnowledgeChatScreen';
-import { useThemeColors } from '../theme';
+import { fonts, useThemeColors } from '../theme';
 import { navigationRef } from './navigationRef';
 import type { MainTabParamList } from './types';
 import { BookingNotificationListener } from './BookingNotificationListener';
@@ -51,7 +51,7 @@ function MainTabs() {
         headerStyle: { backgroundColor: colors.card, borderBottomColor: colors.border },
         headerTintColor: colors.text,
         tabBarStyle: {
-          backgroundColor: colors.card,
+          backgroundColor: colors.bg,
           borderTopColor: colors.border,
           paddingBottom: tabBarBottomPad,
           paddingTop: 4,
@@ -60,12 +60,12 @@ function MainTabs() {
         },
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '600',
+          fontFamily: fonts.semibold,
           marginBottom: 0,
           maxWidth: 72,
         },
         tabBarAllowFontScaling: false,
-        tabBarActiveTintColor: colors.accent,
+        tabBarActiveTintColor: colors.text,
         tabBarInactiveTintColor: colors.muted,
         tabBarShowLabel: true,
       }}
@@ -162,7 +162,7 @@ export function RootNavigator() {
           backgroundColor: colors.bg,
         }}
       >
-        <ActivityIndicator size="large" color={colors.accent} />
+        <ActivityIndicator size="large" color={colors.accentBright} />
       </View>
     );
   }

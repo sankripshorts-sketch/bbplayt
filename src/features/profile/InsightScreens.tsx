@@ -5,9 +5,9 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
+import { Text } from '../../components/DinText';
 import { useQuery } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { bookingFlowApi } from '../../api/endpoints';
@@ -27,6 +27,37 @@ import type { MessageKey } from '../../i18n/messagesRu';
 import type { ColorPalette } from '../../theme/palettes';
 import { useThemeColors } from '../../theme';
 import { queryKeys } from '../../query/queryKeys';
+
+const MAX_ROW_JSON_CHARS = 12_000;
+const MAX_FULL_JSON_CHARS = 80_000;
+
+function truncateForUi(s: string, max: number, overflowHint: string): string {
+  if (s.length <= max) return s;
+  return `${s.slice(0, max)}\n\n…\n${overflowHint}`;
+}
+
+/** Безопасная сериализация для Text: без исключений на циклах и с ограничением длины (Android может падать на огромных строках). */
+function safeJsonForDisplay(
+  data: unknown,
+  t: (k: MessageKey) => string,
+): string {
+  if (typeof data === 'string') {
+    return truncateForUi(data, MAX_FULL_JSON_CHARS, t('profile.insightDisplayOverflow'));
+  }
+  try {
+    const s = JSON.stringify(data, null, 2);
+    return truncateForUi(s, MAX_FULL_JSON_CHARS, t('profile.insightDisplayOverflow'));
+  } catch {
+    return t('profile.insightUnserializable');
+  }
+}
+
+function parseIcafeId(raw: { icafe_id?: string } | undefined): number | null {
+  if (raw == null || raw.icafe_id == null) return null;
+  const n = Number(String(raw.icafe_id).trim());
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return n;
+}
 
 function formatInsightError(e: unknown, t: (k: MessageKey) => string): string {
   if (e instanceof ApiError) {
@@ -63,10 +94,11 @@ function InsightsFallbackButton({
   );
 }
 
-function formatRow(row: unknown): string {
+function formatRow(row: unknown, t: (k: MessageKey) => string): string {
   if (row && typeof row === 'object') {
     try {
-      return JSON.stringify(row, null, 2);
+      const s = JSON.stringify(row, null, 2);
+      return truncateForUi(s, MAX_ROW_JSON_CHARS, t('profile.insightDisplayOverflow'));
     } catch {
       return String(row);
     }
@@ -75,6 +107,7 @@ function formatRow(row: unknown): string {
 }
 
 function PayloadView({ data, emptyText }: { data: unknown; emptyText: string }) {
+  const { t } = useLocale();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const rows = extractRowsForList(data);
@@ -84,7 +117,7 @@ function PayloadView({ data, emptyText }: { data: unknown; emptyText: string }) 
         {rows.map((row, i) => (
           <View key={i} style={styles.card}>
             <Text selectable style={styles.mono}>
-              {formatRow(row)}
+              {formatRow(row, t)}
             </Text>
           </View>
         ))}
@@ -96,7 +129,7 @@ function PayloadView({ data, emptyText }: { data: unknown; emptyText: string }) 
   }
   return (
     <Text selectable style={styles.mono}>
-      {typeof data === 'string' ? data : JSON.stringify(data, null, 2)}
+      {safeJsonForDisplay(data, t)}
     </Text>
   );
 }
@@ -113,19 +146,29 @@ export function BalanceHistoryScreen() {
     queryFn: () => bookingFlowApi.icafeIdForMember(),
   });
 
+  const cafeId = useMemo(() => parseIcafeId(icafeQ.data), [icafeQ.data]);
+
   const q = useQuery({
-    queryKey: ['balance-history', user?.memberId, page],
+    queryKey: ['balance-history', user?.memberId, cafeId, page],
     queryFn: async () => {
-      const cid = Number(String(icafeQ.data!.icafe_id).trim());
-      return fetchMemberBalanceHistory(cid, { memberId: user!.memberId, page });
+      return fetchMemberBalanceHistory(cafeId!, { memberId: user!.memberId, page });
     },
-    enabled: !!user?.memberId && icafeQ.isSuccess,
+    enabled: !!user?.memberId && icafeQ.isSuccess && cafeId != null,
   });
 
   return (
     <SafeAreaView style={styles.root} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        {q.isLoading ? <ActivityIndicator color={colors.accent} /> : null}
+        {icafeQ.isError ? (
+          <>
+            <Text style={styles.err}>{formatInsightError(icafeQ.error, t)}</Text>
+            <InsightsFallbackButton t={t} styles={styles} />
+          </>
+        ) : null}
+        {icafeQ.isSuccess && cafeId == null ? (
+          <Text style={styles.err}>{t('profile.insightInvalidCafe')}</Text>
+        ) : null}
+        {q.isLoading ? <ActivityIndicator color={colors.accentBright} /> : null}
         {q.isError ? (
           <>
             <Text style={styles.err}>
@@ -161,19 +204,29 @@ export function GameSessionsScreen() {
     queryFn: () => bookingFlowApi.icafeIdForMember(),
   });
 
+  const cafeId = useMemo(() => parseIcafeId(icafeQ.data), [icafeQ.data]);
+
   const q = useQuery({
-    queryKey: ['pc-sessions', user?.memberId, page],
+    queryKey: ['pc-sessions', user?.memberId, cafeId, page],
     queryFn: async () => {
-      const cid = Number(String(icafeQ.data!.icafe_id).trim());
-      return fetchPcSessions(cid, { memberId: user!.memberId, page });
+      return fetchPcSessions(cafeId!, { memberId: user!.memberId, page });
     },
-    enabled: !!user?.memberId && icafeQ.isSuccess,
+    enabled: !!user?.memberId && icafeQ.isSuccess && cafeId != null,
   });
 
   return (
     <SafeAreaView style={styles.root} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        {q.isLoading ? <ActivityIndicator color={colors.accent} /> : null}
+        {icafeQ.isError ? (
+          <>
+            <Text style={styles.err}>{formatInsightError(icafeQ.error, t)}</Text>
+            <InsightsFallbackButton t={t} styles={styles} />
+          </>
+        ) : null}
+        {icafeQ.isSuccess && cafeId == null ? (
+          <Text style={styles.err}>{t('profile.insightInvalidCafe')}</Text>
+        ) : null}
+        {q.isLoading ? <ActivityIndicator color={colors.accentBright} /> : null}
         {q.isError ? (
           <>
             <Text style={styles.err}>
@@ -212,7 +265,7 @@ export function CustomerAnalysisScreen() {
   return (
     <SafeAreaView style={styles.root} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        {q.isLoading ? <ActivityIndicator color={colors.accent} /> : null}
+        {q.isLoading ? <ActivityIndicator color={colors.accentBright} /> : null}
         {q.isError ? (
           <>
             <Text style={styles.err}>
@@ -237,10 +290,12 @@ export function RankingScreen() {
     queryFn: () => bookingFlowApi.icafeIdForMember(),
   });
 
+  const cafeId = useMemo(() => parseIcafeId(icafeQ.data), [icafeQ.data]);
+
   const q = useQuery({
-    queryKey: ['ranking', icafeQ.data?.icafe_id],
-    queryFn: async () => fetchRankingPayload(Number(String(icafeQ.data!.icafe_id).trim())),
-    enabled: icafeQ.isSuccess,
+    queryKey: ['ranking', cafeId],
+    queryFn: async () => fetchRankingPayload(cafeId!),
+    enabled: icafeQ.isSuccess && cafeId != null,
   });
 
   const url = q.data ? extractRankingUrl(q.data) : null;
@@ -252,7 +307,16 @@ export function RankingScreen() {
   return (
     <SafeAreaView style={styles.root} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        {q.isLoading ? <ActivityIndicator color={colors.accent} /> : null}
+        {icafeQ.isError ? (
+          <>
+            <Text style={styles.err}>{formatInsightError(icafeQ.error, t)}</Text>
+            <InsightsFallbackButton t={t} styles={styles} />
+          </>
+        ) : null}
+        {icafeQ.isSuccess && cafeId == null ? (
+          <Text style={styles.err}>{t('profile.insightInvalidCafe')}</Text>
+        ) : null}
+        {q.isLoading ? <ActivityIndicator color={colors.accentBright} /> : null}
         {q.isError ? (
           <>
             <Text style={styles.err}>
@@ -296,7 +360,7 @@ function createStyles(colors: ColorPalette) {
       borderColor: colors.border,
       backgroundColor: colors.card,
     },
-    pagerBtnText: { color: colors.accent, fontWeight: '700' },
+    pagerBtnText: { color: colors.accentBright, fontWeight: '700' },
     pagerInfo: { color: colors.text, fontWeight: '700', minWidth: 28, textAlign: 'center' },
     primaryBtn: {
       backgroundColor: colors.accent,
@@ -316,6 +380,6 @@ function createStyles(colors: ColorPalette) {
       borderRadius: 12,
       marginBottom: 12,
     },
-    fallbackBtnText: { color: colors.accent, fontWeight: '700', fontSize: 15 },
+    fallbackBtnText: { color: colors.accentBright, fontWeight: '700', fontSize: 15 },
   });
 }

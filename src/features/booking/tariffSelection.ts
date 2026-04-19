@@ -1,9 +1,251 @@
 import type { PriceItem, ProductItem } from '../../api/types';
 import type { SavedTariffPreference } from '../../preferences/appPreferences';
+import { normalizePcZoneKind, type PcZoneKind } from './pcZoneKind';
 
 export type TariffChoice =
   | { kind: 'product'; item: ProductItem }
   | { kind: 'price'; item: PriceItem };
+
+/**
+ * Единственные длительности «по времени» в брони: 30 мин, 1 ч, 1.5 ч, 2 ч.
+ * Ставка берётся из сетки `prices` (ответ сервера), в приложении — ступень + досчёт (₽/мин или блок).
+ * Любая другая длительность — только пакет из каталога `products` с фиксированной ценой.
+ */
+export const HOURLY_GRID_DURATION_MINUTES: readonly number[] = [30, 60, 90, 120];
+
+export function isHourlyGridDurationMins(m: number): boolean {
+  return HOURLY_GRID_DURATION_MINUTES.includes(m);
+}
+
+/** В колесе отдельные строки «пакет» — только вне 30–120 мин (это выбирается пресетами «по времени»). */
+export function isDistinctBookingPackageWheelDuration(mins: number): boolean {
+  return !HOURLY_GRID_DURATION_MINUTES.includes(mins);
+}
+
+/** Убирает из списка пакетов для колеса строки на 30/60/90/120 мин (дубли почасовки из каталога iCafe). */
+export function filterBookingWheelPackageProducts(products: ProductItem[]): ProductItem[] {
+  return products.filter((p) => {
+    if (isLikelyTopupOrDepositProduct(p)) return false;
+    const m = catalogProductSessionMins(p);
+    if (m == null) return false;
+    return isDistinctBookingPackageWheelDuration(m);
+  });
+}
+
+/** Не сессия: пополнение / баланс — не показываем в колесе длительности. */
+export function isLikelyTopupOrDepositProduct(p: ProductItem): boolean {
+  const blob = `${p.product_type ?? ''}\n${p.product_name ?? ''}`.toLowerCase();
+  return /deposit|top\s*up|topup|\bwallet\b|balance|пополн|депозит|счёт|счет|^баланс/i.test(blob);
+}
+
+/**
+ * Строка каталога `products` с разобранной длительностью (для логики тарифа / POST).
+ * Для **колеса** длительности длинные пакеты отфильтровываются через {@link filterBookingWheelPackageProducts}.
+ */
+export function isCatalogSessionPackageWheelProduct(p: ProductItem): boolean {
+  if (isLikelyTopupOrDepositProduct(p)) return false;
+  return catalogProductSessionMins(p) != null;
+}
+
+/** Порядок зон для одной строки в колесе, если зона не задана явно: GameZone — прежний эталон. */
+const WHEEL_PACKAGE_ZONE_PRIORITY: PcZoneKind[] = ['GameZone', 'BootCamp', 'VIP', 'Other'];
+
+function wheelPackageZoneSortKeyFromProduct(p: ProductItem): number {
+  const k = wheelProductPcZoneKind(p);
+  const i = WHEEL_PACKAGE_ZONE_PRIORITY.indexOf(k);
+  return i >= 0 ? i : 99;
+}
+
+/**
+ * Зона пакета для сопоставления с прайсом ПК: `group_name` или хвост `<<<BC`/`GZ`/`VP` в имени.
+ */
+export function wheelProductPcZoneKind(p: ProductItem): PcZoneKind {
+  const label = productZoneLabelForUi(p);
+  return normalizePcZoneKind(label);
+}
+
+/**
+ * Один пакет на длительность из списка кандидатов с той же длительностью: строка под зону VIP / BootCamp / GameZone.
+ * Совпадает с подбором пакета к ПК на брони при зональных строках каталога.
+ */
+export function pickProductPackageForZoneKind(pool: ProductItem[], zone: PcZoneKind): ProductItem | null {
+  if (pool.length === 0) return null;
+  /** Зона строки: `group_name` / `product_group_name` (после нормализации) или хвост `<<<GZ>>>` в имени iCafe. */
+  const zoneOf = (p: ProductItem) => wheelProductPcZoneKind(p);
+  const exact = pool.filter((p) => zoneOf(p) === zone);
+  if (exact.length > 0) {
+    return [...exact].sort((a, b) => a.product_id - b.product_id)[0] ?? null;
+  }
+  const loose = pool.filter((p) => zoneOf(p) === 'Other');
+  if (loose.length > 0) {
+    return [...loose].sort((a, b) => a.product_id - b.product_id)[0] ?? null;
+  }
+  return null;
+}
+
+/**
+ * Одна позиция на длительность: зональные пакеты не дублируем в UI.
+ * При `preferredZone` в колесе показывается пакет этой зоны (как на сервере: отдельные product на 3 ч / 5 ч по тарифам).
+ */
+export function dedupeBookingWheelPackagesByDuration(
+  packages: ProductItem[],
+  preferredZone?: PcZoneKind | null,
+): ProductItem[] {
+  const byMin = new Map<number, ProductItem[]>();
+  for (const p of packages) {
+    const m = catalogProductSessionMins(p);
+    if (m == null) continue;
+    const list = byMin.get(m) ?? [];
+    list.push(p);
+    byMin.set(m, list);
+  }
+  const out: ProductItem[] = [];
+  for (const list of byMin.values()) {
+    let chosen: ProductItem | null = null;
+    if (preferredZone != null && preferredZone !== undefined) {
+      chosen = pickProductPackageForZoneKind(list, preferredZone);
+    }
+    if (!chosen) {
+      const sorted = [...list].sort((a, b) => {
+        const za = wheelPackageZoneSortKeyFromProduct(a);
+        const zb = wheelPackageZoneSortKeyFromProduct(b);
+        if (za !== zb) return za - zb;
+        return a.product_id - b.product_id;
+      });
+      chosen = sorted[0] ?? null;
+    }
+    if (chosen) out.push(chosen);
+  }
+  return out.sort((a, b) => (catalogProductSessionMins(a) ?? 0) - (catalogProductSessionMins(b) ?? 0));
+}
+
+/** iCafe часто не шлёт `group_name`, но кодирует зону хвостом `<<<BC` / `<<<GZ` / `<<<VP` в `product_name`. */
+const PRODUCT_NAME_TAIL_ZONE = /<<<([A-Z]{2})\s*$/i;
+
+function productNameTailZoneCode(productName: string | undefined): string | undefined {
+  const m = PRODUCT_NAME_TAIL_ZONE.exec(String(productName ?? '').trim());
+  return m ? m[1].toUpperCase() : undefined;
+}
+
+function productZoneKindForWheelDedupe(p: ProductItem): string | undefined {
+  const g = p.group_name?.trim();
+  if (g) return g;
+  const code = productNameTailZoneCode(p.product_name);
+  if (!code) return undefined;
+  const map: Record<string, string> = { BC: 'BootCamp', GZ: 'GameZone', VP: 'VIP' };
+  return map[code] ?? code;
+}
+
+/**
+ * Подпись зоны для UI: `group_name` или хвост `<<<BC`/`GZ`/`VP` в имени пакета.
+ */
+export function productZoneLabelForUi(p: ProductItem): string | undefined {
+  const g = p.group_name?.trim();
+  if (g) return g;
+  const code = productNameTailZoneCode(p.product_name);
+  if (!code) return undefined;
+  const map: Record<string, string> = { BC: 'BootCamp', GZ: 'GameZone', VP: 'VIP' };
+  return map[code] ?? code;
+}
+
+/**
+ * Минуты для подписи колеса/фильтра: как в {@link catalogProductSessionMins}, иначе как в {@link parseMinsFromProduct}
+ * — иначе две строки с разным разбором дают одинаковый «N ч/пакет».
+ */
+export function bookingPackageWheelDisplayMins(p: ProductItem, fallback: number): number {
+  const c = catalogProductSessionMins(p);
+  if (c != null && Number.isFinite(c) && c > 0) return c;
+  return parseMinsFromProduct(p, fallback);
+}
+
+/**
+ * Часы в начале витринного имени пакета (`3 часа/пакет…`, `5 часов/пакет…`) — приоритетнее полей
+ * `duration_min` / `duration`: iCafe часто кладёт там 60 или дубликат 180 для всех позиций, иначе база для «выгоднее» = 1 ч.
+ */
+function bookingPackageLeadTitleMinutesFromName(productName: string | undefined): number | null {
+  const name = String(productName ?? '').trim();
+  if (!name) return null;
+  const hourWord = String.raw`(?:час(?:а|ов)?|ч\.?|h(?:rs?)?)`;
+  const hourWordEnd = String.raw`(?=\s*[/·]|(?=\s*<<<)|\s*$|\s+[^\d])`;
+  const leadHours = new RegExp(String.raw`^(\d+(?:[.,]\d+)?)\s*${hourWord}${hourWordEnd}`, 'i').exec(name);
+  if (!leadHours) return null;
+  const v = parseFloat(leadHours[1].replace(',', '.'));
+  if (!Number.isFinite(v) || v <= 0) return null;
+  return Math.round(v * 60);
+}
+
+/**
+ * Длительность сессии в минутах из **одной** строки каталога `products` (ответ `/all-prices-icafe`).
+ * Только поля и имя с сервера; `null`, если извлечь нельзя.
+ */
+export function catalogProductSessionMins(p: ProductItem): number | null {
+  const fromTitle = bookingPackageLeadTitleMinutesFromName(p.product_name);
+  if (fromTitle != null) return fromTitle;
+
+  if (p.duration_min != null && String(p.duration_min).trim() !== '') {
+    const n = parseInt(String(p.duration_min), 10);
+    if (Number.isFinite(n) && n > 0) return n;
+  }
+  const d = p.duration != null ? String(p.duration).trim() : '';
+  if (d) {
+    if (/^\d+$/.test(d)) {
+      const digitMins = parseDigitOnlyDurationToMins(d);
+      if (digitMins != null) return digitMins;
+      const n = parseInt(d, 10);
+      if (Number.isFinite(n) && n > 0) return n;
+    }
+    const mm = /(\d+)\s*(?:мин|min)/i.exec(d);
+    if (mm) {
+      const n = parseInt(mm[1], 10);
+      if (Number.isFinite(n) && n > 0) return n;
+    }
+    const hh = /(\d+(?:[.,]\d+)?)\s*(?:ч|h)/i.exec(d);
+    if (hh) {
+      const v = parseFloat(hh[1].replace(',', '.'));
+      if (Number.isFinite(v) && v > 0) return Math.round(v * 60);
+    }
+  }
+  const name = String(p.product_name ?? '').trim();
+  const blob = `${name} ${d}`;
+  /** `\b` в JS не даёт границу после кириллицы — конец слова задаём lookahead. */
+  const hourWord = String.raw`(?:час(?:а|ов)?|ч\.?|h(?:rs?)?)`;
+  const hourWordEnd = String.raw`(?=\s*[/·]|(?=\s*<<<)|\s*$|\s+[^\d])`;
+  /** Маркеры в названии: `<<<180>>>` / `<<<300>>>` (минуты), `<<<5>>>` / `<<<3>>>` (часы 1…12), обрыв `<<<180<<<`. */
+  const angleDigitsToMins = (n: number): number | null => {
+    if (!Number.isFinite(n) || n <= 0) return null;
+    if (n >= 15 && n <= 48 * 60) return n;
+    if (n >= 1 && n <= 12) return n * 60;
+    if (n === 13 || n === 14) return n;
+    return null;
+  };
+  const closed = /<<<(\d{1,4})>>>/i.exec(blob);
+  if (closed) {
+    const n = parseInt(closed[1], 10);
+    const mins = angleDigitsToMins(n);
+    if (mins != null) return mins;
+  }
+  const broken = /<<<(\d{1,4})<<</i.exec(blob);
+  if (broken) {
+    const n = parseInt(broken[1], 10);
+    const mins = angleDigitsToMins(n);
+    if (mins != null) return mins;
+  }
+  const hm = new RegExp(String.raw`(\d+(?:[.,]\d+)?)\s*${hourWord}${hourWordEnd}`, 'i').exec(blob);
+  if (hm) {
+    const v = parseFloat(hm[1].replace(',', '.'));
+    if (Number.isFinite(v) && v > 0) return Math.round(v * 60);
+  }
+  return null;
+}
+
+/**
+ * Для этой длительности брони есть строка в каталоге с сервера — считаем и шлём `product_id`, не почасовку.
+ * Почасовые пресеты 30–120 мин всегда через `prices`, даже если в `products` случайно есть совпадение.
+ */
+export function shouldChargeViaCatalogProducts(products: ProductItem[], bookingMinutes: number): boolean {
+  if (isHourlyGridDurationMins(bookingMinutes)) return false;
+  return products.some((p) => catalogProductSessionMins(p) === bookingMinutes);
+}
 
 function formatRub(raw: string | undefined): string {
   if (!raw) return '—';
@@ -13,7 +255,7 @@ function formatRub(raw: string | undefined): string {
 }
 
 export function productCostLabel(p: ProductItem): string {
-  return formatRub(p.total_price ?? p.product_price);
+  return formatRub(p.product_price ?? p.total_price);
 }
 
 export function priceCostLabel(p: PriceItem): string {
@@ -38,24 +280,8 @@ function parseDigitOnlyDurationToMins(raw: string): number | null {
 export function parseMinsFromProduct(p: ProductItem | null, fallback: number): number {
   const fb = Number.isFinite(fallback) && fallback > 0 ? Math.round(fallback) : 60;
   if (!p) return fb;
-  if (p.duration_min != null && String(p.duration_min).length > 0) {
-    const n = parseInt(String(p.duration_min), 10);
-    if (Number.isFinite(n) && n > 0) return n;
-  }
-  const d = p.duration;
-  if (d) {
-    const ds = String(d).trim();
-    if (/^\d+$/.test(ds)) {
-      const asMins = parseDigitOnlyDurationToMins(ds);
-      if (asMins != null) return asMins;
-      const n = parseInt(ds, 10);
-      if (Number.isFinite(n) && n > 0) return n;
-    }
-    const mm = /(\d+)\s*(?:мин|min)/i.exec(d);
-    if (mm) return parseInt(mm[1], 10);
-    const hh = /(\d+)\s*(?:ч|h)/i.exec(d);
-    if (hh) return parseInt(hh[1], 10) * 60;
-  }
+  const c = catalogProductSessionMins(p);
+  if (c != null && Number.isFinite(c) && c > 0) return c;
   return fb;
 }
 
@@ -117,6 +343,14 @@ export function tariffNameForApi(t: TariffChoice | null): string {
   return t.kind === 'product' ? t.item.product_name : t.item.price_name;
 }
 
+/** Сервисные имена вроде «Default» в UI не показываем (для API остаётся исходная строка). */
+export function displayTariffName(raw: string | undefined | null): string {
+  const s = String(raw ?? '').trim();
+  if (!s) return '';
+  if (/^default$/i.test(s)) return '';
+  return s;
+}
+
 /** Только пакет (для отладки/логики): в POST /booking уходит `product_id`, не `price_id`. */
 export function tariffBookingPriceId(t: TariffChoice | null): number | undefined {
   if (!t || t.kind !== 'product') return undefined;
@@ -156,6 +390,23 @@ export function matchPriceTierToMinutes(prices: PriceItem[], template: PriceItem
 }
 
 /** Все строки почасового тарифа с той же «близостью» длительности к сессии (разные `group_name` / зоны). */
+/**
+ * Фиксированные длительности из сетки `/all-prices-icafe` (`prices`), которых нет в почасовых пресетах
+ * (например 180 / 210 / 300 мин), когда каталог `products` пуст — их всё равно нужно показывать в колесе.
+ */
+export function distinctPackageTierMinutesFromPrices(
+  prices: PriceItem[],
+  presetMinutes: readonly number[],
+): number[] {
+  const preset = new Set(presetMinutes);
+  const seen = new Set<number>();
+  for (const p of prices) {
+    const m = parseMinsFromPriceItem(p, 0);
+    if (m > 0 && !preset.has(m)) seen.add(m);
+  }
+  return [...seen].sort((a, b) => a - b);
+}
+
 export function hourlyCandidatesForSessionMins(prices: PriceItem[], sessionMins: number): PriceItem[] {
   if (!prices.length) return [];
   const scored = prices.map((p) => ({
@@ -181,14 +432,15 @@ export function pickHourlyTemplateForSessionMins(prices: PriceItem[], sessionMin
 
 /** Подпись почасовой ступени: имя, минуты строки тарифа, ставка (из API — чаще ₽/час), зона. */
 export function priceHourlyStepLabel(p: PriceItem): string {
-  const name = String(p.price_name ?? '').trim();
+  const name = displayTariffName(p.price_name);
   const hasHour = p.price_price1 != null && String(p.price_price1).trim() !== '';
   const rub = hasHour ? formatRub(p.price_price1) : priceCostLabel(p);
   const unit = hasHour ? '₽/час' : '₽/мин';
   const tierMins = parseMinsFromPriceItem(p, 0);
   const durPart = tierMins > 0 ? `${tierMins} мин` : String(p.duration ?? '').trim() || '—';
   const zone = tierSuffixIfDistinct(name, p.group_name);
-  return `«${name}» · ${durPart} · ${rub} ${unit}${zone}`;
+  const core = `${durPart} · ${rub} ${unit}${zone}`;
+  return name ? `«${name}» · ${core}` : core;
 }
 
 function tierSuffixIfDistinct(primaryLabel: string, groupName: string | undefined): string {
@@ -201,19 +453,42 @@ function tierSuffixIfDistinct(primaryLabel: string, groupName: string | undefine
 }
 
 export function priceTierLabel(p: PriceItem): string {
-  const name = String(p.price_name ?? '').trim();
+  const name = displayTariffName(p.price_name);
   const hasHour = p.price_price1 != null && String(p.price_price1).trim() !== '';
   const rub = hasHour ? formatRub(p.price_price1) : priceCostLabel(p);
   const unit = hasHour ? '₽/час' : '₽/мин';
   const zone = tierSuffixIfDistinct(name, p.group_name);
-  const base = `${name} — ${rub} ${unit}`;
+  const base = name ? `${name} — ${rub} ${unit}` : `${rub} ${unit}`;
   return `${base}${zone}`;
 }
 
 export function productTierLabel(p: ProductItem): string {
-  const name = String(p.product_name ?? '').trim();
-  const base = `${name} — ${productCostLabel(p)} ₽`;
-  return `${base}${tierSuffixIfDistinct(name, p.group_name)}`;
+  const name = displayTariffName(p.product_name);
+  const base = name ? `${name} — ${productCostLabel(p)} ₽` : `${productCostLabel(p)} ₽`;
+  const zone = productZoneLabelForUi(p);
+  return `${base}${tierSuffixIfDistinct(name, zone)}`;
+}
+
+/** Текст выгоды/акции: поле `package_hint` или фрагменты вида `<<<…>>>` в `product_name`. */
+export function packageBenefitTextFromProduct(p: ProductItem): string | undefined {
+  const hint = (p.package_hint ?? '').trim();
+  if (hint) return hint;
+  const name = p.product_name ?? '';
+  const chunks = [...name.matchAll(/<<<([\s\S]*?)>>>/g)]
+    .map((m) => m[1]?.trim())
+    .filter((x): x is string => !!x && x.length > 0);
+  if (chunks.length) return chunks.join(' · ');
+  return undefined;
+}
+
+/** Заголовок группы почасовых строк в модалке «Тарифы» (без служебного «Default»). */
+export function hourlyTariffGroupTitle(first: PriceItem | undefined): string {
+  if (!first) return '';
+  const disp = displayTariffName(first.price_name);
+  const gn = first.group_name?.trim();
+  if (disp && gn) return `«${disp}» · ${gn}`;
+  if (disp) return `«${disp}»`;
+  return gn ?? '';
 }
 
 export function tariffToSaved(t: TariffChoice | null): SavedTariffPreference | null {

@@ -2,6 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import * as Notifications from 'expo-notifications';
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 import {
   BOOKING_NOTIFICATION_DATA_KIND,
   type BookingReminderKind,
@@ -44,7 +45,9 @@ export function BookingNotificationListener() {
       }
     };
 
-    void Notifications.getLastNotificationResponseAsync().then(go);
+    if (Platform.OS !== 'web') {
+      void Notifications.getLastNotificationResponseAsync().then(go);
+    }
     const sub = Notifications.addNotificationResponseReceivedListener(go);
     return () => sub.remove();
   }, [navigation, openVisitFeedbackPrompt]);
