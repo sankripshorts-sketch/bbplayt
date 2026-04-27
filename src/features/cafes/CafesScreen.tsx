@@ -291,18 +291,19 @@ export function CafesScreen() {
     return (q.data ?? []).find((c) => c.icafe_id === jobReviewClubId) ?? null;
   }, [jobReviewClubId, q.data]);
 
-  const renderItem = ({ item }: { item: CafeItem }) => {
-    const fav = favoriteId === item.icafe_id;
-    const distKm =
-      userPos && typeof item.lat === 'number' && typeof item.lng === 'number'
-        ? haversineKm(userPos.lat, userPos.lng, item.lat, item.lng)
-        : null;
-    const heroPair =
-      item.icafe_id % 2 === 0
-        ? ([colors.cardElevated, colors.zoneBg] as const)
-        : ([colors.card, '#1a2330'] as const);
+  const renderItem = useCallback(
+    ({ item }: { item: CafeItem }) => {
+      const fav = favoriteId === item.icafe_id;
+      const distKm =
+        userPos && typeof item.lat === 'number' && typeof item.lng === 'number'
+          ? haversineKm(userPos.lat, userPos.lng, item.lat, item.lng)
+          : null;
+      const heroPair =
+        item.icafe_id % 2 === 0
+          ? ([colors.cardElevated, colors.zoneBg] as const)
+          : ([colors.card, '#1a2330'] as const);
 
-    return (
+      return (
       <View style={styles.clubCard}>
         <View style={[styles.heroShell, { height: heroHeight }]}>
           <ImageBackground
@@ -412,8 +413,46 @@ export function CafesScreen() {
           </View>
         </View>
       </View>
-    );
-  };
+      );
+    },
+    [
+      colors,
+      favoriteId,
+      heroHeight,
+      navigation,
+      openMapSafe,
+      styles,
+      t,
+      toggleFavorite,
+      userPos,
+    ],
+  );
+
+  const renderClubPickerItem = useCallback(
+    ({ item }: { item: CafeItem }) => (
+      <Pressable
+        style={({ pressed }) => [
+          styles.clubPickRow,
+          jobReviewClubId === item.icafe_id && styles.clubPickRowActive,
+          pressed && styles.clubPickRowPressed,
+        ]}
+        onPress={() => {
+          setJobReviewClubId(item.icafe_id);
+          setClubPickerOpen(false);
+        }}
+      >
+        <Text style={styles.clubPickRowTitle} numberOfLines={2}>
+          {cafePickerLabel(item)}
+        </Text>
+        {item.name?.trim() ? (
+          <Text style={styles.clubPickRowSub} numberOfLines={2}>
+            {item.address}
+          </Text>
+        ) : null}
+      </Pressable>
+    ),
+    [jobReviewClubId, styles],
+  );
 
   return (
     <SafeAreaView style={[styles.root, { paddingHorizontal: rootPad }]} edges={['top']}>
@@ -595,28 +634,10 @@ export function CafesScreen() {
               keyExtractor={(item) => String(item.icafe_id)}
               keyboardShouldPersistTaps="handled"
               style={styles.clubPickList}
-              renderItem={({ item }) => (
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.clubPickRow,
-                    jobReviewClubId === item.icafe_id && styles.clubPickRowActive,
-                    pressed && styles.clubPickRowPressed,
-                  ]}
-                  onPress={() => {
-                    setJobReviewClubId(item.icafe_id);
-                    setClubPickerOpen(false);
-                  }}
-                >
-                  <Text style={styles.clubPickRowTitle} numberOfLines={2}>
-                    {cafePickerLabel(item)}
-                  </Text>
-                  {item.name?.trim() ? (
-                    <Text style={styles.clubPickRowSub} numberOfLines={2}>
-                      {item.address}
-                    </Text>
-                  ) : null}
-                </Pressable>
-              )}
+              renderItem={renderClubPickerItem}
+              initialNumToRender={12}
+              maxToRenderPerBatch={8}
+              windowSize={5}
               ListEmptyComponent={
                 <Text style={styles.clubPickEmpty}>{t('cafes.empty')}</Text>
               }
@@ -646,6 +667,11 @@ export function CafesScreen() {
             ListEmptyComponent={<Text style={styles.empty}>{t('cafes.empty')}</Text>}
             contentContainerStyle={styles.list}
             style={styles.listFlex}
+            initialNumToRender={4}
+            maxToRenderPerBatch={3}
+            updateCellsBatchingPeriod={80}
+            windowSize={5}
+            removeClippedSubviews={Platform.OS === 'android'}
           />
         )}
       </View>

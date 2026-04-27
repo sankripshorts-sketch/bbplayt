@@ -28,7 +28,15 @@ export const asyncStoragePersister = createAsyncStoragePersister({
 
 function shouldPersistQueryKey(queryKey: readonly unknown[]): boolean {
   const head = queryKey[0];
-  return head === 'cafes' || head === 'struct-rooms' || head === 'vk-wall';
+  return (
+    head === 'cafes' ||
+    head === 'icafe-id-for-member' ||
+    head === 'struct-rooms' ||
+    head === 'all-prices' ||
+    head === 'all-prices-knowledge' ||
+    head === 'cafe-booking-products' ||
+    head === 'vk-wall'
+  );
 }
 
 export const persistOptions: PersistQueryClientProviderProps['persistOptions'] = {

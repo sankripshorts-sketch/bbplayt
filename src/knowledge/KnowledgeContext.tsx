@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import bundled from '../../assets/knowledge.json';
 import { useAppAlert } from '../components/AppAlertContext';
 import { useLocale } from '../i18n/LocaleContext';
@@ -9,6 +10,8 @@ import { buildStructKnowledge } from './structKnowledge';
 import { getKnowledgeJsonUrl } from '../config/knowledgeUrl';
 import type { KnowledgeCategory, KnowledgeEntry } from './types';
 import { isKnowledgeCategory } from './types';
+import { queryKeys } from '../query/queryKeys';
+import { structuralShareAllPricesData } from '../query/structuralSharing';
 
 const DEFAULT_CATEGORY: KnowledgeCategory = 'club';
 
@@ -164,6 +167,26 @@ function mergeKnowledge(base: KnowledgeEntry[], patch: KnowledgeEntry[]): Knowle
   return [...out.values()];
 }
 
+async function mapWithConcurrency<T, R>(
+  items: readonly T[],
+  limit: number,
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const out = new Array<R>(items.length);
+  let next = 0;
+  const workerCount = Math.min(limit, items.length);
+  await Promise.all(
+    Array.from({ length: workerCount }, async () => {
+      while (next < items.length) {
+        const idx = next;
+        next += 1;
+        out[idx] = await fn(items[idx]);
+      }
+    }),
+  );
+  return out;
+}
+
 type KnowledgeContextValue = {
   entries: KnowledgeEntry[];
   /** false, пока не завершена попытка загрузки удалённого JSON (если URL задан). */
@@ -180,6 +203,7 @@ let startupCafesLoadAlertShown = false;
 export function KnowledgeProvider({ children }: { children: React.ReactNode }) {
   const { t } = useLocale();
   const { showAlert } = useAppAlert();
+  const qc = useQueryClient();
   const [entries, setEntries] = useState<KnowledgeEntry[]>(initialEntries);
   // Bundled knowledge is available synchronously, so the app can proceed immediately.
   const [knowledgeReady, setKnowledgeReady] = useState(true);
@@ -209,7 +233,11 @@ export function KnowledgeProvider({ children }: { children: React.ReactNode }) {
 
     Promise.all([
       remotePromise,
-      cafesApi.list().catch(() => {
+      qc.fetchQuery({
+        queryKey: queryKeys.cafes(),
+        queryFn: () => cafesApi.list(),
+        staleTime: 10 * 60 * 1000,
+      }).catch(() => {
         cafesListLoadFailed = true;
         if (__DEV__) console.warn('[knowledge] cafes API unavailable, keeping base entries');
         return [] as CafeItem[];
@@ -221,25 +249,30 @@ export function KnowledgeProvider({ children }: { children: React.ReactNode }) {
         let structArr: (StructRoomsData | null)[] = [];
         if (cafes.length > 0) {
           [pricesArr, structArr] = await Promise.all([
-            Promise.all(
-              cafes.map((c) =>
-                bookingFlowApi.allPrices({ cafeId: c.icafe_id }).catch((): null => {
+            mapWithConcurrency(cafes, 3, (c) =>
+              qc.fetchQuery({
+                queryKey: queryKeys.allPricesKnowledge(c.icafe_id),
+                queryFn: () => bookingFlowApi.allPrices({ cafeId: c.icafe_id }),
+                staleTime: 30 * 60 * 1000,
+                structuralSharing: structuralShareAllPricesData,
+              }).catch((): null => {
                   if (__DEV__) {
                     console.warn('[knowledge] all-prices-icafe failed for cafe', c.icafe_id);
                   }
                   return null;
                 }),
-              ),
             ),
-            Promise.all(
-              cafes.map((c) =>
-                bookingFlowApi.structRooms(c.icafe_id).catch((): null => {
+            mapWithConcurrency(cafes, 3, (c) =>
+              qc.fetchQuery({
+                queryKey: queryKeys.structRooms(c.icafe_id),
+                queryFn: () => bookingFlowApi.structRooms(c.icafe_id),
+                staleTime: 30 * 60 * 1000,
+              }).catch((): null => {
                   if (__DEV__) {
                     console.warn('[knowledge] struct-rooms-icafe failed for cafe', c.icafe_id);
                   }
                   return null;
                 }),
-              ),
             ),
           ]);
         }
@@ -274,7 +307,7 @@ export function KnowledgeProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [t]);
+  }, [qc, t]);
 
   const value = useMemo(() => ({ entries, knowledgeReady }), [entries, knowledgeReady]);
 

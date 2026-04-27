@@ -28,6 +28,7 @@ import { getVkCommunityAvatarUri, getVkWallPostMobileUrl } from '../../config/vk
 import { loadAppPreferences } from '../../preferences/appPreferences';
 import { resolveEffectiveCityId } from '../../preferences/effectiveCity';
 import { useLocale } from '../../i18n/LocaleContext';
+import type { MessageKey } from '../../i18n/messagesRu';
 import type { ColorPalette } from '../../theme/palettes';
 import { useThemeColors } from '../../theme';
 import { queryKeys } from '../../query/queryKeys';
@@ -75,6 +76,95 @@ function mergeTailPosts(prev: VkWallPost[], more: VkWallPost[]): VkWallPost[] {
 const POST_REVEAL_STAGGER_MS = 110;
 /** Сначала показываем столько постов; дальше — из уже загруженной первой страницы или сеть при догрузке. */
 const HEAD_BATCH = 8;
+type NewsStyles = ReturnType<typeof createStyles>;
+
+const NewsPostCard = React.memo(function NewsPostCard({
+  item,
+  liked,
+  avatarSource,
+  communityTitle,
+  locale,
+  colors,
+  styles,
+  t,
+  openPostUrl,
+  openVideo,
+  onToggleLike,
+}: {
+  item: VkWallPost;
+  liked: boolean;
+  avatarSource: ImageSourcePropType;
+  communityTitle: string;
+  locale: string;
+  colors: ColorPalette;
+  styles: NewsStyles;
+  t: (key: MessageKey) => string;
+  openPostUrl: (p: VkWallPost) => void;
+  openVideo: (p: VkWallPost) => void;
+  onToggleLike: (key: string) => void;
+}) {
+  return (
+    <View style={styles.card}>
+      <View style={styles.postHeader}>
+        <Image source={avatarSource} style={styles.avatar} accessibilityIgnoresInvertColors />
+        <View style={styles.postHeaderText}>
+          <Text style={styles.authorName} numberOfLines={1}>
+            {communityTitle}
+          </Text>
+          <Text style={styles.postDate}>{formatPostDate(item.dateUnix, locale)}</Text>
+        </View>
+      </View>
+      <Pressable
+        onPress={() => openPostUrl(item)}
+        accessibilityRole="button"
+        accessibilityLabel={item.text.slice(0, 120) || t('news.title')}
+      >
+        {item.previewUrl ? (
+          <Image
+            source={{ uri: item.previewUrl }}
+            style={styles.preview}
+            resizeMode="cover"
+            accessibilityIgnoresInvertColors
+          />
+        ) : null}
+        {item.text ? <Text style={styles.postText}>{item.text}</Text> : <Text style={styles.postTextMuted}>—</Text>}
+      </Pressable>
+      {item.video ? (
+        <Pressable
+          style={styles.videoBtn}
+          onPress={() => openVideo(item)}
+          accessibilityRole="button"
+          accessibilityLabel={t('news.watchVideo')}
+        >
+          <Text style={styles.videoBtnText}>{t('news.watchVideo')}</Text>
+        </Pressable>
+      ) : null}
+      <View style={styles.actionsRow}>
+        <Pressable
+          style={styles.likeBtn}
+          onPress={() => onToggleLike(item.key)}
+          accessibilityRole="button"
+          accessibilityLabel={t('news.likeA11y')}
+        >
+          <MaterialCommunityIcons
+            name={liked ? 'heart' : 'heart-outline'}
+            size={24}
+            color={liked ? colors.danger : colors.muted}
+          />
+        </Pressable>
+        <Pressable
+          style={styles.commentBtn}
+          onPress={() => openPostUrl(item)}
+          accessibilityRole="button"
+          accessibilityLabel={t('news.writeComment')}
+        >
+          <MaterialCommunityIcons name="comment-outline" size={22} color={colors.muted} />
+          <Text style={styles.commentBtnText}>{t('news.writeComment')}</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+});
 
 export function NewsScreen() {
   const colors = useThemeColors();
@@ -102,6 +192,11 @@ export function NewsScreen() {
   const [paintCount, setPaintCount] = useState(0);
 
   const loadingMoreRef = useRef(false);
+  const likedKeysRef = useRef(likedKeys);
+  useEffect(() => {
+    likedKeysRef.current = likedKeys;
+  }, [likedKeys]);
+  const likedKeysSignature = useMemo(() => [...likedKeys].sort().join('|'), [likedKeys]);
 
   const reloadNewsCity = useCallback(() => {
     void loadAppPreferences().then((p) => {
@@ -344,79 +439,26 @@ export function NewsScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: VkWallPost }) => {
-      const liked = likedKeys.has(item.key);
       return (
-        <View style={styles.card}>
-          <View style={styles.postHeader}>
-            <Image source={avatarSource} style={styles.avatar} accessibilityIgnoresInvertColors />
-            <View style={styles.postHeaderText}>
-              <Text style={styles.authorName} numberOfLines={1}>
-                {communityTitle}
-              </Text>
-              <Text style={styles.postDate}>{formatPostDate(item.dateUnix, locale)}</Text>
-            </View>
-          </View>
-          <Pressable
-            onPress={() => openPostUrl(item)}
-            accessibilityRole="button"
-            accessibilityLabel={item.text.slice(0, 120) || t('news.title')}
-          >
-            {item.previewUrl ? (
-              <Image
-                source={{ uri: item.previewUrl }}
-                style={styles.preview}
-                resizeMode="cover"
-                accessibilityIgnoresInvertColors
-              />
-            ) : null}
-            {item.text ? (
-              <Text style={styles.postText}>{item.text}</Text>
-            ) : (
-              <Text style={styles.postTextMuted}>—</Text>
-            )}
-          </Pressable>
-          {item.video ? (
-            <Pressable
-              style={styles.videoBtn}
-              onPress={() => openVideo(item)}
-              accessibilityRole="button"
-              accessibilityLabel={t('news.watchVideo')}
-            >
-              <Text style={styles.videoBtnText}>{t('news.watchVideo')}</Text>
-            </Pressable>
-          ) : null}
-          <View style={styles.actionsRow}>
-            <Pressable
-              style={styles.likeBtn}
-              onPress={() => onToggleLike(item.key)}
-              accessibilityRole="button"
-              accessibilityLabel={t('news.likeA11y')}
-            >
-              <MaterialCommunityIcons
-                name={liked ? 'heart' : 'heart-outline'}
-                size={24}
-                color={liked ? colors.danger : colors.muted}
-              />
-            </Pressable>
-            <Pressable
-              style={styles.commentBtn}
-              onPress={() => openPostUrl(item)}
-              accessibilityRole="button"
-              accessibilityLabel={t('news.writeComment')}
-            >
-              <MaterialCommunityIcons name="comment-outline" size={22} color={colors.muted} />
-              <Text style={styles.commentBtnText}>{t('news.writeComment')}</Text>
-            </Pressable>
-          </View>
-        </View>
+        <NewsPostCard
+          item={item}
+          liked={likedKeysRef.current.has(item.key)}
+          avatarSource={avatarSource}
+          communityTitle={communityTitle}
+          locale={locale}
+          colors={colors}
+          styles={styles}
+          t={t}
+          openPostUrl={openPostUrl}
+          openVideo={openVideo}
+          onToggleLike={onToggleLike}
+        />
       );
     },
     [
       avatarSource,
-      colors.danger,
-      colors.muted,
+      colors,
       communityTitle,
-      likedKeys,
       locale,
       onToggleLike,
       openPostUrl,
@@ -455,10 +497,16 @@ export function NewsScreen() {
     <SafeAreaView style={styles.root} edges={['top']}>
       <FlatList
         data={displayedPosts}
+        extraData={likedKeysSignature}
         keyExtractor={(item) => item.key}
         renderItem={renderItem}
         ListHeaderComponent={listHeader}
         contentContainerStyle={styles.listContent}
+        initialNumToRender={6}
+        maxToRenderPerBatch={4}
+        updateCellsBatchingPeriod={80}
+        windowSize={5}
+        removeClippedSubviews={Platform.OS === 'android'}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

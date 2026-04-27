@@ -38,6 +38,11 @@ import { useQuery } from '@tanstack/react-query';
 import { bookingFlowApi, cafesApi } from '../../api/endpoints';
 import { fetchCafeBookingProducts, mergeBookingProductsCatalog } from '../../api/cafeBookingProducts';
 import { queryKeys } from '../../query/queryKeys';
+import {
+  structuralShareAllPricesData,
+  structuralShareAvailablePcsData,
+  structuralShareProducts,
+} from '../../query/structuralSharing';
 import type { CafeItem, MemberBookingRow, PcListItem, ProductItem } from '../../api/types';
 import { bookingRowLifecycleStatus, memberOfferIdForApi } from '../booking/memberBookingsUtils';
 import { combineServerISODateAndTime, intervalFromMemberRow } from '../booking/bookingTimeUtils';
@@ -381,6 +386,7 @@ export function KnowledgeChatScreen() {
   const entries = useKnowledgeEntries();
   const helpListRef = useRef<FlatList<Msg>>(null);
   const adminListRef = useRef<FlatList<AdminChatLine>>(null);
+  const scrollToBottomQueuedRef = useRef(false);
   const inputRef = useRef<RnTextInput>(null);
 
   const [input, setInput] = useState(
@@ -469,9 +475,12 @@ export function KnowledgeChatScreen() {
 
   const suggestions = useMemo(() => entries.slice(0, 8), [entries]);
 
-  const scrollToBottom = (animated: boolean) => {
+  const scrollToBottom = useCallback((animated: boolean) => {
+    if (scrollToBottomQueuedRef.current) return;
+    scrollToBottomQueuedRef.current = true;
     requestAnimationFrame(() => {
       InteractionManager.runAfterInteractions(() => {
+        scrollToBottomQueuedRef.current = false;
         if (adminUi === 'off') {
           helpListRef.current?.scrollToEnd({ animated });
         } else {
@@ -479,11 +488,15 @@ export function KnowledgeChatScreen() {
         }
       });
     });
-  };
+  }, [adminUi]);
 
   useEffect(() => {
     scrollToBottom(true);
-  }, [threadKnowledge.length, threadNeural.length, responseMode, adminMessages.length, adminUi]);
+  }, [threadKnowledge.length, threadNeural.length, responseMode, adminMessages.length, adminUi, scrollToBottom]);
+  const messageKeyExtractor = useCallback((m: Msg) => m.id, []);
+  const adminMessageKeyExtractor = useCallback((m: AdminChatLine) => m.id, []);
+  const handleHelpListLayout = useCallback(() => scrollToBottom(false), [scrollToBottom]);
+  const handleHelpContentSizeChange = useCallback(() => scrollToBottom(true), [scrollToBottom]);
 
   const openAdminSession = useCallback(() => {
     setOpenPicker(null);
@@ -590,12 +603,16 @@ export function KnowledgeChatScreen() {
         bookingDate: pickerBookingDate,
       }),
     staleTime: 5 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+    structuralSharing: structuralShareAllPricesData,
   });
   const pickerCafeProductsQ = useQuery({
     queryKey: queryKeys.cafeBookingProducts(pickerCafeId ?? 0),
     queryFn: () => fetchCafeBookingProducts(pickerCafeId!),
     enabled: pickerCafeId != null && !!user,
     staleTime: 5 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+    structuralSharing: structuralShareProducts,
   });
   const dateOptionLabels = useMemo(
     () => dateOptions.map((iso) => formatMoscowCalendarDayLong(iso, locale === 'en' ? 'en' : 'ru')),
@@ -695,6 +712,7 @@ export function KnowledgeChatScreen() {
         priceName: '',
       }),
     staleTime: 15 * 1000,
+    structuralSharing: structuralShareAvailablePcsData,
   });
   const pcItems = useMemo(() => {
     const byLower = new Map<string, PcListItem>();
@@ -1251,9 +1269,14 @@ export function KnowledgeChatScreen() {
           ref={helpListRef}
           style={styles.listFlex}
           data={activeMessages}
-          keyExtractor={(m) => m.id}
+          keyExtractor={messageKeyExtractor}
           keyboardDismissMode="on-drag"
           keyboardShouldPersistTaps="always"
+          initialNumToRender={14}
+          maxToRenderPerBatch={8}
+          updateCellsBatchingPeriod={50}
+          windowSize={7}
+          removeClippedSubviews={Platform.OS === 'android'}
           renderItem={({ item }) => (
             <View style={[styles.msgItem, item.role === 'user' ? styles.msgItemUser : styles.msgItemBot]}>
               <View
@@ -1393,17 +1416,22 @@ export function KnowledgeChatScreen() {
             </View>
           )}
           contentContainerStyle={styles.list}
-          onLayout={() => scrollToBottom(false)}
-          onContentSizeChange={() => scrollToBottom(true)}
+          onLayout={handleHelpListLayout}
+          onContentSizeChange={handleHelpContentSizeChange}
         />
         ) : (
         <FlatList<AdminChatLine>
           ref={adminListRef}
           style={styles.listFlex}
           data={adminMessages}
-          keyExtractor={(m) => m.id}
+          keyExtractor={adminMessageKeyExtractor}
           keyboardDismissMode="on-drag"
           keyboardShouldPersistTaps="always"
+          initialNumToRender={14}
+          maxToRenderPerBatch={8}
+          updateCellsBatchingPeriod={50}
+          windowSize={7}
+          removeClippedSubviews={Platform.OS === 'android'}
           renderItem={({ item }) =>
             item.role === 'system' ? (
               <View style={styles.msgItemSystem}>
@@ -1418,8 +1446,8 @@ export function KnowledgeChatScreen() {
             )
           }
           contentContainerStyle={styles.list}
-          onLayout={() => scrollToBottom(false)}
-          onContentSizeChange={() => scrollToBottom(true)}
+          onLayout={handleHelpListLayout}
+          onContentSizeChange={handleHelpContentSizeChange}
         />
         )}
 

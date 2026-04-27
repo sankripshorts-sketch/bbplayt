@@ -17,6 +17,13 @@ import { fetchVkWallVideoPage } from '../features/news/fetchVkWallVideoPosts';
 import type { VkWallFetchResult } from '../features/news/fetchVkWallVideoPosts';
 import type { VkWallPost } from '../features/news/vkWallHtmlParser';
 import { queryKeys } from './queryKeys';
+import {
+  structuralShareAllBooksData,
+  structuralShareAllPricesData,
+  structuralShareAvailablePcsData,
+  structuralShareBookingRows,
+  structuralSharePcList,
+} from './structuralSharing';
 import type { CafeItem } from '../api/types';
 import { buildBookingTimeSlots } from '../features/booking/bookingTimeSlots';
 
@@ -42,7 +49,7 @@ export function useAppBootstrap() {
 
     void (async () => {
       try {
-        const prefs = await loadAppPreferences();
+        let prefs = await loadAppPreferences();
         // Startup-critical data only: cafes feed multiple first screens.
         await qc.fetchQuery({
           queryKey: queryKeys.cafes(),
@@ -93,6 +100,8 @@ export function useAppBootstrap() {
                     bookingDate,
                   }),
                 staleTime: 2 * 60 * 1000,
+                gcTime: 24 * 60 * 60 * 1000,
+                structuralSharing: structuralShareAllPricesData,
               })
               .catch(() => {});
 
@@ -116,6 +125,7 @@ export function useAppBootstrap() {
                     priceName: undefined,
                   }),
                 staleTime: 15 * 1000,
+                structuralSharing: structuralShareAvailablePcsData,
               })
               .catch(() => {});
 
@@ -124,6 +134,7 @@ export function useAppBootstrap() {
                 queryKey: queryKeys.cafeBookings(cafeId),
                 queryFn: () => fetchIcafeCafeBookings(cafeId),
                 staleTime: 15 * 1000,
+                structuralSharing: structuralShareBookingRows,
               })
               .catch(() => {});
 
@@ -132,6 +143,7 @@ export function useAppBootstrap() {
                 queryKey: queryKeys.livePcs(cafeId),
                 queryFn: () => fetchLivePcsForUi(cafeId),
                 staleTime: 8 * 1000,
+                structuralSharing: structuralSharePcList,
               })
               .catch(() => {});
           }
@@ -145,23 +157,27 @@ export function useAppBootstrap() {
                 queryFn: () =>
                   bookingFlowApi.memberBooks({ memberAccount: acc, memberId }),
                 staleTime: 15 * 1000,
+                structuralSharing: structuralShareAllBooksData,
               })
               .catch(() => {});
           }
         }
 
-        const prefsAfter = await loadAppPreferences();
         const cafesData = qc.getQueryData<CafeItem[]>(queryKeys.cafes());
-        if (shouldAttemptCityGeoBootstrap(prefsAfter, cafesData)) {
+        if (shouldAttemptCityGeoBootstrap(prefs, cafesData)) {
           const guessed = await tryGeolocationCityGuess();
           await patchAppPreferences({
             cityGeoAttempted: true,
             ...(guessed ? { cityIdFromGeo: guessed } : {}),
           });
+          prefs = {
+            ...prefs,
+            cityGeoAttempted: true,
+            ...(guessed ? { cityIdFromGeo: guessed } : {}),
+          };
         }
 
-        const freshPrefs = await loadAppPreferences();
-        const effectiveCityId = resolveEffectiveCityId(freshPrefs, cafesData);
+        const effectiveCityId = resolveEffectiveCityId(prefs, cafesData);
         const newsVkGroupId = vkGroupIdForCityId(effectiveCityId);
         void warmupVkNewsFeed(qc, newsVkGroupId);
       } finally {

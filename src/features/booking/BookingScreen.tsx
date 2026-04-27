@@ -2,10 +2,10 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Dimensions,
-  FlatList,
   Linking,
-  type ListRenderItemInfo,
   Modal,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
   Platform,
   Pressable,
   RefreshControl,
@@ -149,6 +149,11 @@ import {
 } from '../../config/citiesCatalog';
 import { loadAppPreferences, patchAppPreferences } from '../../preferences/appPreferences';
 import { queryKeys } from '../../query/queryKeys';
+import {
+  structuralShareAllPricesData,
+  structuralShareAvailablePcsData,
+  structuralShareProducts,
+} from '../../query/structuralSharing';
 import { ClubDataLoader } from '../ui/ClubDataLoader';
 import { TabScreenTopBar } from '../../components/TabScreenTopBar';
 import { useAppAlert } from '../../components/AppAlertContext';
@@ -341,6 +346,8 @@ function productWheelLineLabel(
 }
 
 const PC_REFETCH_INTERVAL_MS = 60_000;
+const PC_LIST_INITIAL_RENDER_ROWS = 28;
+const PC_LIST_RENDER_STEP_ROWS = 18;
 const ZONE_WHEEL_KEYS = ['any', 'VIP', 'BootCamp', 'GameZone'] as const;
 /** Обычный список ПК на экране брони — без поиска «ближайшего окна» (он для поиска по всем клубам). */
 const IS_FIND_WINDOW_MAIN = false;
@@ -792,6 +799,8 @@ export function BookingScreen() {
     /** `/all-prices-icafe`: memberId опционален; без него тарифы/пакеты всё равно нужны для выбора. */
     enabled: !!cafe,
     staleTime: 2 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+    structuralSharing: structuralShareAllPricesData,
   });
 
   const cafeBookingProductsQ = useQuery({
@@ -800,6 +809,8 @@ export function BookingScreen() {
     /** Пробуем при любом залогиненном пользователе (Bearer: private_key или токен в сессии). */
     enabled: !!cafe && !!user,
     staleTime: 3 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+    structuralSharing: structuralShareProducts,
   });
 
   const productsRaw = pricesQ.data?.products ?? [];
@@ -1081,6 +1092,7 @@ export function BookingScreen() {
     staleTime: 15_000,
     refetchOnMount: true,
     refetchInterval: isFocused && !isBookingFilterSheetOpen ? PC_REFETCH_INTERVAL_MS : false,
+    structuralSharing: structuralShareAvailablePcsData,
   });
 
   /** «Занят сейчас»: iCafe `member_pcs` → fallback `GET .../pcs` — не используется для доступности слота. */
@@ -1089,7 +1101,7 @@ export function BookingScreen() {
     pcDataFetchReady && isFocused && !isBookingFilterSheetOpen,
   );
 
-  const booksQ = useMemberBooksQuery(user?.memberAccount, user?.memberId);
+  const booksQ = useMemberBooksQuery(user?.memberAccount, user?.memberId, { poll: isFocused });
   const hasMemberBookingHistory = useMemo(() => hasAnyMemberBookingRows(booksQ.data), [booksQ.data]);
   const myBookingsListCount = useMemo(
     () => countTotalMemberBookingsInData(booksQ.data),
@@ -1242,6 +1254,36 @@ export function BookingScreen() {
     }
     return rows;
   }, [pcListSections]);
+  const [pcListRenderCount, setPcListRenderCount] = useState(PC_LIST_INITIAL_RENDER_ROWS);
+  const visiblePcListRows = useMemo(
+    () => pcListRows.slice(0, Math.min(pcListRenderCount, pcListRows.length)),
+    [pcListRenderCount, pcListRows],
+  );
+  const hasMorePcListRows = visiblePcListRows.length < pcListRows.length;
+
+  useEffect(() => {
+    if (seatLayoutMode !== 'list') {
+      setPcListRenderCount(PC_LIST_INITIAL_RENDER_ROWS);
+      return;
+    }
+    setPcListRenderCount((count) =>
+      Math.min(Math.max(count, PC_LIST_INITIAL_RENDER_ROWS), pcListRows.length || PC_LIST_INITIAL_RENDER_ROWS),
+    );
+  }, [pcListRows.length, seatLayoutMode]);
+
+  const revealMorePcRows = useCallback(() => {
+    setPcListRenderCount((count) => Math.min(count + PC_LIST_RENDER_STEP_ROWS, pcListRows.length));
+  }, [pcListRows.length]);
+
+  const handleBookingScroll = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      if (seatLayoutMode !== 'list' || !hasMorePcListRows) return;
+      const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
+      const distanceFromEnd = contentSize.height - (contentOffset.y + layoutMeasurement.height);
+      if (distanceFromEnd < 420) revealMorePcRows();
+    },
+    [hasMorePcListRows, revealMorePcRows, seatLayoutMode],
+  );
 
   const pcsForNearestSearchUi = useMemo(() => {
     if (!pcs) return null;
@@ -1556,22 +1598,6 @@ export function BookingScreen() {
     locale,
   ]);
 
-  const renderPcListRow = useCallback(
-    ({ item }: ListRenderItemInfo<PcFlatListRow>) => (
-      <BookingPcListRow
-        row={item}
-        styles={styles}
-        colors={colors}
-        canSelectPc={canSelectPc}
-        pcStatusByPc={pcStatusByPc}
-        onPressPc={togglePcSelection}
-        uiPcLabel={uiPcLabel}
-        t={t}
-      />
-    ),
-    [styles, colors, canSelectPc, pcStatusByPc, togglePcSelection, uiPcLabel, t],
-  );
-
   const nearestSearchZoneReady =
     nearestSearchPcZone === 'any' || nearestSearchPcZoneCommitted;
 
@@ -1647,6 +1673,22 @@ export function BookingScreen() {
       planOverlapBusyPcsLower,
       t,
     ],
+  );
+
+  const renderPcListRow = useCallback(
+    (item: PcFlatListRow) => (
+      <BookingPcListRow
+        row={item}
+        styles={styles}
+        colors={colors}
+        canSelectPc={canSelectPc}
+        pcStatusByPc={pcStatusByPc}
+        onPressPc={togglePcSelection}
+        uiPcLabel={uiPcLabel}
+        t={t}
+      />
+    ),
+    [styles, colors, canSelectPc, pcStatusByPc, togglePcSelection, uiPcLabel, t],
   );
 
   const onMapPcPress = useCallback(
@@ -2771,8 +2813,15 @@ export function BookingScreen() {
           bounces={false}
           alwaysBounceVertical={false}
           overScrollMode="never"
+          scrollEventThrottle={120}
+          onScroll={handleBookingScroll}
           onLayout={(e) => setMainScrollViewportH(e.nativeEvent.layout.height)}
-          onContentSizeChange={(_, h) => setMainScrollContentH(h)}
+          onContentSizeChange={(_, h) => {
+            setMainScrollContentH(h);
+            if (seatLayoutMode === 'list' && hasMorePcListRows && h <= mainScrollViewportH + 2) {
+              revealMorePcRows();
+            }
+          }}
         >
         <View style={styles.topBarLift}>
           <TabScreenTopBar
@@ -2976,21 +3025,14 @@ export function BookingScreen() {
                       { flex: 1, minHeight: 0 },
                     ]}
                   >
-                    <FlatList
-                      data={pcListRows}
-                      renderItem={renderPcListRow}
-                      keyExtractor={(item) => item.key}
-                      nestedScrollEnabled
-                      keyboardShouldPersistTaps="handled"
-                      style={{ flex: 1, minHeight: 0 }}
-                      contentContainerStyle={{ paddingBottom: 4 }}
-                      showsVerticalScrollIndicator
-                      removeClippedSubviews={Platform.OS !== 'web'}
-                      initialNumToRender={10}
-                      windowSize={9}
-                      maxToRenderPerBatch={10}
-                      updateCellsBatchingPeriod={16}
-                    />
+                    <View style={{ flex: 1, minHeight: 0, paddingBottom: 4 }}>
+                      {visiblePcListRows.map((item) => (
+                        <View key={item.key}>{renderPcListRow(item)}</View>
+                      ))}
+                      {hasMorePcListRows ? (
+                        <ActivityIndicator color={colors.accentBright} style={styles.pcListMoreIndicator} />
+                      ) : null}
+                    </View>
                     {selectedPcs.length > 0 ? (
                       <Pressable
                         style={({ pressed }) => [
@@ -4939,6 +4981,10 @@ function createBookingStyles(colors: ColorPalette, theme: ThemeName, scrollHPad:
     pcListCellSpacer: {
       flex: 1,
       minWidth: 0,
+    },
+    pcListMoreIndicator: {
+      marginTop: 8,
+      marginBottom: 12,
     },
     pcName: { color: colors.text, fontWeight: '700', fontSize: 15, lineHeight: 18 },
     pcSub: { color: colors.muted, fontSize: 12, lineHeight: 15, marginTop: 1 },

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchIcafeCafeBookings } from '../../api/icafeCafeBookings';
 import { queryKeys } from '../../query/queryKeys';
+import { structuralShareBookingRows } from '../../query/structuralSharing';
 
 /**
  * Брони клуба со стороны iCafe (все участники), для занятости слота без опоры только на «мои брони».
@@ -14,5 +15,6 @@ export function useCafeBookingsQuery(cafeId: number | undefined, enabled: boolea
     staleTime: 15 * 1000,
     gcTime: 30 * 60 * 1000,
     refetchOnReconnect: true,
+    structuralSharing: structuralShareBookingRows,
   });
 }

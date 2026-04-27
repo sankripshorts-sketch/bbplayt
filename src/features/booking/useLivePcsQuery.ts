@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchLivePcsForUi } from '../../api/icafeLivePcs';
 import { queryKeys } from '../../query/queryKeys';
+import { structuralSharePcList } from '../../query/structuralSharing';
 
 /**
  * Онлайн-занятость ПК «сейчас»: iCafe `member_pcs` при возможности, иначе `GET .../pcs`.
@@ -15,5 +16,6 @@ export function useLivePcsQuery(cafeId: number | undefined, enabled: boolean) {
     gcTime: 5 * 60_000,
     refetchInterval: enabled && cafeId ? 22_000 : false,
     refetchOnReconnect: true,
+    structuralSharing: structuralSharePcList,
   });
 }
