@@ -38,6 +38,7 @@ export const messagesEn: Record<MessageKey, string> = {
   'login.forgot.errorEmpty': 'Enter your username or email',
   'login.forgot.success':
     'Password has been reset (demo). Use the new password from SMS/email once backend is connected.',
+  'login.forgot.back': 'Back to sign in',
 
   'register.title': 'Register',
   'register.subClub':
@@ -249,6 +250,8 @@ export const messagesEn: Record<MessageKey, string> = {
   'promo.diceIdleSub': 'Tap the button below',
   'promo.diceIdleSubNoRolls': 'No rolls left today. A new free one comes with the next 24h, or top up 500₽+.',
   'promo.diceAvailableLine': 'Rolls available: {{n}}',
+  'promo.diceTopUpCta': 'Top up {{min}} ₽+ — +1 roll',
+  'promo.diceTopUpForRoll': 'Top up {{min}} ₽',
   'promo.diceRoll': 'Roll the dice',
   'promo.diceNoRolls': 'No rolls left',
   'promo.diceRolling': 'Rolling…',
@@ -264,10 +267,22 @@ export const messagesEn: Record<MessageKey, string> = {
   'promo.diceWelcomePlay': 'Play',
   'promo.diceWelcomeDismiss': 'Got it',
   'tutorial.title': 'Quick app tour',
-  'tutorial.subtitle': 'The most useful features in 20 seconds. You can skip and continue right away.',
+  'tutorial.subtitle':
+    'A few short steps: swipe the cards or use the buttons. At the end there is a tiny check.',
   'tutorial.skip': 'Skip',
   'tutorial.next': 'Next',
+  'tutorial.back': 'Back',
   'tutorial.finish': 'Start',
+  'tutorial.intro.title': 'Welcome',
+  'tutorial.intro.body':
+    'We will walk through the main tabs so you know where to look. You can close anytime with the X or Skip.',
+  'tutorial.pagerHint': 'Swipe right for the next step.',
+  'tutorial.check.title': 'Quick check',
+  'tutorial.check.prompt': 'Where do you book a PC seat in the app?',
+  'tutorial.check.wrong': 'Not that tab — booking lives under Booking.',
+  'tutorial.check.correct': 'Correct. You are ready to go.',
+  'tutorial.check.ctaLocked': 'Answer the question first',
+  'tutorial.progress': 'Step {{current}} of {{total}}',
   'tutorial.step.booking.title': 'Book in a few taps',
   'tutorial.step.booking.body':
     'Use the Booking tab to pick a club, time, and seat on the floor plan, then confirm right in the app.',
@@ -334,7 +349,7 @@ export const messagesEn: Record<MessageKey, string> = {
   'chat.btnNews': 'News',
   'chat.btnDice': 'Dice game',
   'chat.adminOpenButton': 'Chat with admin',
-  'chat.adminTitle': 'Club admin',
+  'chat.adminTitle': 'Support',
   'chat.adminWelcome':
     'Direct line for your visit. Send your message — staff can reply. The chat ends after 5 minutes without a message from you, or when you tap «End chat».',
   'chat.adminEndButton': 'End chat',
@@ -366,7 +381,7 @@ export const messagesEn: Record<MessageKey, string> = {
   'cafes.jobReviewPlaceholderBody': 'Describe the situation or suggestions',
   'cafes.jobReviewPlaceholderContact': 'Phone or Telegram',
   'cafes.jobReviewSubmit': 'Send',
-  'cafes.jobReviewSuccessHeadline': 'Feedback\nsent',
+  'cafes.jobReviewSuccessHeadline': 'Feedback sent',
   'cafes.jobReviewSuccessSub': 'Thanks! We will read your message.',
   'cafes.jobReviewSectionClub': 'Club',
   'cafes.jobReviewPlaceholderClub': 'Select a club',
@@ -533,6 +548,8 @@ export const messagesEn: Record<MessageKey, string> = {
   'booking.selectPcBlockedNeedTimeDuration': 'Select time and duration',
   'booking.selectPcBlockedLoadingClubBookings':
     'Please wait: loading club bookings so seats already booked for this time cannot be selected.',
+  'booking.selectPcBlockedLoadingAvailablePcs':
+    'Please wait: loading available seats for the selected time — you can pick a seat in a moment.',
   'booking.selectPcBlockedNeedPcZone':
     'Confirm PC tier / seat type in the “PC tier” row above the floor plan.',
   'booking.selectPcBlockedNeedTariff':
@@ -651,6 +668,9 @@ export const messagesEn: Record<MessageKey, string> = {
   'booking.overlapWarningDetail': 'This seat is already booked for this time.',
   'booking.bannerTodayTitle': 'You have a booking today',
   'booking.bannerTodayLine': '{{address}} · {{pc}} · {{from}}—{{to}}',
+  'booking.bannerChipToday': 'Today',
+  'booking.bannerChipUpcoming': 'Soon',
+  'booking.bannerSwipeHint': 'Swipe the card sideways to dismiss',
 
   'notif.reminderTitle': 'BBplay booking',
   'notif.reminderBody': '{{club}} · {{pc}} · {{when}}{{party}}',

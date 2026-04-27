@@ -6,8 +6,10 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  useWindowDimensions,
   View,
 } from 'react-native';
+import { Image } from 'expo-image';
 import type { TextInput as RnTextInput } from 'react-native';
 import { Text } from '../../components/DinText';
 import { TextInput } from '../../components/DinTextInput';
@@ -22,23 +24,43 @@ import type { ColorPalette } from '../../theme/palettes';
 import { useThemeColors } from '../../theme';
 import { formatPublicErrorMessage } from '../../utils/publicText';
 
+const LOGIN_LOGO = require('../../../assets/auth-login-logo.webp');
+
+const BRAND_LINE_1 = 'BlackBears';
+const BRAND_LINE_2 = 'Play';
+
 export function LoginScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<AuthStackParamList, 'Login'>>();
   const { login } = useAuth();
   const { t } = useLocale();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const [mainColumnH, setMainColumnH] = useState(() => Math.max(480, Math.round(windowHeight * 0.86)));
+  const [formStackHeight, setFormStackHeight] = useState(400);
+
+  const { logoHeight, formPaddingTop } = useMemo(() => {
+    const midY = mainColumnH / 2;
+    const logoDesired = Math.round(Math.min(windowWidth * 0.88, 560));
+    let nextLogoH = logoDesired;
+    let padTop = Math.round(midY - formStackHeight / 2 - nextLogoH);
+    const minLogo = 96;
+    if (padTop < 12) {
+      nextLogoH = Math.max(minLogo, Math.round(midY - formStackHeight / 2 - 12));
+      padTop = Math.max(12, Math.round(midY - formStackHeight / 2 - nextLogoH));
+    }
+    return { logoHeight: nextLogoH, formPaddingTop: padTop };
+  }, [formStackHeight, mainColumnH, windowWidth]);
+
+  const styles = useMemo(
+    () => createStyles(colors, logoHeight, formPaddingTop),
+    [colors, logoHeight, formPaddingTop],
+  );
 
   const [loginStr, setLoginStr] = useState('');
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [forgotOpen, setForgotOpen] = useState(false);
-  const [recoveryLogin, setRecoveryLogin] = useState('');
-  const [recoveryError, setRecoveryError] = useState<string | null>(null);
-  const [recoverySuccess, setRecoverySuccess] = useState<string | null>(null);
-  const [recoveryLoading, setRecoveryLoading] = useState(false);
   const passwordRef = useRef<RnTextInput>(null);
 
   const onSubmit = async () => {
@@ -57,30 +79,6 @@ export function LoginScreen() {
     }
   };
 
-  const onForgotPasswordToggle = () => {
-    setForgotOpen((prev) => !prev);
-    setRecoveryError(null);
-    setRecoverySuccess(null);
-  };
-
-  const onRecoverySubmit = async () => {
-    const normalizedLogin = recoveryLogin.trim();
-    setRecoveryError(null);
-    setRecoverySuccess(null);
-    if (!normalizedLogin) {
-      setRecoveryError(t('login.forgot.errorEmpty'));
-      return;
-    }
-    setRecoveryLoading(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 900));
-      setRecoverySuccess(t('login.forgot.success'));
-      setRecoveryLogin('');
-    } finally {
-      setRecoveryLoading(false);
-    }
-  };
-
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <KeyboardAvoidingView
@@ -88,142 +86,166 @@ export function LoginScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
       >
-        <ScrollView
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
+        <View
+          style={styles.mainColumn}
+          onLayout={(e) => {
+            const h = e.nativeEvent.layout.height;
+            setMainColumnH((prev) => (Math.abs(prev - h) > 1 ? h : prev));
+          }}
         >
-          <View style={styles.inner}>
-          <Text style={styles.title}>{t('login.title')}</Text>
-          <Text style={styles.subtitle}>{t('login.subtitle')}</Text>
-
-          <TextInput
-            style={styles.input}
-            placeholder={t('login.placeholderUser')}
-            placeholderTextColor={colors.muted}
-            autoCapitalize="none"
-            autoCorrect={false}
-            autoFocus
-            returnKeyType="next"
-            blurOnSubmit={false}
-            onSubmitEditing={() => passwordRef.current?.focus()}
-            value={loginStr}
-            onChangeText={setLoginStr}
-          />
-          <View style={styles.passwordRow}>
-            <TextInput
-              ref={passwordRef}
-              style={styles.inputFlex}
-              placeholder={t('login.placeholderPassword')}
-              placeholderTextColor={colors.muted}
-              secureTextEntry={!passwordVisible}
-              value={password}
-              onChangeText={setPassword}
-              accessibilityLabel={t('login.placeholderPassword')}
-              returnKeyType="go"
-              onSubmitEditing={onSubmit}
+          <View style={styles.logoSection}>
+            <Image
+              source={LOGIN_LOGO}
+              style={styles.logo}
+              contentFit="contain"
+              autoplay={false}
+              accessibilityRole="image"
+              accessibilityLabel={`${BRAND_LINE_1} ${BRAND_LINE_2}`}
             />
-            <Pressable
-              style={({ pressed }) => [styles.eyeBtn, pressed && styles.eyeBtnPressed]}
-              onPress={() => setPasswordVisible((v) => !v)}
-              accessibilityRole="button"
-              accessibilityLabel={passwordVisible ? t('login.hidePassword') : t('login.showPassword')}
-            >
-              <MaterialCommunityIcons
-                name={passwordVisible ? 'eye-off-outline' : 'eye-outline'}
-                size={24}
-                color={colors.muted}
-              />
-            </Pressable>
           </View>
-          <Pressable
-            onPress={onForgotPasswordToggle}
-            style={({ pressed }) => [styles.forgotLink, pressed && styles.forgotLinkPressed]}
+          <ScrollView
+            style={styles.formScroll}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.formScrollContent}
+            showsVerticalScrollIndicator={false}
           >
-            <Text style={styles.forgotLinkText}>{t('login.forgot.link')}</Text>
-          </Pressable>
+            <View
+              style={styles.formInner}
+              onLayout={(e) => {
+                const h = e.nativeEvent.layout.height;
+                setFormStackHeight((prev) => (Math.abs(prev - h) > 1 ? h : prev));
+              }}
+            >
+              <View style={styles.brandBlock} accessibilityRole="header">
+                <Text style={styles.brandLine1}>{BRAND_LINE_1}</Text>
+                <Text style={styles.brandLine2}>{BRAND_LINE_2}</Text>
+              </View>
 
-          {forgotOpen ? (
-            <View style={styles.forgotCard}>
-              <Text style={styles.forgotTitle}>{t('login.forgot.title')}</Text>
-              <Text style={styles.forgotSubtitle}>{t('login.forgot.subtitle')}</Text>
               <TextInput
                 style={styles.input}
-                placeholder={t('login.forgot.placeholder')}
+                placeholder={t('login.placeholderUser')}
                 placeholderTextColor={colors.muted}
                 autoCapitalize="none"
                 autoCorrect={false}
-                value={recoveryLogin}
-                onChangeText={setRecoveryLogin}
-                editable={!recoveryLoading}
-                returnKeyType="send"
-                onSubmitEditing={onRecoverySubmit}
+                autoFocus
+                returnKeyType="next"
+                blurOnSubmit={false}
+                onSubmitEditing={() => passwordRef.current?.focus()}
+                value={loginStr}
+                onChangeText={setLoginStr}
               />
-              {recoveryError ? <Text style={styles.error}>{recoveryError}</Text> : null}
-              {recoverySuccess ? <Text style={styles.success}>{recoverySuccess}</Text> : null}
+              <View style={styles.passwordRow}>
+                <TextInput
+                  ref={passwordRef}
+                  style={styles.inputFlex}
+                  placeholder={t('login.placeholderPassword')}
+                  placeholderTextColor={colors.muted}
+                  secureTextEntry={!passwordVisible}
+                  value={password}
+                  onChangeText={setPassword}
+                  accessibilityLabel={t('login.placeholderPassword')}
+                  returnKeyType="go"
+                  onSubmitEditing={onSubmit}
+                />
+                <Pressable
+                  style={({ pressed }) => [styles.eyeBtn, pressed && styles.eyeBtnPressed]}
+                  onPress={() => setPasswordVisible((v) => !v)}
+                  accessibilityRole="button"
+                  accessibilityLabel={passwordVisible ? t('login.hidePassword') : t('login.showPassword')}
+                >
+                  <MaterialCommunityIcons
+                    name={passwordVisible ? 'eye-off-outline' : 'eye-outline'}
+                    size={24}
+                    color={colors.muted}
+                  />
+                </Pressable>
+              </View>
               <Pressable
-                style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
-                onPress={onRecoverySubmit}
-                disabled={recoveryLoading}
+                onPress={() => navigation.navigate('ForgotPassword')}
+                style={({ pressed }) => [styles.forgotLink, pressed && styles.forgotLinkPressed]}
               >
-                {recoveryLoading ? (
+                <Text style={styles.forgotLinkText}>{t('login.forgot.link')}</Text>
+              </Pressable>
+
+              {error ? <Text style={styles.error}>{error}</Text> : null}
+
+              <Pressable
+                style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+                onPress={onSubmit}
+                disabled={loading}
+              >
+                {loading ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <Text style={styles.buttonText}>{t('login.forgot.submit')}</Text>
+                  <Text style={styles.buttonText}>{t('login.submit')}</Text>
                 )}
               </Pressable>
+
+              <Pressable
+                onPress={() => navigation.navigate('Register')}
+                style={({ pressed }) => [styles.registerButton, pressed && styles.registerButtonPressed]}
+              >
+                <Text style={styles.registerButtonText}>{t('login.register')}</Text>
+              </Pressable>
             </View>
-          ) : null}
-
-          {error ? <Text style={styles.error}>{error}</Text> : null}
-
-          <Pressable
-            style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-            onPress={onSubmit}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>{t('login.submit')}</Text>
-            )}
-          </Pressable>
-
-          <Pressable onPress={() => navigation.navigate('Register')} style={styles.registerLink}>
-            <Text style={styles.registerLinkText}>{t('login.register')}</Text>
-          </Pressable>
+          </ScrollView>
         </View>
-        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-function createStyles(colors: ColorPalette) {
+function createStyles(colors: ColorPalette, logoHeight: number, formPaddingTop: number) {
   return StyleSheet.create({
     safe: { flex: 1, backgroundColor: colors.bg },
     root: {
       flex: 1,
       backgroundColor: colors.bg,
     },
-    scrollContent: {
+    mainColumn: {
+      flex: 1,
+      width: '100%',
+    },
+    logoSection: {
+      width: '100%',
+    },
+    logo: {
+      width: '100%',
+      height: logoHeight,
+    },
+    formScroll: {
+      flex: 1,
+    },
+    formScrollContent: {
       flexGrow: 1,
-      justifyContent: 'center',
-      paddingVertical: 24,
-    },
-    inner: {
       paddingHorizontal: 24,
+      paddingTop: formPaddingTop,
+      paddingBottom: 40,
     },
-    title: {
-      fontSize: 32,
+    formInner: {
+      width: '100%',
+      maxWidth: 480,
+      alignSelf: 'center',
+    },
+    brandBlock: {
+      width: '100%',
+      alignItems: 'center',
+      marginBottom: 28,
+    },
+    brandLine1: {
+      fontSize: 30,
       fontWeight: '700',
       color: colors.text,
-      marginBottom: 4,
+      textAlign: 'center',
+      width: '100%',
     },
-    subtitle: {
-      fontSize: 16,
-      color: colors.muted,
-      marginBottom: 32,
+    brandLine2: {
+      fontSize: 24,
+      fontWeight: '700',
+      color: colors.text,
+      textAlign: 'center',
+      width: '100%',
+      marginTop: 2,
     },
     passwordRow: {
       flexDirection: 'row',
@@ -270,32 +292,10 @@ function createStyles(colors: ColorPalette) {
       color: colors.accentBright,
       fontSize: 14,
     },
-    forgotCard: {
-      backgroundColor: colors.card,
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 12,
-      padding: 14,
-      marginBottom: 12,
-    },
-    forgotTitle: {
-      color: colors.text,
-      fontSize: 16,
-      fontWeight: '600',
-      marginBottom: 4,
-    },
-    forgotSubtitle: {
-      color: colors.muted,
-      fontSize: 14,
-      marginBottom: 10,
-    },
     error: {
       color: colors.danger,
       marginBottom: 12,
-    },
-    success: {
-      color: colors.accentBright,
-      marginBottom: 12,
+      textAlign: 'center',
     },
     button: {
       backgroundColor: colors.accent,
@@ -303,12 +303,6 @@ function createStyles(colors: ColorPalette) {
       paddingVertical: 16,
       alignItems: 'center',
       marginTop: 8,
-    },
-    secondaryButton: {
-      backgroundColor: colors.accent,
-      borderRadius: 12,
-      paddingVertical: 14,
-      alignItems: 'center',
     },
     buttonPressed: {
       opacity: 0.85,
@@ -318,7 +312,22 @@ function createStyles(colors: ColorPalette) {
       fontSize: 17,
       fontWeight: '600',
     },
-    registerLink: { marginTop: 20, alignItems: 'center' },
-    registerLinkText: { color: colors.accentBright, fontSize: 16 },
+    registerButton: {
+      marginTop: 18,
+      borderRadius: 12,
+      borderWidth: 2,
+      borderColor: colors.accentBright,
+      paddingVertical: 14,
+      alignItems: 'center',
+      backgroundColor: 'transparent',
+    },
+    registerButtonPressed: {
+      opacity: 0.88,
+    },
+    registerButtonText: {
+      color: colors.accentBright,
+      fontSize: 17,
+      fontWeight: '600',
+    },
   });
 }

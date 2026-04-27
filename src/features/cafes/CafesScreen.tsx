@@ -148,7 +148,6 @@ export function CafesScreen() {
   const [jobReviewTopic, setJobReviewTopic] = useState('');
   const [jobReviewBody, setJobReviewBody] = useState('');
   const [jobReviewContact, setJobReviewContact] = useState('');
-  const [jobReviewSuccessOpen, setJobReviewSuccessOpen] = useState(false);
 
   useEffect(() => {
     void loadAppPreferences().then((p) => setFavoriteId(p.favoriteClubId));
@@ -280,11 +279,10 @@ export function CafesScreen() {
     setJobReviewStars(0);
     setClubPickerOpen(false);
     setJobReviewOpen(false);
-    // Alert не показывается на веб; полноэкранный Modal — как у успешного бронирования
     setTimeout(() => {
-      setJobReviewSuccessOpen(true);
+      showAlert(t('cafes.jobReviewSuccessHeadline'), t('cafes.jobReviewSuccessSub'));
     }, 0);
-  }, [jobReviewBody, jobReviewClubId, jobReviewContact, jobReviewStars, jobReviewTopic]);
+  }, [jobReviewBody, jobReviewClubId, jobReviewContact, jobReviewStars, jobReviewTopic, showAlert, t]);
 
   const selectedJobReviewClub = useMemo(() => {
     if (jobReviewClubId == null) return null;
@@ -668,30 +666,6 @@ export function CafesScreen() {
         </Pressable>
       </View>
 
-      <Modal
-        visible={jobReviewSuccessOpen}
-        animationType="fade"
-        transparent
-        onRequestClose={() => setJobReviewSuccessOpen(false)}
-        presentationStyle={Platform.OS === 'ios' ? 'overFullScreen' : undefined}
-      >
-        <View style={styles.jobReviewSuccessOverlay}>
-          <View style={styles.jobReviewSuccessCard}>
-            <Text style={styles.jobReviewSuccessTitle}>{t('cafes.jobReviewSuccessHeadline')}</Text>
-            <Text style={styles.jobReviewSuccessDescr}>{t('cafes.jobReviewSuccessSub')}</Text>
-            <Pressable
-              style={({ pressed }) => [
-                styles.jobReviewSuccessBtn,
-                pressed && styles.jobModalSubmitBtnPressed,
-              ]}
-              onPress={() => setJobReviewSuccessOpen(false)}
-              accessibilityRole="button"
-            >
-              <Text style={styles.jobReviewSuccessBtnText}>{t('booking.successOk')}</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -938,37 +912,6 @@ function createStyles(colors: ColorPalette, windowHeight: number) {
     },
     jobModalSubmitBtnPressed: { opacity: 0.92 },
     jobModalSubmitBtnText: { color: colors.accentTextOnButton, fontWeight: '700', fontSize: 15 },
-    jobReviewSuccessOverlay: {
-      flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.95)',
-      justifyContent: 'center',
-      padding: 24,
-    },
-    jobReviewSuccessCard: { alignItems: 'center' },
-    jobReviewSuccessTitle: {
-      color: colors.text,
-      fontSize: 26,
-      fontWeight: '700',
-      textAlign: 'center',
-      lineHeight: 34,
-    },
-    jobReviewSuccessDescr: {
-      color: colors.muted,
-      fontSize: 18,
-      textAlign: 'center',
-      marginTop: 24,
-      lineHeight: 26,
-    },
-    jobReviewSuccessBtn: {
-      marginTop: 28,
-      backgroundColor: colors.success,
-      borderRadius: 12,
-      paddingVertical: 14,
-      paddingHorizontal: 48,
-      minWidth: 200,
-      alignItems: 'center',
-    },
-    jobReviewSuccessBtnText: { color: colors.accentTextOnButton, fontWeight: '700', fontSize: 18 },
     clubPickRoot: { flex: 1, justifyContent: 'flex-end', elevation: 1000, zIndex: 1000 },
     clubPickSheet: {
       backgroundColor: colors.card,

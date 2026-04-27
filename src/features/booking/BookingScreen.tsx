@@ -1607,6 +1607,16 @@ export function BookingScreen() {
   /** Тариф ПК на основном экране не фильтрует места; для поиска ближайшего окна зона подтверждается в отдельном меню. */
   const pcTierFilterReady = true;
 
+  /**
+   * Схема зала строится из `structQ`, клик по чипу ищет `PcListItem` в `pcs` из `available-pcs-for-booking`.
+   * Сразу после смены фильтров запрос в полёте — `pcs` ещё `null`, первый клик «глохнет».
+   * Держим схему в режиме блокировки, пока не придёт ответ (не путать с refetch, когда `isLoading` = false).
+   */
+  const availablePcsListLoading = useMemo(
+    () => bookingFiltersReady && !isBookingFilterSheetOpen && pcsQuery.isLoading,
+    [bookingFiltersReady, isBookingFilterSheetOpen, pcsQuery.isLoading],
+  );
+
   const canSelectPc = useMemo(
     () =>
       !!cafe &&
@@ -1614,7 +1624,8 @@ export function BookingScreen() {
       dateFilterCommitted &&
       timeAndDurationReady &&
       pcTierFilterReady &&
-      !cafeBookingsOverlapLoading,
+      !cafeBookingsOverlapLoading &&
+      !availablePcsListLoading,
     [
       cafe,
       memberProfileReady,
@@ -1622,6 +1633,7 @@ export function BookingScreen() {
       timeAndDurationReady,
       pcTierFilterReady,
       cafeBookingsOverlapLoading,
+      availablePcsListLoading,
     ],
   );
 
@@ -1756,6 +1768,10 @@ export function BookingScreen() {
       showAlert(t('booking.alertPc'), t('booking.selectPcBlockedNeedTimeDuration'));
       return;
     }
+    if (availablePcsListLoading) {
+      showAlert(t('booking.alertPc'), t('booking.selectPcBlockedLoadingAvailablePcs'));
+      return;
+    }
     if (cafeBookingsOverlapLoading) {
       showAlert(t('booking.alertPc'), t('booking.selectPcBlockedLoadingClubBookings'));
       return;
@@ -1763,6 +1779,7 @@ export function BookingScreen() {
   }, [
     cafe,
     memberProfileReady,
+    availablePcsListLoading,
     cafeBookingsOverlapLoading,
     dateFilterCommitted,
     timeAndDurationReady,
@@ -1775,16 +1792,27 @@ export function BookingScreen() {
     if (!memberProfileReady) return t('booking.selectPcBlockedNeedProfile');
     if (!dateFilterCommitted) return t('booking.selectPcBlockedNeedDate');
     if (!timeAndDurationReady) return t('booking.selectPcBlockedNeedTimeDuration');
+    if (availablePcsListLoading) return t('booking.selectPcBlockedLoadingAvailablePcs');
     if (cafeBookingsOverlapLoading) return t('booking.selectPcBlockedLoadingClubBookings');
     return '';
   }, [
     cafe,
     memberProfileReady,
+    availablePcsListLoading,
     cafeBookingsOverlapLoading,
     dateFilterCommitted,
     timeAndDurationReady,
     t,
   ]);
+
+  /** Подсказка и затемнение только над окном схемы — легенда остаётся снизу и не перекрывает текст. */
+  const hallMapBookingBlockedOverlay = useMemo(
+    () =>
+      !canSelectPc && pcSelectionLockHint
+        ? { hint: pcSelectionLockHint, onPress: alertSelectPcBlockedIfNeeded }
+        : null,
+    [canSelectPc, pcSelectionLockHint, alertSelectPcBlockedIfNeeded],
+  );
 
   useEffect(() => {
     if (!canSelectPc) {
@@ -3098,13 +3126,7 @@ export function BookingScreen() {
             <View style={{ flex: 1, minHeight: 100 }}>
               {seatLayoutMode === 'scheme' ? (
                 <View style={{ flex: 1, minHeight: 0 }}>
-                  <View
-                    style={[
-                      styles.mapBlock,
-                      styles.mapBlockScheme,
-                      !canSelectPc && structQ.data?.rooms?.length ? { overflow: 'visible' } : null,
-                    ]}
-                  >
+                  <View style={[styles.mapBlock, styles.mapBlockScheme]}>
                     {structQ.isError ? (
                       <QueryError
                         message={formatPublicErrorMessage(structQ.error, t, 'booking.errorGeneric')}
@@ -3116,35 +3138,18 @@ export function BookingScreen() {
                     ) : structQ.isLoading || (structQ.isFetching && !structQ.data) ? (
                       <ClubDataLoader message={t('common.loader.captionPc')} compact minHeight={240} />
                     ) : structQ.data?.rooms?.length ? (
-                      <>
-                        <MemoClubLayoutCanvas
-                          rooms={structQ.data.rooms}
-                          colors={colors}
-                          icafeId={cafe.icafe_id}
-                          zoneFilter={bookingMapZoneFilter}
-                          pcAvailability={pcAvailability}
-                          onPcPress={onMapPcPress}
-                          minHeight={hallMapMinHeight}
-                          horizontalPadding={scrollHPad * 2}
-                          bookingCompact
-                          dimContent={!canSelectPc}
-                        />
-                        {!canSelectPc ? (
-                          <Pressable
-                            onPress={alertSelectPcBlockedIfNeeded}
-                            accessibilityLabel={pcSelectionLockHint}
-                            style={{
-                              position: 'absolute',
-                              zIndex: 10,
-                              top: 0,
-                              bottom: 0,
-                              left: -scrollHPad,
-                              width: windowWidth,
-                              backgroundColor: 'rgba(0,0,0,0)',
-                            }}
-                          />
-                        ) : null}
-                      </>
+                      <MemoClubLayoutCanvas
+                        rooms={structQ.data.rooms}
+                        colors={colors}
+                        icafeId={cafe.icafe_id}
+                        zoneFilter={bookingMapZoneFilter}
+                        pcAvailability={pcAvailability}
+                        onPcPress={onMapPcPress}
+                        minHeight={hallMapMinHeight}
+                        horizontalPadding={scrollHPad * 2}
+                        bookingCompact
+                        bookingBlockedOverlay={hallMapBookingBlockedOverlay}
+                      />
                     ) : (
                       <Text style={styles.hintMuted}>{t('hallMap.emptyZones')}</Text>
                     )}

@@ -14,6 +14,18 @@ export const parseLocalDateTimeString = parseServerDateTimeString;
 
 export { parseServerDateTimeString };
 
+/**
+ * `time_frame` в ответе available-pcs иногда — шаг сетки в минутах (`"30"`), а не «С — по»;
+ * см. docs/PROMPTS (пример data.time_frame: "30"). Это нельзя парсить как время окна.
+ */
+function isTimeFrameGridStepHint(tf: string | undefined | null): boolean {
+  if (tf == null) return false;
+  const t = String(tf).trim();
+  if (!/^\d{1,4}$/.test(t)) return false;
+  const n = Number(t);
+  return Number.isFinite(n) && n > 0 && n <= 24 * 60;
+}
+
 function parseHHmm(hhmm: string): { h: number; m: number; s: number } | null {
   const t = hhmm.trim();
   const withSec = /^(\d{1,2}):(\d{2}):(\d{2})$/.exec(t);
@@ -82,6 +94,10 @@ export function windowStartFromAvailablePcs(
   contextTimeHHmm?: string,
 ): Date | null {
   const tf = data.time_frame?.trim();
+  if (tf && isTimeFrameGridStepHint(tf) && contextDateISO && contextTimeHHmm) {
+    const d = combineServerISODateAndTime(contextDateISO, contextTimeHHmm);
+    if (d) return d;
+  }
   if (tf) {
     const parsed = parseTimeFrameStart(tf, contextDateISO);
     if (parsed) return parsed;
@@ -102,6 +118,19 @@ export function windowStartFromAvailablePcs(
     (data.pc_list ?? []).some((p) => !p.is_using)
   ) {
     return combineServerISODateAndTime(contextDateISO, contextTimeHHmm);
+  }
+
+  /**
+   * Пустой `pc_list` + неинтервальный/битый `time_frame` (шаг "30" обработан выше): без якоря
+   * `findNearestClubWindows` не доходит до refetch `isFindWindow: false` — везде «нет мест».
+   */
+  if (contextDateISO && contextTimeHHmm && (data.pc_list ?? []).length === 0) {
+    if (!tf) {
+      return combineServerISODateAndTime(contextDateISO, contextTimeHHmm);
+    }
+    if (!parseTimeFrameStart(tf, contextDateISO)) {
+      return combineServerISODateAndTime(contextDateISO, contextTimeHHmm);
+    }
   }
   return null;
 }

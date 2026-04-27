@@ -11,7 +11,7 @@ module.exports = {
   splash: {
     image: './assets/splash-icon.png',
     resizeMode: 'contain',
-    backgroundColor: '#141824',
+    backgroundColor: '#141f2d',
   },
   assetBundlePatterns: ['**/*'],
   ios: {
@@ -24,7 +24,7 @@ module.exports = {
   android: {
     adaptiveIcon: {
       foregroundImage: './assets/adaptive-icon.png',
-      backgroundColor: '#141824',
+      backgroundColor: '#141f2d',
     },
     package: 'com.bbplay.app',
     permissions: [

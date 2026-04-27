@@ -74,6 +74,7 @@ export function ProfileScreen() {
   const [localPromoBonusRub, setLocalPromoBonusRub] = useState(0);
   const [promoDetailId, setPromoDetailId] = useState<'birthday' | 'maps_review' | null>(null);
   const [diceOpen, setDiceOpen] = useState(false);
+  const [diceRollsRefreshSignal, setDiceRollsRefreshSignal] = useState(0);
 
   const accountLabel = user?.memberAccount ?? '—';
 
@@ -153,6 +154,9 @@ export function ProfileScreen() {
       const nextBonus = (user.bonusBalanceRub ?? 0) + bonus;
       await patchUser({ balanceRub: nextBalance, bonusBalanceRub: nextBonus });
       await grantDiceRollOnTopupIfEligible(amount);
+      if (diceOpen) {
+        setDiceRollsRefreshSignal((s) => s + 1);
+      }
       setTopUpOpen(false);
       setTopUpAmount('');
       setTopUpPromo('');
@@ -167,7 +171,7 @@ export function ProfileScreen() {
     } finally {
       setTopUpBusy(false);
     }
-  }, [user, topUpAmount, topUpPromo, patchUser, t]);
+  }, [user, topUpAmount, topUpPromo, patchUser, t, diceOpen]);
 
   return (
     <SafeAreaView style={styles.root} edges={['top']}>
@@ -321,6 +325,11 @@ export function ProfileScreen() {
         visible={diceOpen}
         onClose={() => setDiceOpen(false)}
         onLocalBonusChanged={refreshLocalPromoBonus}
+        onRequestTopUp={(presetAmountRub) => {
+          setTopUpAmount(String(presetAmountRub));
+          setTopUpOpen(true);
+        }}
+        reloadRollsSignal={diceRollsRefreshSignal}
       />
 
       <DimmedSheetModal

@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AppState, Platform, StyleSheet, View } from 'react-native';
+import * as SplashScreen from 'expo-splash-screen';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NavigationContainer, DefaultTheme, type EventArg } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useQueryClient } from '@tanstack/react-query';
+import { useIsRestoring, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../auth/AuthContext';
 import { useLocale } from '../i18n/LocaleContext';
 import { AuthNavigator } from './AuthNavigator';
@@ -28,8 +29,6 @@ import { ClubDataLoader } from '../features/ui/ClubDataLoader';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const TAB_BAR_EDGE_BLEED_PX = 128;
-/** Не держим экран загрузки дольше этого, если сеть ведёт себя плохо. */
-const BOOTSTRAP_MAX_WAIT_MS = 5000;
 
 const linking = {
   prefixes: ['bbplay://'] as string[],
@@ -236,9 +235,9 @@ export function RootNavigator() {
   const { t } = useLocale();
   const knowledgeReady = useKnowledgeReady();
   const { dataReady } = useAppBootstrap();
+  const isRestoringCache = useIsRestoring();
   const [promoUnlocked, setPromoUnlocked] = useState(false);
   const promoUnlockTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [bootstrapDeadlinePassed, setBootstrapDeadlinePassed] = useState(false);
   useEffect(() => {
     if (!user) {
       if (promoUnlockTimerRef.current) {
@@ -257,17 +256,16 @@ export function RootNavigator() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!ready) {
-      setBootstrapDeadlinePassed(false);
-      return;
-    }
-    const t = setTimeout(() => setBootstrapDeadlinePassed(true), BOOTSTRAP_MAX_WAIT_MS);
-    return () => clearTimeout(t);
-  }, [ready]);
+  /**
+   * Пока идёт бутстрап — экран с лоадером. Ждём и восстановление RQ из AsyncStorage (`useIsRestoring`):
+   * иначе кэш ещё подтягивается, UI уже без лоадера, а 1–3 с «мёртвый» экран/фриз.
+   */
   const bootstrapping =
-    !ready ||
-    (!bootstrapDeadlinePassed && (!knowledgeReady || !dataReady));
+    !ready || !knowledgeReady || !dataReady || isRestoringCache;
+
+  useLayoutEffect(() => {
+    void SplashScreen.hideAsync().catch(() => {});
+  }, []);
 
   const handleTutorialDone = useCallback(() => {
     // Небольшая пауза между закрытием туториала и следующей акцией, чтобы переход не был резким.

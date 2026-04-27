@@ -14,7 +14,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Text } from '../../components/DinText';
 import { useLocale } from '../../i18n/LocaleContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { tryConsumeOneDiceRoll } from '../../preferences/diceMinigameRolls';
+import { TOPUP_MIN_RUB_FOR_EXTRA_ROLL, tryConsumeOneDiceRoll } from '../../preferences/diceMinigameRolls';
 import { getDiceRollsTotalAvailable, loadAppPreferences, patchAppPreferences } from '../../preferences/appPreferences';
 import type { ColorPalette } from '../../theme/palettes';
 import { useThemeColors } from '../../theme';
@@ -373,11 +373,21 @@ type Props = {
   visible: boolean;
   onClose: () => void;
   onLocalBonusChanged: () => void;
+  /** Открыть пополнение из профиля; `presetAmountRub` — сумма в поле ввода (для кубика = порог +1 бросок). */
+  onRequestTopUp?: (presetAmountRub: number) => void;
+  /** Увеличить после успешного пополнения, пока модалка открыта — перечитать доступные броски. */
+  reloadRollsSignal?: number;
 };
 
 type Outcome = 'win' | 'lose' | null;
 
-export function DiceMinigameModal({ visible, onClose, onLocalBonusChanged }: Props) {
+export function DiceMinigameModal({
+  visible,
+  onClose,
+  onLocalBonusChanged,
+  onRequestTopUp,
+  reloadRollsSignal = 0,
+}: Props) {
   const { t } = useLocale();
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
@@ -409,6 +419,10 @@ export function DiceMinigameModal({ visible, onClose, onLocalBonusChanged }: Pro
   onLocalBonusChangedRef.current = onLocalBonusChanged;
   const fastRollRef = useRef(fastRoll);
   fastRollRef.current = fastRoll;
+  /** Синхронно: идёт анимация броска (нельзя вызывать beginRoll повторно — ломает Animated и остаётся «крутится»). */
+  const rollAnimActiveRef = useRef(false);
+  /** Синхронно: уже запущен async runRoll (до beginRoll). */
+  const rollRequestInFlightRef = useRef(false);
 
   const settleScale = useRef(new Animated.Value(1)).current;
   const diceRollSoundRef = useRef<Audio.Sound | null>(null);
@@ -466,7 +480,7 @@ export function DiceMinigameModal({ visible, onClose, onLocalBonusChanged }: Pro
       setRollsAvailable(getDiceRollsTotalAvailable(p));
     })();
     void getDiceRollSound();
-  }, [visible, getDiceRollSound]);
+  }, [visible, reloadRollsSignal, getDiceRollSound]);
 
   useEffect(() => {
     return () => {
@@ -480,6 +494,8 @@ export function DiceMinigameModal({ visible, onClose, onLocalBonusChanged }: Pro
 
   useEffect(() => {
     if (!visible) {
+      rollAnimActiveRef.current = false;
+      rollRequestInFlightRef.current = false;
       rollResultRef.current = null;
       setRolling(false);
       setRolled(null);
@@ -523,6 +539,7 @@ export function DiceMinigameModal({ visible, onClose, onLocalBonusChanged }: Pro
 
   const finishRoll = useCallback(() => {
     stopDiceRollSound();
+    rollAnimActiveRef.current = false;
     const value = rollResultRef.current ?? 1;
     const chosen = pickRef.current;
     setRolled(value);
@@ -659,7 +676,8 @@ export function DiceMinigameModal({ visible, onClose, onLocalBonusChanged }: Pro
   }, [rolling, rolled, settleScale]);
 
   const beginRoll = useCallback(() => {
-    if (rolling) return;
+    if (rollAnimActiveRef.current) return;
+    rollAnimActiveRef.current = true;
     setRollsAfterRound(null);
     rollProgress.setValue(0);
     const startFace = (rolled != null ? rolled : 1) as DiceValue;
@@ -675,26 +693,31 @@ export function DiceMinigameModal({ visible, onClose, onLocalBonusChanged }: Pro
     } else if (Platform.OS === 'ios') {
       Vibration.vibrate(25);
     }
-  }, [playDiceRollSound, rolling, rolled, rollProgress]);
+  }, [playDiceRollSound, rolled, rollProgress]);
 
   const runRoll = useCallback(() => {
-    if (rolling) return;
+    if (rollAnimActiveRef.current || rollRequestInFlightRef.current) return;
+    rollRequestInFlightRef.current = true;
     void (async () => {
-      const p0 = await loadAppPreferences();
-      const can = getDiceRollsTotalAvailable(p0);
-      setRollsAvailable(can);
-      if (can < 1) return;
-      const ok = await tryConsumeOneDiceRoll();
-      if (!ok) {
-        const p1 = await loadAppPreferences();
-        setRollsAvailable(getDiceRollsTotalAvailable(p1));
-        return;
+      try {
+        const p0 = await loadAppPreferences();
+        const can = getDiceRollsTotalAvailable(p0);
+        setRollsAvailable(can);
+        if (can < 1) return;
+        const ok = await tryConsumeOneDiceRoll();
+        if (!ok) {
+          const p1 = await loadAppPreferences();
+          setRollsAvailable(getDiceRollsTotalAvailable(p1));
+          return;
+        }
+        const p2 = await loadAppPreferences();
+        setRollsAvailable(getDiceRollsTotalAvailable(p2));
+        beginRoll();
+      } finally {
+        rollRequestInFlightRef.current = false;
       }
-      const p2 = await loadAppPreferences();
-      setRollsAvailable(getDiceRollsTotalAvailable(p2));
-      beginRoll();
     })();
-  }, [beginRoll, rolling]);
+  }, [beginRoll]);
 
   useEffect(() => {
     if (!visible || !autoRoll) return;
@@ -908,22 +931,37 @@ export function DiceMinigameModal({ visible, onClose, onLocalBonusChanged }: Pro
               </View>
             </View>
 
-            <Pressable
-              style={({ pressed }) => [
-                styles.rollBtn,
-                (pressed || rolling || rollsAvailable < 1) && { opacity: 0.9 },
-                rollsAvailable < 1 && { opacity: 0.5 },
-              ]}
-              onPress={runRoll}
-              disabled={rolling || rollsAvailable < 1}
-              accessibilityRole="button"
-              accessibilityLabel={rollsAvailable < 1 ? t('promo.diceNoRolls') : t('promo.diceRoll')}
-            >
-              <MaterialCommunityIcons name="dice-5" size={22} color={colors.accentTextOnButton} />
-              <Text style={styles.rollText}>
-                {rollsAvailable < 1 ? t('promo.diceNoRolls') : t('promo.diceRoll')}
-              </Text>
-            </Pressable>
+            {rollsAvailable < 1 && onRequestTopUp ? (
+              <Pressable
+                style={({ pressed }) => [styles.rollBtn, pressed && { opacity: 0.9 }]}
+                onPress={() => onRequestTopUp(TOPUP_MIN_RUB_FOR_EXTRA_ROLL)}
+                disabled={rolling}
+                accessibilityRole="button"
+                accessibilityLabel={t('promo.diceTopUpForRoll', { min: TOPUP_MIN_RUB_FOR_EXTRA_ROLL })}
+              >
+                <MaterialCommunityIcons name="cash-plus" size={22} color={colors.accentTextOnButton} />
+                <Text style={styles.rollText}>
+                  {t('promo.diceTopUpForRoll', { min: TOPUP_MIN_RUB_FOR_EXTRA_ROLL })}
+                </Text>
+              </Pressable>
+            ) : (
+              <Pressable
+                style={({ pressed }) => [
+                  styles.rollBtn,
+                  (pressed || rolling || rollsAvailable < 1) && { opacity: 0.9 },
+                  rollsAvailable < 1 && { opacity: 0.5 },
+                ]}
+                onPress={runRoll}
+                disabled={rolling || rollsAvailable < 1}
+                accessibilityRole="button"
+                accessibilityLabel={rollsAvailable < 1 ? t('promo.diceNoRolls') : t('promo.diceRoll')}
+              >
+                <MaterialCommunityIcons name="dice-5" size={22} color={colors.accentTextOnButton} />
+                <Text style={styles.rollText}>
+                  {rollsAvailable < 1 ? t('promo.diceNoRolls') : t('promo.diceRoll')}
+                </Text>
+              </Pressable>
+            )}
 
             <View style={styles.settingsRow}>
               <Pressable

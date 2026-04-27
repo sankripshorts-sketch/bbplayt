@@ -132,9 +132,11 @@ export function findOverlappingBookingForPc(
   rows: MemberBookingRow[] | undefined,
   pcName: string,
   plan: TimeInterval,
+  nowMs: number = nowForBookingCompareMs(),
 ): MemberBookingRow | null {
   if (!rows?.length) return null;
   for (const row of rows) {
+    if (bookingRowLifecycleStatus(row, nowMs) === 'ended') continue;
     if (!pcNamesLooselyEqual(row.product_pc_name, pcName)) continue;
     const iv = intervalFromMemberRow(row);
     if (iv && intervalsOverlap(iv, plan)) return row;

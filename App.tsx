@@ -2,7 +2,6 @@ import 'react-native-gesture-handler';
 import React, { useEffect } from 'react';
 import { Audio } from 'expo-av';
 import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { persistOptions, queryClient } from './src/query/queryClient';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -15,6 +14,7 @@ import { KnowledgeProvider } from './src/knowledge/KnowledgeContext';
 import { AppErrorBoundary } from './src/components/AppErrorBoundary';
 import { AppAlertProvider } from './src/components/AppAlertContext';
 import { RootNavigator } from './src/navigation/RootNavigator';
+import { ThemedSystemChrome } from './src/components/ThemedSystemChrome';
 import { ThemeProvider, applyDefaultTypography, useAppFonts } from './src/theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -86,11 +86,8 @@ export default function App() {
     }
   }, [fontsLoaded]);
 
-  useEffect(() => {
-    if (fontsLoaded || fontError) {
-      SplashScreen.hideAsync().catch(() => {});
-    }
-  }, [fontsLoaded, fontError]);
+  // Нативный сплэш снимаем в RootNavigator сразу при монтировании — один экран загрузки (лоадер бутстрапа),
+  // без отдельной картинки splash до него.
 
   if (!fontsLoaded && !fontError) {
     return null;
@@ -107,7 +104,7 @@ export default function App() {
                   <FoodProvider>
                     <KnowledgeProvider>
                       <AppErrorBoundary>
-                        <StatusBar style="light" translucent={false} />
+                        <ThemedSystemChrome />
                         <RootNavigator />
                       </AppErrorBoundary>
                     </KnowledgeProvider>

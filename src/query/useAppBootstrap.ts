@@ -20,11 +20,13 @@ import type { VkWallFetchResult } from '../features/news/fetchVkWallVideoPosts';
 import type { VkWallPost } from '../features/news/vkWallHtmlParser';
 import { queryKeys } from './queryKeys';
 import type { CafeItem } from '../api/types';
+import { formatISODateMoscow } from '../datetime/mskTime';
+import { nowForBookingCompareMs } from '../datetime/serverBookingClock';
 
 /**
  * Старт: кафе; для залогиненного — iCafe, затем пакетом схема/прайс/продукты/брони клуба/онлайн-ПК и «мои брони».
  * Лента VK: прогрев после гео-города (не критична для табов) — кэш с диска + порция на экране новостей.
- * Пока `dataReady` false, RootNavigator держит экран загрузки (параллельно с лимитом в RootNavigator, обычно 5 c).
+ * Пока `dataReady` false (и пока RQ `useIsRestoring` в RootNavigator), показывается экран загрузки.
  */
 export function useAppBootstrap() {
   const qc = useQueryClient();
@@ -52,11 +54,11 @@ export function useAppBootstrap() {
         });
 
         if (user) {
-          const today = new Date();
-          const y = today.getFullYear();
-          const m = String(today.getMonth() + 1).padStart(2, '0');
-          const day = String(today.getDate()).padStart(2, '0');
-          const bookingDate = `${y}-${m}-${day}`;
+          /** Как на `BookingScreen`: московский «сегодня» и дата из префсов, если не в прошлом. */
+          const todayMsk = formatISODateMoscow(new Date(nowForBookingCompareMs()));
+          const lastFromPrefs = prefs.lastBookingDateISO;
+          const bookingDate =
+            lastFromPrefs && lastFromPrefs >= todayMsk ? lastFromPrefs : todayMsk;
 
           let icafeData: IcafeIdForMemberData | undefined;
           try {

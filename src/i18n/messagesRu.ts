@@ -37,6 +37,7 @@ export const messagesRu = {
   'login.forgot.errorEmpty': 'Введите логин или email',
   'login.forgot.success':
     'Пароль сброшен (демо). Используйте новый пароль из SMS/почты, когда подключим сервер.',
+  'login.forgot.back': 'К входу',
 
   'register.title': 'Регистрация',
   'register.subClub':
@@ -248,6 +249,8 @@ export const messagesRu = {
   'promo.diceIdleSub': 'Нажмите кнопку «Бросить кубик»',
   'promo.diceIdleSubNoRolls': 'Сегодня бросков нет. Завтра будет новый бесплатный или пополните от 500 ₽.',
   'promo.diceAvailableLine': 'Доступно бросков: {{n}}',
+  'promo.diceTopUpCta': 'Пополнить от {{min}} ₽ — +1 бросок',
+  'promo.diceTopUpForRoll': 'Пополнить {{min}} ₽',
   'promo.diceRoll': 'Бросить кубик',
   'promo.diceNoRolls': 'Нет бросков',
   'promo.diceRolling': 'Кубик крутится…',
@@ -265,10 +268,22 @@ export const messagesRu = {
   'promo.diceWelcomePlay': 'Сыграть',
   'promo.diceWelcomeDismiss': 'Понятно',
   'tutorial.title': 'Короткий тур по приложению',
-  'tutorial.subtitle': 'Самое полезное — за 20 секунд. Можно пропустить и вернуться к основному экрану.',
+  'tutorial.subtitle':
+    'Несколько коротких шагов: листайте экраны вправо или пользуйтесь кнопками. В конце — маленькая проверка.',
   'tutorial.skip': 'Пропустить',
   'tutorial.next': 'Далее',
+  'tutorial.back': 'Назад',
   'tutorial.finish': 'Начать',
+  'tutorial.intro.title': 'Добро пожаловать',
+  'tutorial.intro.body':
+    'Покажем основные вкладки и подскажем, где что искать. Можно в любой момент закрыть крестиком или «Пропустить».',
+  'tutorial.pagerHint': 'Свайп вправо — следующий шаг.',
+  'tutorial.check.title': 'Проверка',
+  'tutorial.check.prompt': 'Где в приложении вы бронируете место за ПК?',
+  'tutorial.check.wrong': 'Не тот раздел — бронь во вкладке «Бронь».',
+  'tutorial.check.correct': 'Верно. Можно начинать пользоваться приложением.',
+  'tutorial.check.ctaLocked': 'Сначала ответьте на вопрос',
+  'tutorial.progress': 'Шаг {{current}} из {{total}}',
   'tutorial.step.booking.title': 'Бронь без звонков',
   'tutorial.step.booking.body': 'Во вкладке «Бронь» выберите клуб, время и место на схеме — подтверждение сразу в приложении.',
   'tutorial.step.food.title': 'Еда и напитки',
@@ -331,7 +346,7 @@ export const messagesRu = {
   'chat.btnNews': 'Новости',
   'chat.btnDice': 'Кубики',
   'chat.adminOpenButton': 'Чат с админом',
-  'chat.adminTitle': 'Администратор клуба',
+  'chat.adminTitle': 'Поддержка',
   'chat.adminWelcome':
     'Прямая линия на время визита. Напишите вопрос — сотрудник сможет ответить. Чат завершится через 5 минут без ваших сообщений или по кнопке «Закончить чат».',
   'chat.adminEndButton': 'Закончить чат',
@@ -362,7 +377,7 @@ export const messagesRu = {
   'cafes.jobReviewPlaceholderBody': 'Опишите ситуацию или пожелания',
   'cafes.jobReviewPlaceholderContact': 'Телефон или Telegram',
   'cafes.jobReviewSubmit': 'Отправить',
-  'cafes.jobReviewSuccessHeadline': 'Отзыв\nотправлен',
+  'cafes.jobReviewSuccessHeadline': 'Отзыв отправлен',
   'cafes.jobReviewSuccessSub': 'Спасибо! Мы обязательно прочитаем ваше сообщение.',
   'cafes.jobReviewSectionClub': 'Клуб',
   'cafes.jobReviewPlaceholderClub': 'Выберите клуб',
@@ -530,6 +545,8 @@ export const messagesRu = {
   'booking.selectPcBlockedNeedTimeDuration': 'Выберите время и длительность',
   'booking.selectPcBlockedLoadingClubBookings':
     'Подождите: загружается список броней в клубе, чтобы нельзя было выбрать место, занятое на это время.',
+  'booking.selectPcBlockedLoadingAvailablePcs':
+    'Подождите: загружается список свободных мест на выбранное время; выбор на схеме откроется через секунду.',
   'booking.selectPcBlockedNeedPcZone':
     'Сначала подтвердите тип места / тариф ПК в строке «Тариф ПК» над схемой зала.',
   'booking.selectPcBlockedNeedTariff':
@@ -646,6 +663,9 @@ export const messagesRu = {
   'booking.overlapWarningDetail': 'Этот ПК уже занят на выбранное время.',
   'booking.bannerTodayTitle': 'Сегодня у вас бронь',
   'booking.bannerTodayLine': '{{address}} · {{pc}} · {{from}}—{{to}}',
+  'booking.bannerChipToday': 'Сегодня',
+  'booking.bannerChipUpcoming': 'Скоро',
+  'booking.bannerSwipeHint': 'Смахните карточку в сторону, чтобы скрыть',
 
   'notif.reminderTitle': 'Бронь BBplay',
   'notif.reminderBody': '{{club}} · {{pc}} · {{when}}{{party}}',

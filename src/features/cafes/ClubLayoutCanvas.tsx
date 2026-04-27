@@ -552,14 +552,9 @@ function ClubLayoutCanvasInner({
 
   const innerMapStack =
     bookingBlockedOverlay != null ? (
-      <View
-        style={[styles.bookingViewportDimHost, flatBookingScheme && styles.bookingViewportDimHostFlat]}
-      >
+      <View style={styles.bookingViewportDimHost}>
         {innerMap}
-        <Pressable
-          style={[styles.bookingBlockedOverlay, flatBookingScheme && styles.bookingBlockedOverlayFlat]}
-          onPress={bookingBlockedOverlay.onPress}
-        >
+        <Pressable style={styles.bookingBlockedOverlay} onPress={bookingBlockedOverlay.onPress}>
           <Text style={styles.bookingBlockedOverlayText}>{bookingBlockedOverlay.hint}</Text>
         </Pressable>
       </View>
@@ -696,10 +691,9 @@ function createStyles(colors: ColorPalette) {
       position: 'relative',
       alignSelf: 'stretch',
       width: '100%',
-      borderRadius: 14,
+      borderRadius: 16,
       overflow: 'hidden',
     },
-    bookingViewportDimHostFlat: { borderRadius: 0 },
     bookingBlockedOverlay: {
       ...StyleSheet.absoluteFillObject,
       backgroundColor: 'rgba(0,0,0,0.40)',
@@ -707,9 +701,8 @@ function createStyles(colors: ColorPalette) {
       justifyContent: 'center',
       paddingHorizontal: 16,
       zIndex: 10,
-      borderRadius: 14,
+      borderRadius: 16,
     },
-    bookingBlockedOverlayFlat: { borderRadius: 0 },
     bookingBlockedOverlayText: {
       color: colors.text,
       fontSize: 13,

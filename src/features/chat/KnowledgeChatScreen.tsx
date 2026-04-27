@@ -17,6 +17,7 @@ import type { TextInput as RnTextInput } from 'react-native';
 import { Text } from '../../components/DinText';
 import { TextInput } from '../../components/DinTextInput';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLocale } from '../../i18n/LocaleContext';
 import { useNavigation } from '@react-navigation/native';
 import { useIsOnline } from '../../hooks/useIsOnline';
@@ -29,7 +30,6 @@ import type { ColorPalette } from '../../theme/palettes';
 import { useThemeColors } from '../../theme';
 import { TabScreenTopBar } from '../../components/TabScreenTopBar';
 import { TodaysBookingBanner } from '../booking/TodaysBookingBanner';
-import { useBookingNowMs } from '../booking/useBookingNowMs';
 import { useAuth } from '../../auth/AuthContext';
 import { useMemberBooksQuery } from '../booking/useMemberBooksQuery';
 import { useCancelBookingMutation } from '../booking/useCancelBookingMutation';
@@ -432,7 +432,6 @@ export function KnowledgeChatScreen() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const booksQ = useMemberBooksQuery(user?.memberAccount, user?.memberId);
-  const nowMs = useBookingNowMs();
   const [adminUi, setAdminUi] = useState<'off' | 'active' | 'ended'>('off');
   const [adminMessages, setAdminMessages] = useState<AdminChatLine[]>([]);
   const [adminInput, setAdminInput] = useState('');
@@ -444,13 +443,6 @@ export function KnowledgeChatScreen() {
     staleTime: 10 * 60 * 1000,
   });
   const bookingRows = useMemo(() => flattenMemberRows(booksQ.data), [booksQ.data]);
-  const hasActiveStartedBooking = useMemo(() => {
-    if (!user?.memberAccount?.trim()) return false;
-    for (const { row } of bookingRows) {
-      if (bookingRowLifecycleStatus(row, nowMs) === 'active') return true;
-    }
-    return false;
-  }, [bookingRows, nowMs, user?.memberAccount]);
 
   useEffect(() => {
     void loadAppPreferences().then((prefs) => {
@@ -518,7 +510,6 @@ export function KnowledgeChatScreen() {
   useEffect(() => {
     if (adminUi !== 'active') return;
     const id = setInterval(() => {
-      if (!hasActiveStartedBooking) return;
       if (Date.now() - lastAdminActivityRef.current >= 5 * 60 * 1000) {
         setAdminMessages((m) => [
           ...m,
@@ -528,17 +519,7 @@ export function KnowledgeChatScreen() {
       }
     }, 10_000);
     return () => clearInterval(id);
-  }, [adminUi, hasActiveStartedBooking, t]);
-
-  useEffect(() => {
-    if (adminUi !== 'active') return;
-    if (hasActiveStartedBooking) return;
-    setAdminMessages((m) => [
-      ...m,
-      { id: `sys-booking-${Date.now()}`, role: 'system', text: t('chat.adminEndedBooking') },
-    ]);
-    setAdminUi('ended');
-  }, [adminUi, hasActiveStartedBooking, t]);
+  }, [adminUi, t]);
 
   const pickerDraft: BookingDraft = useMemo(
     () =>
@@ -1160,18 +1141,6 @@ export function KnowledgeChatScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
       <TodaysBookingBanner />
-      {hasActiveStartedBooking && adminUi === 'off' ? (
-        <View style={styles.adminEntryWrap}>
-          <Pressable
-            style={styles.adminEntryBtn}
-            onPress={openAdminSession}
-            accessibilityRole="button"
-            accessibilityLabel={t('chat.adminOpenButton')}
-          >
-            <Text style={styles.adminEntryBtnText}>{t('chat.adminOpenButton')}</Text>
-          </Pressable>
-        </View>
-      ) : null}
       <KeyboardAvoidingView
         style={styles.root}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -1181,7 +1150,18 @@ export function KnowledgeChatScreen() {
           title={adminUi === 'off' ? t('tabs.help') : t('chat.adminTitle')}
           horizontalPadding={16}
           rightAccessory={
-            adminUi === 'active' ? (
+            adminUi === 'off' ? (
+              <View style={styles.adminTopAccessory}>
+                <Pressable
+                  style={({ pressed }) => [styles.adminTopIconBtn, pressed && styles.adminTopIconBtnPressed]}
+                  onPress={openAdminSession}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('chat.adminOpenButton')}
+                >
+                  <MaterialCommunityIcons name="face-agent" size={26} color={colors.text} />
+                </Pressable>
+              </View>
+            ) : adminUi === 'active' ? (
               <Pressable
                 onPress={endAdminManual}
                 style={({ pressed }) => (pressed ? { opacity: 0.72 } : null)}
@@ -2011,16 +1991,19 @@ export function KnowledgeChatScreen() {
 function createStyles(colors: ColorPalette) {
   return StyleSheet.create({
     root: { flex: 1, backgroundColor: colors.bg, paddingTop: 4 },
-    adminEntryWrap: { paddingHorizontal: 16, paddingBottom: 6, paddingTop: 2 },
-    adminEntryBtn: {
+    adminTopAccessory: { marginTop: 10 },
+    adminTopIconBtn: {
+      minWidth: 46,
+      minHeight: 46,
+      padding: 9,
       borderRadius: 12,
-      backgroundColor: colors.accent,
-      paddingVertical: 12,
-      paddingHorizontal: 14,
-      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.card,
       justifyContent: 'center',
+      alignItems: 'center',
     },
-    adminEntryBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+    adminTopIconBtnPressed: { opacity: 0.85 },
     adminTopBarEnd: { fontSize: 13, fontWeight: '700', color: colors.accentBright, paddingVertical: 4, paddingLeft: 8 },
     msgItemSystem: { alignSelf: 'center', maxWidth: '96%', marginBottom: 10 },
     tSystem: { fontSize: 13, lineHeight: 19, color: colors.muted, textAlign: 'center' },
@@ -2306,7 +2289,7 @@ function createStyles(colors: ColorPalette) {
     tBot: { color: colors.text, fontSize: 15, lineHeight: 24 },
     inputRow: {
       flexDirection: 'row',
-      alignItems: 'center',
+      alignItems: 'stretch',
       gap: 8,
       paddingVertical: 12,
       paddingHorizontal: 16,
@@ -2325,22 +2308,23 @@ function createStyles(colors: ColorPalette) {
       paddingVertical: 12,
       fontSize: 16,
       color: colors.text,
+      minHeight: 48,
+      textAlignVertical: 'center',
     },
     inputCompact: {
       paddingHorizontal: 12,
       fontSize: 15,
+      minHeight: 44,
     },
     sendBtn: {
       backgroundColor: colors.accent,
-      width: 44,
-      height: 44,
+      alignSelf: 'stretch',
+      aspectRatio: 1,
       borderRadius: 12,
       alignItems: 'center',
       justifyContent: 'center',
     },
     sendBtnCompact: {
-      width: 40,
-      height: 40,
       borderRadius: 10,
     },
     sendBtnDisabled: { opacity: 0.7 },

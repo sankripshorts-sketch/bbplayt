@@ -29,11 +29,17 @@ import { queryKeys } from '../query/queryKeys';
 import { useMemberBooksQuery } from '../features/booking/useMemberBooksQuery';
 import { useBookingNowMs } from '../features/booking/useBookingNowMs';
 import { addHandledVisitKey, loadHandledVisitKeys } from './visitFeedbackStorage';
-import { selectPendingVisitFeedback, type PendingVisitFeedback } from './selectPendingVisitFeedback';
+import {
+  selectPendingVisitFeedback,
+  selectPendingVisitForNotificationHint,
+  type PendingVisitFeedback,
+} from './selectPendingVisitFeedback';
 import { formatPublicClubLabel, formatPublicPcLabel } from '../utils/publicText';
 
+export type VisitFeedbackNotificationHint = { icafeId: number; visitStartMs: number };
+
 type Ctx = {
-  openVisitFeedbackPrompt: () => void;
+  openVisitFeedbackPrompt: (hint?: VisitFeedbackNotificationHint) => void;
 };
 
 const VisitFeedbackContext = createContext<Ctx | null>(null);
@@ -45,6 +51,7 @@ export function VisitFeedbackProvider({ children }: { children: React.ReactNode 
   const { user } = useAuth();
   const booksQ = useMemberBooksQuery(user?.memberAccount, user?.memberId);
   const nowMs = useBookingNowMs(60_000);
+  const pendingFromNotificationRef = useRef<VisitFeedbackNotificationHint | null>(null);
   const cafesQ = useQuery({
     queryKey: queryKeys.cafes(),
     queryFn: () => cafesApi.list(),
@@ -85,14 +92,70 @@ export function VisitFeedbackProvider({ children }: { children: React.ReactNode 
     setThanks(false);
   }, []);
 
-  const openVisitFeedbackPrompt = useCallback(() => {
-    if (!handledKeys) return;
-    const p = selectPendingVisitFeedback(booksQ.data, nowMs, handledKeys, addressById);
-    if (!p) return;
+  const resolvePendingToShow = useCallback(
+    (hint?: VisitFeedbackNotificationHint) => {
+      if (!handledKeys) return null;
+      if (hint) {
+        const forPush =
+          selectPendingVisitForNotificationHint(
+            booksQ.data,
+            nowMs,
+            handledKeys,
+            addressById,
+            hint,
+          ) ?? selectPendingVisitFeedback(booksQ.data, nowMs, handledKeys, addressById);
+        if (forPush) return forPush;
+      }
+      return selectPendingVisitFeedback(booksQ.data, nowMs, handledKeys, addressById);
+    },
+    [booksQ.data, nowMs, handledKeys, addressById],
+  );
+
+  const openVisitFeedbackPrompt = useCallback(
+    (hint?: VisitFeedbackNotificationHint) => {
+      if (!handledKeys) return;
+      if (hint) {
+        pendingFromNotificationRef.current = hint;
+        if (booksQ.isPending) return;
+      } else {
+        pendingFromNotificationRef.current = null;
+      }
+      const p = resolvePendingToShow(hint);
+      if (!p) {
+        if (hint && (booksQ.isError || (booksQ.isFetched && !booksQ.isPending))) {
+          pendingFromNotificationRef.current = null;
+        }
+        return;
+      }
+      if (p.bookingKey) autoPromptedRef.current.add(p.bookingKey);
+      pendingFromNotificationRef.current = null;
+      setDisplay(p);
+      resetForm();
+      setVisible(true);
+    },
+    [booksQ.data, booksQ.isPending, booksQ.isFetched, booksQ.isError, handledKeys, resetForm, resolvePendingToShow],
+  );
+
+  useEffect(() => {
+    if (!pendingFromNotificationRef.current || !handledKeys) return;
+    if (booksQ.isPending) return;
+    if (booksQ.isError) {
+      pendingFromNotificationRef.current = null;
+      return;
+    }
+    if (!booksQ.isFetched) return;
+    const hint = pendingFromNotificationRef.current;
+    const p = resolvePendingToShow(hint ?? undefined);
+    if (!p) {
+      pendingFromNotificationRef.current = null;
+      return;
+    }
+    autoPromptedRef.current.add(p.bookingKey);
+    pendingFromNotificationRef.current = null;
     setDisplay(p);
     resetForm();
     setVisible(true);
-  }, [booksQ.data, nowMs, handledKeys, addressById, resetForm]);
+  }, [booksQ.isPending, booksQ.isError, booksQ.isFetched, booksQ.data, handledKeys, resolvePendingToShow, resetForm]);
 
   const markHandled = useCallback(async (key: string) => {
     await addHandledVisitKey(key);
@@ -108,6 +171,7 @@ export function VisitFeedbackProvider({ children }: { children: React.ReactNode 
     if (display?.bookingKey) {
       autoPromptedRef.current.delete(display.bookingKey);
     }
+    pendingFromNotificationRef.current = null;
     setVisible(false);
     setDisplay(null);
     resetForm();

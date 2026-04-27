@@ -34,17 +34,29 @@ export function TabScreenTopBar({
 }: Props) {
   const colors = useThemeColors();
   const styles = useMemo(
-    () => createStyles(colors, !!dense, !!subtitle, horizontalPadding),
-    [colors, dense, subtitle, horizontalPadding],
+    () => createStyles(colors, !!dense, horizontalPadding, !!rightAccessory),
+    [colors, dense, horizontalPadding, rightAccessory],
   );
 
   return (
     <View style={styles.outer}>
       <View style={styles.bar}>
-        <Text style={styles.title} numberOfLines={1} accessibilityRole="header">
-          {title}
-        </Text>
-        {rightAccessory ? <View style={styles.rightSlot}>{rightAccessory}</View> : null}
+        {/* Заголовок по центру всей полосы; иначе при rightAccessory он «уезжает» влево */}
+        <View style={styles.titleLayer} pointerEvents="none">
+          <Text
+            style={styles.title}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            accessibilityRole="header"
+          >
+            {title}
+          </Text>
+        </View>
+        {rightAccessory ? (
+          <View style={styles.rightRow}>
+            <View style={styles.rightSlot}>{rightAccessory}</View>
+          </View>
+        ) : null}
       </View>
       <View style={styles.subtitleSlot}>
         {subtitle ? (
@@ -57,11 +69,14 @@ export function TabScreenTopBar({
   );
 }
 
+/** Одинаковый отступ слева и справа при иконке справа — иначе `textAlign: center` даёт смещение влево. */
+const TITLE_LAYER_PAD_WITH_ACCESSORY = 48;
+
 function createStyles(
   colors: { text: string; muted: string },
   dense: boolean,
-  hasSubtitle: boolean,
   horizontalPadding: number,
+  hasRightAccessory: boolean,
 ) {
   return StyleSheet.create({
     outer: {
@@ -72,8 +87,14 @@ function createStyles(
     },
     bar: {
       minHeight: TAB_SCREEN_BAR_MIN_HEIGHT,
-      justifyContent: 'center',
+      flexDirection: 'row',
       alignItems: 'center',
+      position: 'relative',
+    },
+    titleLayer: {
+      ...StyleSheet.absoluteFillObject,
+      justifyContent: 'center',
+      paddingHorizontal: hasRightAccessory ? TITLE_LAYER_PAD_WITH_ACCESSORY : 4,
     },
     title: {
       fontSize: TAB_SCREEN_TITLE_SIZE,
@@ -81,9 +102,16 @@ function createStyles(
       fontFamily: fonts.semibold,
       color: colors.text,
       textAlign: 'center',
-      maxWidth: hasSubtitle ? '92%' : '78%',
+      width: '100%',
       transform: [{ translateY: -2 }],
       ...(Platform.OS === 'android' ? { includeFontPadding: false } : null),
+    },
+    rightRow: {
+      flex: 1,
+      minHeight: TAB_SCREEN_BAR_MIN_HEIGHT,
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      alignItems: 'center',
     },
     subtitleSlot: {
       minHeight: TAB_SCREEN_SUBTITLE_SLOT_HEIGHT,
@@ -97,11 +125,9 @@ function createStyles(
       lineHeight: 18,
     },
     rightSlot: {
-      position: 'absolute',
-      right: 0,
-      top: 0,
-      bottom: 0,
+      flexShrink: 0,
       justifyContent: 'center',
+      marginLeft: 8,
     },
   });
 }

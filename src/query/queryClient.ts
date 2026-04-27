@@ -1,4 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
+import { replaceEqualDeep } from '@tanstack/query-core';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import type { PersistQueryClientProviderProps } from '@tanstack/react-query-persist-client';
@@ -6,13 +7,29 @@ import type { PersistQueryClientProviderProps } from '@tanstack/react-query-pers
 const PERSIST_KEY = 'bbplay.react-query.v1';
 const PERSIST_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
+/**
+ * Дольше старого 30 мин: неактивные запросы не вылетают из памяти за сессию;
+ * срок согласован с `maxAge` персиста — после холодного старта данные с диска не «болтаются» без корня в кэше.
+ */
+const DEFAULT_GC_TIME_MS = PERSIST_MAX_AGE_MS;
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 2,
       retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000),
       staleTime: 60 * 1000,
-      gcTime: 30 * 60 * 1000,
+      gcTime: DEFAULT_GC_TIME_MS,
+      /**
+       * После refetch: если ответ глубоко равен предыдущему — оставляем старые ссылки,
+       * без лишних ре-рендеров (как «не менять UI, если сервер прислал то же»).
+       */
+      structuralSharing: (oldData, newData) => {
+        if (oldData === newData) return newData;
+        if (oldData == null) return newData;
+        if (newData == null) return newData;
+        return replaceEqualDeep(oldData, newData);
+      },
       refetchOnReconnect: true,
       /** RN: refetch при «фокусе» окна часто дергается при клавиатуре. */
       refetchOnWindowFocus: false,
