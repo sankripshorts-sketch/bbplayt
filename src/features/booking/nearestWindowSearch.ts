@@ -418,7 +418,7 @@ export async function findNearestClubWindows(
   const maxSearchMsRaw = options.maxSearchMs ?? DEFAULT_MAX_SEARCH_MS;
   const maxSearchMs =
     typeof maxSearchMsRaw === 'number' && Number.isFinite(maxSearchMsRaw)
-      ? Math.max(500, Math.min(20_000, Math.floor(maxSearchMsRaw)))
+      ? Math.max(500, Math.min(60_000, Math.floor(maxSearchMsRaw)))
       : DEFAULT_MAX_SEARCH_MS;
   const startedAtMs = Date.now();
   const stepMs = stepMins * 60 * 1000;

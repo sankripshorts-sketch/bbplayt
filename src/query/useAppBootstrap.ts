@@ -3,7 +3,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { QueryClient } from '@tanstack/react-query';
 import { useAuth } from '../auth/AuthContext';
 import { useKnowledgeReady } from '../knowledge/KnowledgeContext';
+import { fetchCafeBookingProducts } from '../api/cafeBookingProducts';
+import { fetchIcafeCafeBookings } from '../api/icafeCafeBookings';
+import { fetchLivePcsForUi } from '../api/icafeLivePcs';
 import { bookingFlowApi, cafesApi } from '../api/endpoints';
+import type { IcafeIdForMemberData } from '../api/types';
 import { loadAppPreferences, patchAppPreferences } from '../preferences/appPreferences';
 import {
   resolveEffectiveCityId,
@@ -18,9 +22,9 @@ import { queryKeys } from './queryKeys';
 import type { CafeItem } from '../api/types';
 
 /**
- * Единый стартовый запрос данных с API: кафе, при входе — iCafe, схема/прайс для сохранённого клуба, брони.
- * Лента VK не блокирует старт — грузится на экране новостей (кэш с диска + порциями).
- * Пока `dataReady` false, RootNavigator держит экран загрузки (не дольше лимита в RootNavigator, обычно 5 c).
+ * Старт: кафе; для залогиненного — iCafe, затем пакетом схема/прайс/продукты/брони клуба/онлайн-ПК и «мои брони».
+ * Лента VK: прогрев после гео-города (не критична для табов) — кэш с диска + порция на экране новостей.
+ * Пока `dataReady` false, RootNavigator держит экран загрузки (параллельно с лимитом в RootNavigator, обычно 5 c).
  */
 export function useAppBootstrap() {
   const qc = useQueryClient();
@@ -47,63 +51,90 @@ export function useAppBootstrap() {
           staleTime: 10 * 60 * 1000,
         });
 
-        // The rest is warmed up in background and must not block first render.
         if (user) {
-          void qc
-            .prefetchQuery({
+          const today = new Date();
+          const y = today.getFullYear();
+          const m = String(today.getMonth() + 1).padStart(2, '0');
+          const day = String(today.getDate()).padStart(2, '0');
+          const bookingDate = `${y}-${m}-${day}`;
+
+          let icafeData: IcafeIdForMemberData | undefined;
+          try {
+            icafeData = await qc.fetchQuery({
               queryKey: queryKeys.icafeIdForMember(),
               queryFn: () => bookingFlowApi.icafeIdForMember(),
               staleTime: 10 * 60 * 1000,
-            })
-            .catch(() => {});
+            });
+          } catch {
+            /* iCafe — для fallback club id; экраны сами перезапросят */
+          }
 
-          const cafeId = prefs.favoriteClubId ?? prefs.lastBookingClubId;
-          if (cafeId != null) {
-            const today = new Date();
-            const y = today.getFullYear();
-            const m = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            const bookingDate = `${y}-${m}-${day}`;
+          const fromPrefs = prefs.favoriteClubId ?? prefs.lastBookingClubId;
+          let clubId: number | null =
+            typeof fromPrefs === 'number' && Number.isFinite(fromPrefs) && fromPrefs > 0 ? fromPrefs : null;
+          if (clubId == null && icafeData) {
+            const n = Number(String(icafeData.icafe_id ?? '').trim());
+            if (Number.isFinite(n) && n > 0) clubId = n;
+          }
 
-            void qc
-              .prefetchQuery({
-                queryKey: queryKeys.structRooms(cafeId),
-                queryFn: () => bookingFlowApi.structRooms(cafeId),
+          const acc = user.memberAccount?.trim();
+          const memberId = user.memberId?.trim();
+          const startupQueries: Promise<unknown>[] = [];
+
+          if (clubId != null) {
+            const cid = clubId;
+            startupQueries.push(
+              qc.fetchQuery({
+                queryKey: queryKeys.structRooms(cid),
+                queryFn: () => bookingFlowApi.structRooms(cid),
                 staleTime: 30 * 60 * 1000,
-              })
-              .catch(() => {});
-
-            void qc
-              .prefetchQuery({
+              }),
+              qc.fetchQuery({
                 queryKey: queryKeys.allPrices({
-                  cafeId,
+                  cafeId: cid,
                   memberId: user.memberId,
                   mins: 60,
                   bookingDate,
                 }),
                 queryFn: () =>
                   bookingFlowApi.allPrices({
-                    cafeId,
+                    cafeId: cid,
                     memberId: user.memberId,
                     mins: 60,
                     bookingDate,
                   }),
                 staleTime: 2 * 60 * 1000,
-              })
-              .catch(() => {});
+              }),
+              qc.fetchQuery({
+                queryKey: queryKeys.cafeBookingProducts(cid),
+                queryFn: () => fetchCafeBookingProducts(cid),
+                staleTime: 3 * 60 * 1000,
+              }),
+              qc.fetchQuery({
+                queryKey: queryKeys.cafeBookings(cid),
+                queryFn: () => fetchIcafeCafeBookings(cid),
+                staleTime: 15 * 1000,
+              }),
+              qc.fetchQuery({
+                queryKey: queryKeys.livePcs(cid),
+                queryFn: () => fetchLivePcsForUi(cid),
+                staleTime: 8_000,
+              }),
+            );
           }
 
-          const acc = user.memberAccount?.trim();
-          const memberId = user.memberId?.trim();
           if (acc || memberId) {
-            void qc
-              .prefetchQuery({
+            startupQueries.push(
+              qc.fetchQuery({
                 queryKey: queryKeys.books(acc, memberId),
-                queryFn: () =>
-                  bookingFlowApi.memberBooks({ memberAccount: acc, memberId }),
-                staleTime: 15 * 1000,
-              })
-              .catch(() => {});
+                queryFn: () => bookingFlowApi.memberBooks({ memberAccount: acc, memberId }),
+                staleTime: 60 * 1000,
+              }),
+            );
+          }
+
+          if (startupQueries.length > 0) {
+            await Promise.allSettled(startupQueries);
           }
         }
 

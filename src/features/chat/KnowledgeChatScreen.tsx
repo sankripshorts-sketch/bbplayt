@@ -483,7 +483,7 @@ export function KnowledgeChatScreen() {
 
   useEffect(() => {
     scrollToBottom(true);
-  }, [threadKnowledge.length, threadNeural.length, responseMode, adminMessages.length, adminUi]);
+  }, [threadKnowledge.length, threadNeural.length, responseMode, adminMessages.length, adminUi, isChatBusy]);
 
   const openAdminSession = useCallback(() => {
     setOpenPicker(null);
@@ -1254,6 +1254,20 @@ export function KnowledgeChatScreen() {
           keyExtractor={(m) => m.id}
           keyboardDismissMode="on-drag"
           keyboardShouldPersistTaps="always"
+          ListFooterComponent={
+            isChatBusy ? (
+              <View
+                style={styles.thinkingFooter}
+                accessibilityLiveRegion="polite"
+                accessibilityRole="text"
+                accessibilityLabel={responseMode === 'neural' ? t('chat.thinkingNeural') : t('chat.thinkingHelp')}
+              >
+                <Text style={styles.thinkingFooterText}>
+                  {responseMode === 'neural' ? t('chat.thinkingNeural') : t('chat.thinkingHelp')}
+                </Text>
+              </View>
+            ) : null
+          }
           renderItem={({ item }) => (
             <View style={[styles.msgItem, item.role === 'user' ? styles.msgItemUser : styles.msgItemBot]}>
               <View
@@ -2101,6 +2115,18 @@ function createStyles(colors: ColorPalette) {
       backgroundColor: colors.card,
       borderWidth: 1,
       borderColor: colors.border,
+    },
+    thinkingFooter: {
+      alignSelf: 'flex-start',
+      paddingVertical: 6,
+      paddingHorizontal: 2,
+      marginBottom: 4,
+    },
+    thinkingFooterText: {
+      fontSize: 14,
+      lineHeight: 20,
+      color: colors.muted,
+      opacity: 0.55,
     },
     ctaBtn: {
       marginTop: 10,

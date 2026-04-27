@@ -1,5 +1,5 @@
 import { getOllamaConfig } from '../config/ollamaConfig';
-import { isAbortError, ollamaFetch, OLLAMA_EXTRACT_TIMEOUT_MS } from './ollamaHttp';
+import { isAbortError, ollamaFetchWithRetry, OLLAMA_EXTRACT_TIMEOUT_MS } from './ollamaHttp';
 
 const CHAT_PATH = '/chat';
 
@@ -70,7 +70,7 @@ export async function extractBookingWithOllama(
   const url = `${baseUrl.replace(/\/$/, '')}${CHAT_PATH}`;
   let res: Response;
   try {
-    res = await ollamaFetch(
+    res = await ollamaFetchWithRetry(
       url,
       {
         method: 'POST',

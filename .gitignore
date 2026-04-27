@@ -13,3 +13,6 @@ web-build/
 .env.local
 tests/api-live/artifacts/
 cursor-agent-prompts-export/
+
+# Root copy of release APK (too large for Git; use build output or GitHub Releases)
+/app-release.apk

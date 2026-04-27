@@ -321,6 +321,8 @@ export const messagesEn: Record<MessageKey, string> = {
   'chat.ollamaKeyHint': 'The expanded assistant is not connected yet.',
   'chat.ollamaNoKey': 'The expanded assistant is unavailable right now.',
   'chat.ollamaError': 'Could not get an expanded answer. Below is a quick help answer.',
+  'chat.thinkingNeural': 'Thinking…',
+  'chat.thinkingHelp': 'Looking for an answer…',
   'chat.actionsTitle': 'Go to',
   'chat.btnTopUp': 'Top up balance',
   'chat.btnBalanceHistory': 'Balance history',

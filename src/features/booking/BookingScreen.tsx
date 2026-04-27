@@ -58,6 +58,18 @@ const BOOKING_TIME_STEP_MINS = 10;
 /** В колесе «по времени» только 30 / 60 / 90 / 120 мин (ставки из `prices` на сервере). */
 const HOURLY_DURATION_PRESETS_BASE = HOURLY_GRID_DURATION_MINUTES;
 
+const BOOKING_PERF_LOGS_ENABLED = false;
+const MEMBER_BOOKS_FOCUS_COOLDOWN_MS = 180_000;
+let memberBooksFocusRefetchInFlight = false;
+let memberBooksFocusLastRefetchAtMs = 0;
+
+function nowMs(): number {
+  if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
+    return performance.now();
+  }
+  return Date.now();
+}
+
 /**
  * `indexOf(dateStart)` часто даёт -1 (формат, сдвиг окна списка) → раньше подставлялся idx 0 («сегодня»).
  * Без этого после повторного открытия колеса дата визуально сбрасывалась.
@@ -418,6 +430,17 @@ const BookingPcCard = React.memo(function BookingPcCard({
   );
 });
 
+function rowStatusSignature(row: PcFlatListRow, pcStatusByPc: Map<string, PcStatusMeta>): string {
+  return row.pair
+    .map((item) => {
+      const lk = String(item.pc_name).trim().toLowerCase();
+      const meta = pcStatusByPc.get(lk);
+      if (!meta) return `${lk}:0:0:`;
+      return `${lk}:${meta.selected ? 1 : 0}:${meta.busy ? 1 : 0}:${meta.statusLine}`;
+    })
+    .join('|');
+}
+
 const BookingPcListRow = React.memo(function BookingPcListRow({
   row,
   styles,
@@ -466,9 +489,25 @@ const BookingPcListRow = React.memo(function BookingPcListRow({
       </View>
     </View>
   );
+}, (prev, next) => {
+  if (prev.row.key !== next.row.key) return false;
+  if (prev.row.showSectionTitle !== next.row.showSectionTitle) return false;
+  if (prev.row.sectionTitle !== next.row.sectionTitle) return false;
+  if (prev.canSelectPc !== next.canSelectPc) return false;
+  if (prev.styles !== next.styles) return false;
+  if (prev.colors !== next.colors) return false;
+  if (prev.onPressPc !== next.onPressPc) return false;
+  if (prev.uiPcLabel !== next.uiPcLabel) return false;
+  if (prev.t !== next.t) return false;
+  if (prev.row.pair.length !== next.row.pair.length) return false;
+  for (let i = 0; i < prev.row.pair.length; i += 1) {
+    if (prev.row.pair[i]?.pc_name !== next.row.pair[i]?.pc_name) return false;
+  }
+  return rowStatusSignature(prev.row, prev.pcStatusByPc) === rowStatusSignature(next.row, next.pcStatusByPc);
 });
 
 export function BookingScreen() {
+  const renderStartedAtMs = nowMs();
   const { user, refreshMemberBalance } = useAuth();
   const qc = useQueryClient();
   const isFocused = useIsFocused();
@@ -520,8 +559,10 @@ export function BookingScreen() {
   const [pendingTimeIdx, setPendingTimeIdx] = useState(0);
   const [pendingDurIdx, setPendingDurIdx] = useState(0);
   const [pendingZoneIdx, setPendingZoneIdx] = useState(0);
+  const pendingDateIdxRef = useRef(0);
   const pendingTimeIdxRef = useRef(0);
   const pendingDurIdxRef = useRef(0);
+  const pendingZoneIdxRef = useRef(0);
   const clubWheelRef = useRef<WheelPickerColumnHandle>(null);
   const cityWheelRef = useRef<WheelPickerColumnHandle>(null);
   const dateWheelRef = useRef<WheelPickerColumnHandle>(null);
@@ -531,6 +572,13 @@ export function BookingScreen() {
   const nearestDayWheelRef = useRef<WheelPickerColumnHandle>(null);
   /** Отмена сетевых запросов поиска ближайшего окна (закрытие шторки / новый поиск). */
   const nearestSearchAbortRef = useRef<AbortController | null>(null);
+  const memberBooksFetchingRef = useRef(false);
+  const memberBooksRefetchRef = useRef<(() => Promise<unknown>) | null>(null);
+  const memberBooksCanFetchRef = useRef(false);
+  const bookingFiltersReadyRef = useRef(false);
+  const bookingFilterSheetOpenRef = useRef(false);
+  const focusAvailKeyRef = useRef<ReturnType<typeof queryKeys.availablePcs> | null>(null);
+  const focusCafeIdRef = useRef<number | null>(null);
   /** Актуальная дата сетки времени (для async в `applyTimeDurationWheelSelection`). */
   const effectiveDateForTimeSlotsRef = useRef<string>(dateStart);
   /** Дата основной формы брони — не путать с датой сетки в меню «ближайшее окно». */
@@ -557,8 +605,11 @@ export function BookingScreen() {
   nearestSearchDayISORef.current = nearestSearchDayISO;
   const [modalNearestDay, setModalNearestDay] = useState(false);
   const [pendingNearestDayIdx, setPendingNearestDayIdx] = useState(0);
+  const pendingNearestDayIdxRef = useRef(0);
   /** Шторка «время/длительность» открыта из меню ближайшего окна — в колесе времени есть пункт «Без разницы». */
   const [timeModalForNearestSlotSearch, setTimeModalForNearestSlotSearch] = useState(false);
+  const isAnyFilterSheetOpen =
+    modalClub || modalDate || modalTimeDuration || modalTariff || modalNearestDay;
 
   /** Тип ПК только для поиска «ближайшее окно» (не смешивает зоны для компании — см. pickPcsForPartyForPlan). */
   const [nearestSearchPcZone, setNearestSearchPcZone] = useState<'any' | 'VIP' | 'BootCamp' | 'GameZone'>('any');
@@ -598,6 +649,9 @@ export function BookingScreen() {
   const [myBookingsPullRefresh, setMyBookingsPullRefresh] = useState(false);
   const [mainScrollViewportH, setMainScrollViewportH] = useState(0);
   const [mainScrollContentH, setMainScrollContentH] = useState(0);
+  const renderCountRef = useRef(0);
+  renderCountRef.current += 1;
+  const renderCount = renderCountRef.current;
 
   const formatDateHuman = (iso: string) => formatMoscowCalendarDayLong(iso, locale === 'en' ? 'en' : 'ru');
   const uiClubLabel = useCallback((address?: string | null) => formatPublicClubLabel({ address, t }), [t]);
@@ -907,6 +961,7 @@ export function BookingScreen() {
 
   useEffect(() => {
     if (!cafe || !prefsLoaded) return;
+    if (isAnyFilterSheetOpen) return;
     /** Пока прайс грузится под новый queryKey (дата/минуты), `products`/`pricesList` пустые — не сбрасывать выбор в шторке. */
     if (pricesQ.isPending) return;
     if (!products.length && !pricesList.length) {
@@ -942,9 +997,10 @@ export function BookingScreen() {
         setMins(bookingMinsAfterTariffSelect(pick, String(defaultSessionMins)));
       }
     });
-  }, [cafe, dateStart, prefsLoaded, products, pricesList, defaultSessionMins, pricesQ.isPending]);
+  }, [cafe, dateStart, prefsLoaded, products, pricesList, defaultSessionMins, pricesQ.isPending, isAnyFilterSheetOpen]);
 
   useEffect(() => {
+    if (isAnyFilterSheetOpen) return;
     if (pricesQ.isPending) return;
     if (!products.length && !pricesList.length) {
       setTariff(null);
@@ -980,7 +1036,7 @@ export function BookingScreen() {
       }
       return first;
     });
-  }, [products, pricesList, defaultSessionMins, pricesQ.isPending]);
+  }, [products, pricesList, defaultSessionMins, pricesQ.isPending, isAnyFilterSheetOpen]);
 
   const structQ = useQuery({
     queryKey: queryKeys.structRooms(cafe?.icafe_id ?? 0),
@@ -1020,55 +1076,120 @@ export function BookingScreen() {
       let cancelled = false;
       const id = setTimeout(() => {
         if (cancelled) return;
-        if (user?.memberAccount?.trim() || user?.memberId?.trim()) {
-          void qc.refetchQueries({
-            queryKey: queryKeys.books(user?.memberAccount, user?.memberId),
-          });
+        const now = Date.now();
+        if (
+          memberBooksCanFetchRef.current
+          && !memberBooksFocusRefetchInFlight
+          && !memberBooksFetchingRef.current
+          && (now - memberBooksFocusLastRefetchAtMs >= MEMBER_BOOKS_FOCUS_COOLDOWN_MS)
+        ) {
+          memberBooksFocusRefetchInFlight = true;
+          memberBooksFocusLastRefetchAtMs = now;
+          const refetchBooks = memberBooksRefetchRef.current;
+          if (refetchBooks) {
+            void refetchBooks().finally(() => {
+              memberBooksFocusRefetchInFlight = false;
+            });
+          } else {
+            memberBooksFocusRefetchInFlight = false;
+          }
         }
-        if (cafe && memberProfileReady && minsNum > 0) {
-          void qc.invalidateQueries({ queryKey: availKey });
-          void qc.invalidateQueries({ queryKey: queryKeys.cafeBookings(cafe.icafe_id) });
+        if (bookingFiltersReadyRef.current && !bookingFilterSheetOpenRef.current) {
+          const currentAvailKey = focusAvailKeyRef.current;
+          const currentCafeId = focusCafeIdRef.current;
+          if (currentAvailKey) {
+            void qc.invalidateQueries({ queryKey: currentAvailKey });
+          }
+          if (currentCafeId) {
+            void qc.invalidateQueries({ queryKey: queryKeys.cafeBookings(currentCafeId) });
+          }
         }
       }, 0);
       return () => {
         cancelled = true;
         clearTimeout(id);
       };
-    }, [qc, availKey, cafe, memberProfileReady, minsNum, user?.memberAccount, user?.memberId]),
+    }, [qc]),
   );
 
   /**
    * Во время прокрутки колес в фильтрах временно замораживаем «живые» запросы:
    * иначе фоновые refetch'и конкурируют за кадры и дергают wheel-анимации.
    */
-  const isBookingFilterSheetOpen =
-    modalClub || modalDate || modalTimeDuration || modalTariff || modalNearestDay;
+  const isBookingFilterSheetOpen = isAnyFilterSheetOpen;
+  bookingFilterSheetOpenRef.current = isBookingFilterSheetOpen;
+  const bookingFiltersReady =
+    Boolean(cafe)
+    && memberProfileReady
+    && dateFilterCommitted
+    && timeDurationFilterCommitted
+    && tariff != null
+    && minsNum > 0;
+  bookingFiltersReadyRef.current = bookingFiltersReady;
+  focusAvailKeyRef.current = availKey;
+  focusCafeIdRef.current = cafe?.icafe_id ?? null;
 
   /** Слот брони: только vibe `GET /available-pcs-for-booking` (не iCafe `.../pcs`). */
   const pcsQuery = useQuery({
     queryKey: availKey,
-    queryFn: () =>
-      bookingFlowApi.availablePcs({
+    queryFn: async () => {
+      const startedAt = nowMs();
+      if (BOOKING_PERF_LOGS_ENABLED) {
+        console.log('[booking][availablePcs] fetch:start', {
+          cafeId: cafe?.icafe_id ?? null,
+          dateStart: serverBookingDateTime.date,
+          timeStart: serverBookingDateTime.time,
+          mins: minsNum,
+        });
+      }
+      try {
+        const result = await bookingFlowApi.availablePcs({
         cafeId: cafe!.icafe_id,
         dateStart: serverBookingDateTime.date,
         timeStart: serverBookingDateTime.time,
         mins: minsNum,
         isFindWindow: IS_FIND_WINDOW_MAIN,
         priceName: priceNameForAvailability || undefined,
-      }),
-    enabled: !!cafe && memberProfileReady && minsNum > 0 && !isBookingFilterSheetOpen,
-    staleTime: 0,
-    refetchOnMount: 'always',
-    refetchInterval: isFocused && !isBookingFilterSheetOpen ? PC_REFETCH_INTERVAL_MS : false,
+        });
+        if (BOOKING_PERF_LOGS_ENABLED) {
+          console.log('[booking][availablePcs] fetch:success', {
+            cafeId: cafe?.icafe_id ?? null,
+            pcs: result?.pc_list?.length ?? 0,
+            tookMs: Math.round(nowMs() - startedAt),
+          });
+        }
+        return result;
+      } catch (error) {
+        if (BOOKING_PERF_LOGS_ENABLED) {
+          console.warn('[booking][availablePcs] fetch:error', {
+            cafeId: cafe?.icafe_id ?? null,
+            tookMs: Math.round(nowMs() - startedAt),
+            error,
+          });
+        }
+        throw error;
+      }
+    },
+    enabled: bookingFiltersReady && !isBookingFilterSheetOpen,
+    staleTime: 60_000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchInterval: bookingFiltersReady && isFocused && !isBookingFilterSheetOpen
+      ? PC_REFETCH_INTERVAL_MS
+      : false,
   });
 
   /** «Занят сейчас»: iCafe `member_pcs` → fallback `GET .../pcs` — не используется для доступности слота. */
   const livePcsQuery = useLivePcsQuery(
     cafe?.icafe_id,
-    !!cafe && memberProfileReady && isFocused && !isBookingFilterSheetOpen,
+    bookingFiltersReady && isFocused && !isBookingFilterSheetOpen,
   );
 
   const booksQ = useMemberBooksQuery(user?.memberAccount, user?.memberId);
+  memberBooksFetchingRef.current = booksQ.isFetching;
+  memberBooksRefetchRef.current = booksQ.refetch;
+  memberBooksCanFetchRef.current = Boolean(user?.memberAccount?.trim() || user?.memberId?.trim());
   const hasMemberBookingHistory = useMemo(() => hasAnyMemberBookingRows(booksQ.data), [booksQ.data]);
   const myBookingsListCount = useMemo(
     () => countTotalMemberBookingsInData(booksQ.data),
@@ -1076,11 +1197,16 @@ export function BookingScreen() {
   );
   const cafeBooksQ = useCafeBookingsQuery(
     cafe?.icafe_id,
-    !!cafe && memberProfileReady && !isBookingFilterSheetOpen,
+    bookingFiltersReady && !isBookingFilterSheetOpen,
   );
   /** Пока не подтянули брони клуба (все участники), нельзя честно отметить места с пересечением по слоту. */
   const cafeBookingsOverlapLoading = !!(cafe && memberProfileReady && cafeBooksQ.isPending);
-  const bookingNowMs = useBookingNowMs(Platform.OS === 'web' ? 45_000 : 15_000);
+  const nowTrackingEnabled =
+    (bookingFiltersReady && !isBookingFilterSheetOpen)
+    || modalNearestMenu
+    || modalOccupancy
+    || selectedPcs.length > 0;
+  const bookingNowMs = useBookingNowMs(Platform.OS === 'web' ? 45_000 : 15_000, nowTrackingEnabled);
 
   /** Дата для сетки времени в шторке «время / длительность»: при открытом поиске «ближайшее окно» — день поиска или «сегодня» при «Без разницы». */
   const effectiveDateForTimeSlots = useMemo(() => {
@@ -1093,6 +1219,15 @@ export function BookingScreen() {
   /** В поиске ближайшего окна при «Без разницы» по дню — полная сетка времени за день. */
   const nearestSearchFullDayTimeGrid = modalNearestMenu && nearestSearchDayISO == null;
   nearestSearchFullDayTimeGridRef.current = nearestSearchFullDayTimeGrid;
+
+  /** Как `timeSlots` в меню «ближайшее окно»: иначе снап в `findNearestClubWindows` и здесь расходятся — на телефоне слоты часто «заняты» и список пустой. */
+  const nearestBookableSlotOptions = useMemo(
+    () => ({
+      ...timeSlotOptions,
+      fullDayIgnoreNow: nearestSearchFullDayTimeGrid,
+    }),
+    [timeSlotOptions, nearestSearchFullDayTimeGrid],
+  );
 
   /** Сетка времени на основной форме — только от `dateStart` (меню «ближ. окно» не пересчитывает её). */
   const mainTimeSlots = useMemo(
@@ -1157,12 +1292,66 @@ export function BookingScreen() {
   const sessionQ = useQuery<MemberPcSessionInfo, Error>({
     queryKey: ['member-pc-session', cafe?.icafe_id, user?.memberId],
     queryFn: () => fetchMemberPcSessionInfo(cafe!.icafe_id, user!.memberId),
-    enabled: Boolean(cafe && user?.memberId && memberProfileReady && isFocused && !isBookingFilterSheetOpen),
+    enabled: Boolean(bookingFiltersReady && user?.memberId && isFocused && !isBookingFilterSheetOpen),
     staleTime: 15_000,
-    refetchInterval: isBookingFilterSheetOpen ? false : 28_000,
+    refetchInterval: bookingFiltersReady && !isBookingFilterSheetOpen ? 28_000 : false,
   });
 
   const pcs = pcsQuery.data?.pc_list ?? null;
+
+  const renderTraceRef = useRef<Record<string, string | number | boolean | null> | null>(null);
+  const renderTraceLoggedAtRef = useRef(0);
+  useEffect(() => {
+    if (!BOOKING_PERF_LOGS_ENABLED) return;
+    const commitMs = Math.round(nowMs() - renderStartedAtMs);
+    const snapshot: Record<string, string | number | boolean | null> = {
+      isFocused,
+      cafeId: cafe?.icafe_id ?? null,
+      bookingFiltersReady,
+      isBookingFilterSheetOpen,
+      nowTrackingEnabled,
+      modalClub,
+      modalDate,
+      modalTimeDuration,
+      modalBooks,
+      modalNearestMenu,
+      dateStart,
+      timeStart,
+      minsNum,
+      tariffKind: tariff?.kind ?? null,
+      selectedPcs: selectedPcs.length,
+      seatLayoutMode,
+      fetchingCafes: cafesQ.isFetching,
+      fetchingAvailablePcs: pcsQuery.isFetching,
+      fetchingLivePcs: livePcsQuery.isFetching,
+      fetchingMemberBooks: booksQ.isFetching,
+      fetchingCafeBooks: cafeBooksQ.isFetching,
+      fetchingMemberSession: sessionQ.isFetching,
+      pcsCount: pcs?.length ?? 0,
+      pcListRowsCount: pcListRows.length,
+      myBookingsCount: myBookingsListCount,
+      bookingNowTick: Math.floor(bookingNowMs / (Platform.OS === 'web' ? 45_000 : 15_000)),
+    };
+    const prev = renderTraceRef.current;
+    const changedKeys = prev
+      ? Object.keys(snapshot).filter((k) => snapshot[k] !== prev[k])
+      : ['initial-render'];
+    renderTraceRef.current = snapshot;
+    const now = Date.now();
+    const hasMeaningfulChange = changedKeys.some((k) => !k.startsWith('modal'));
+    const shouldLog =
+      commitMs >= 180
+      || hasMeaningfulChange
+      || (now - renderTraceLoggedAtRef.current >= 2_000 && changedKeys.length === 0);
+    if (!shouldLog) return;
+    renderTraceLoggedAtRef.current = now;
+    console.log('[booking][render:trace]', {
+      renderCount,
+      commitMs,
+      changedKeys,
+      snapshot,
+    });
+  });
 
   const pcsForUi = useMemo(() => {
     if (!pcs) return null;
@@ -1395,8 +1584,8 @@ export function BookingScreen() {
 
   useEffect(() => {
     if (!pcs) return;
-    setSelectedPcs((prev) =>
-      prev.filter((s) => {
+    setSelectedPcs((prev) => {
+      const next = prev.filter((s) => {
         const lk = String(s.pc_name).trim().toLowerCase();
         if (planOverlapBusyPcsLower.has(lk)) return false;
         return pcs.some((p) => {
@@ -1404,8 +1593,12 @@ export function BookingScreen() {
           if (!planIv) return !p.is_using;
           return !effectivePcBusyForPlan(p, planIv, bookingNowMs);
         });
-      }),
-    );
+      });
+      if (next.length === prev.length && next.every((item, idx) => item.pc_name === prev[idx]?.pc_name)) {
+        return prev;
+      }
+      return next;
+    });
   }, [pcs, planOverlapBusyPcsLower, planIv, bookingNowMs]);
 
   /** Время+длительность из шторки без действующего тарифа (см. эффекты `setTariff(null)` при пустом прайсе) не считаем завершённым выбором. */
@@ -1543,22 +1736,6 @@ export function BookingScreen() {
     locale,
   ]);
 
-  const renderPcListRow = useCallback(
-    ({ item }: ListRenderItemInfo<PcFlatListRow>) => (
-      <BookingPcListRow
-        row={item}
-        styles={styles}
-        colors={colors}
-        canSelectPc={canSelectPc}
-        pcStatusByPc={pcStatusByPc}
-        onPressPc={togglePcSelection}
-        uiPcLabel={uiPcLabel}
-        t={t}
-      />
-    ),
-    [styles, colors, canSelectPc, pcStatusByPc, togglePcSelection, uiPcLabel, t],
-  );
-
   const nearestSearchZoneReady =
     nearestSearchPcZone === 'any' || nearestSearchPcZoneCommitted;
 
@@ -1643,6 +1820,22 @@ export function BookingScreen() {
     ],
   );
 
+  const renderPcListRow = useCallback(
+    ({ item }: ListRenderItemInfo<PcFlatListRow>) => (
+      <BookingPcListRow
+        row={item}
+        styles={styles}
+        colors={colors}
+        canSelectPc={canSelectPc}
+        pcStatusByPc={pcStatusByPc}
+        onPressPc={togglePcSelection}
+        uiPcLabel={uiPcLabel}
+        t={t}
+      />
+    ),
+    [styles, colors, canSelectPc, pcStatusByPc, togglePcSelection, uiPcLabel, t],
+  );
+
   const onMapPcPress = useCallback(
     (pcName: string) => {
       const item = pcs?.find((p) => pcNamesLooselyEqual(p.pc_name, pcName));
@@ -1722,10 +1915,6 @@ export function BookingScreen() {
     if (!modalNearestMenu) setModalNearestDay(false);
   }, [modalNearestMenu]);
 
-  useEffect(() => {
-    if (modalBooks && (user?.memberAccount?.trim() || user?.memberId?.trim())) void booksQ.refetch();
-  }, [modalBooks, user?.memberAccount, user?.memberId, booksQ.refetch]);
-
   const overlapConflict = useMemo(() => {
     if (!cafe || !selectedPcs.length || !cafeBookingRowsForOverlap.length || !planIv) return null;
     for (const sel of selectedPcs) {
@@ -1789,7 +1978,7 @@ export function BookingScreen() {
         : selectedPcs.length > 0
           ? selectedPcs.length
           : 1;
-      const slot = snapWindowToBookableSlot(c.windowStart, timeSlotOptions);
+      const slot = snapWindowToBookableSlot(c.windowStart, nearestBookableSlotOptions);
       const planIv = plannedInterval(slot.dateISO, slot.timeStart, minsNum);
       const pcsWithoutKnownOverlap =
         planIv == null
@@ -1831,7 +2020,7 @@ export function BookingScreen() {
       };
     },
     [
-      timeSlotOptions,
+      nearestBookableSlotOptions,
       minsNum,
       nearestZoneFilter,
       bookingNowMs,
@@ -1866,7 +2055,7 @@ export function BookingScreen() {
             searchDayIsoMoscow: nearestSearchDayISO,
             earliestStartMoscow:
               nearestSearchTimeAny ? null : { date: effectiveDateForTimeSlots, time: timeStart },
-            bookableSlotOptions: timeSlotOptions,
+            bookableSlotOptions: nearestBookableSlotOptions,
             lockedPcNames,
             lockedPcSnapshots: nearestSearchTargetPcs,
           },
@@ -1874,8 +2063,8 @@ export function BookingScreen() {
             maxSlots: 3,
             bookingNowMs,
             stepAdvanceMins: slotStep,
-            // На мобилках ответ /available-pcs-for-booking доходит дольше; 2.5s — часто 1–2 итерации и пустой результат.
-            maxSearchMs: 10_000,
+            // На мобилках ответ дольше; мало итераций за 10s — пустая выдача. Веб оставляем короче.
+            maxSearchMs: Platform.OS === 'web' ? 12_000 : 40_000,
             signal: ac.signal,
           },
         );
@@ -2398,6 +2587,37 @@ export function BookingScreen() {
         : mainTimeSlotLabels,
     [timeModalForNearestSlotSearch, timeSlotLabels, mainTimeSlotLabels, t],
   );
+  const timeWheelLoopBase = timeLabelsForDurationModal.length;
+  const timeWheelLoopRepeats = 7;
+  const timeWheelLoopCenterOffset = timeWheelLoopBase * Math.floor(timeWheelLoopRepeats / 2);
+  const timeWheelVisualLabels = useMemo(
+    () =>
+      timeWheelLoopBase > 0
+        ? Array.from({ length: timeWheelLoopRepeats }, () => timeLabelsForDurationModal).flat()
+        : [],
+    [timeLabelsForDurationModal, timeWheelLoopBase],
+  );
+  const normalizeTimeWheelIndex = useCallback(
+    (index: number) => {
+      if (timeWheelLoopBase <= 0) return 0;
+      const raw = Number.isFinite(index) ? Math.trunc(index) : 0;
+      const mod = raw % timeWheelLoopBase;
+      return mod < 0 ? mod + timeWheelLoopBase : mod;
+    },
+    [timeWheelLoopBase],
+  );
+  const recenterTimeWheelIndex = useCallback(
+    (index: number) => {
+      if (timeWheelLoopBase <= 0) return;
+      const normalized = normalizeTimeWheelIndex(index);
+      const centeredIndex = timeWheelLoopCenterOffset + normalized;
+      if (index === centeredIndex) return;
+      requestAnimationFrame(() => {
+        timeWheelRef.current?.scrollToIndex(centeredIndex, false);
+      });
+    },
+    [normalizeTimeWheelIndex, timeWheelLoopBase, timeWheelLoopCenterOffset],
+  );
 
   const dateListLabels = useMemo(
     () => datesList.map((iso) => formatMoscowCalendarDayLong(iso, locale === 'en' ? 'en' : 'ru')),
@@ -2455,8 +2675,11 @@ export function BookingScreen() {
     [mainTimeSlots, dateStart, bookingNowMs, slotStep],
   );
 
+  pendingDateIdxRef.current = pendingDateIdx;
   pendingTimeIdxRef.current = pendingTimeIdx;
   pendingDurIdxRef.current = pendingDurIdx;
+  pendingZoneIdxRef.current = pendingZoneIdx;
+  pendingNearestDayIdxRef.current = pendingNearestDayIdx;
 
   const occupancyDaysStrip = useMemo(() => {
     const out: string[] = [];
@@ -2688,13 +2911,14 @@ export function BookingScreen() {
         overrides?.durationIndex
         ?? durWheelRef.current?.getCenterIndex()
         ?? pendingDurIdxRef.current;
-      const ti = nT <= 0 ? 0 : Math.max(0, Math.min(nT - 1, tiRaw));
+      const ti = nT <= 0 ? 0 : Math.max(0, Math.min(nT - 1, normalizeTimeWheelIndex(tiRaw)));
       const di = nD <= 0 ? 0 : Math.max(0, Math.min(nD - 1, diRaw));
       applyTimeDurationWheelSelection(ti, di);
     },
     [
       applyTimeDurationWheelSelection,
       durationWheelItems.length,
+      normalizeTimeWheelIndex,
       timeLabelsForDurationModal.length,
     ],
   );
@@ -3547,13 +3771,16 @@ export function BookingScreen() {
               active={modalDate}
               data={dateListLabels}
               valueIndex={pendingDateIdx}
-              onChangeIndex={setPendingDateIdx}
+              onChangeIndex={(i) => {
+                pendingDateIdxRef.current = i;
+              }}
               colors={colors}
               onItemPress={applyDateWheelSelection}
             />
             <Pressable
               style={styles.wheelSheetDone}
-              onPress={() => applyDateWheelSelection(dateWheelRef.current?.getCenterIndex() ?? pendingDateIdx)}
+              onPress={() =>
+                applyDateWheelSelection(dateWheelRef.current?.getCenterIndex() ?? pendingDateIdxRef.current)}
             >
               <View style={styles.wheelSheetDoneTextWrap}>
                 <Text style={styles.wheelSheetDoneText}>{t('booking.done')}</Text>
@@ -3604,13 +3831,16 @@ export function BookingScreen() {
                 <WheelPickerColumn
                   ref={timeWheelRef}
                   active={modalTimeDuration}
-                  data={timeLabelsForDurationModal}
-                  valueIndex={pendingTimeIdx}
-                  onChangeIndex={setPendingTimeIdx}
+                  data={timeWheelVisualLabels}
+                  valueIndex={timeWheelLoopCenterOffset + pendingTimeIdx}
+                  onChangeIndex={(i) => {
+                    pendingTimeIdxRef.current = normalizeTimeWheelIndex(i);
+                    recenterTimeWheelIndex(i);
+                  }}
                   colors={colors}
                   onItemPress={(i) =>
                     applyTimeDurationSelectionFromWheels({
-                      timeIndex: i,
+                      timeIndex: normalizeTimeWheelIndex(i),
                       durationIndex: pendingDurIdxRef.current,
                     })
                   }
@@ -3622,7 +3852,9 @@ export function BookingScreen() {
                   active={modalTimeDuration}
                   data={durationWheelItems}
                   valueIndex={pendingDurIdx}
-                  onChangeIndex={setPendingDurIdx}
+                  onChangeIndex={(j) => {
+                    pendingDurIdxRef.current = j;
+                  }}
                   colors={colors}
                   onItemPress={(j) =>
                     applyTimeDurationSelectionFromWheels({
@@ -3683,7 +3915,9 @@ export function BookingScreen() {
                     active={modalTariff}
                     data={zoneWheelLabels}
                     valueIndex={pendingZoneIdx}
-                    onChangeIndex={setPendingZoneIdx}
+                    onChangeIndex={(idx) => {
+                      pendingZoneIdxRef.current = idx;
+                    }}
                     colors={colors}
                     onItemPress={applyZoneWheelSelection}
                   />
@@ -3695,7 +3929,8 @@ export function BookingScreen() {
             )}
             <Pressable
               style={styles.wheelSheetDone}
-              onPress={() => applyZoneWheelSelection(zoneWheelRef.current?.getCenterIndex() ?? pendingZoneIdx)}
+              onPress={() =>
+                applyZoneWheelSelection(zoneWheelRef.current?.getCenterIndex() ?? pendingZoneIdxRef.current)}
             >
               <View style={styles.wheelSheetDoneTextWrap}>
                 <Text style={styles.wheelSheetDoneText}>{t('booking.done')}</Text>
@@ -3833,7 +4068,9 @@ export function BookingScreen() {
               active={modalNearestDay}
               data={nearestSearchDayLabels}
               valueIndex={pendingNearestDayIdx}
-              onChangeIndex={setPendingNearestDayIdx}
+              onChangeIndex={(idx) => {
+                pendingNearestDayIdxRef.current = idx;
+              }}
               colors={colors}
               onItemPress={applyNearestDayWheelSelection}
             />
@@ -3841,7 +4078,7 @@ export function BookingScreen() {
               style={styles.wheelSheetDone}
               onPress={() =>
                 applyNearestDayWheelSelection(
-                  nearestDayWheelRef.current?.getCenterIndex() ?? pendingNearestDayIdx,
+                  nearestDayWheelRef.current?.getCenterIndex() ?? pendingNearestDayIdxRef.current,
                 )
               }
             >

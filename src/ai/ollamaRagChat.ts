@@ -1,7 +1,7 @@
 import type { KnowledgeEntry } from '../knowledge/types';
 import { getOllamaConfig } from '../config/ollamaConfig';
 import { topKnowledgeForRag } from '../knowledge/search';
-import { isAbortError, ollamaFetch, OLLAMA_RAG_TIMEOUT_MS } from './ollamaHttp';
+import { isAbortError, ollamaFetchWithRetry, OLLAMA_RAG_TIMEOUT_MS } from './ollamaHttp';
 
 const CHAT_PATH = '/chat';
 
@@ -173,7 +173,7 @@ export async function completeWithOllamaRag(args: {
   const url = `${baseUrl}${CHAT_PATH}`;
   let res: Response;
   try {
-    res = await ollamaFetch(
+    res = await ollamaFetchWithRetry(
       url,
       {
         method: 'POST',

@@ -318,6 +318,8 @@ export const messagesRu = {
   'chat.ollamaKeyHint': 'Расширенный помощник пока не подключён.',
   'chat.ollamaNoKey': 'Расширенный помощник пока недоступен.',
   'chat.ollamaError': 'Не удалось получить расширенный ответ. Ниже — ответ по справке.',
+  'chat.thinkingNeural': 'Думаю…',
+  'chat.thinkingHelp': 'Ищу ответ…',
   'chat.actionsTitle': 'Перейти',
   'chat.btnTopUp': 'Пополнить баланс',
   'chat.btnBalanceHistory': 'Движения по счёту',

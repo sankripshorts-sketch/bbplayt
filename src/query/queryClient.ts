@@ -26,9 +26,21 @@ export const asyncStoragePersister = createAsyncStoragePersister({
   throttleTime: 1000,
 });
 
+/** Какие query-ключи пишем в AsyncStorage (см. also gcTime / staleTime в хуках). */
 function shouldPersistQueryKey(queryKey: readonly unknown[]): boolean {
   const head = queryKey[0];
-  return head === 'cafes' || head === 'struct-rooms' || head === 'vk-wall';
+  if (typeof head !== 'string') return false;
+  return (
+    head === 'cafes' ||
+    head === 'struct-rooms' ||
+    head === 'vk-wall' ||
+    head === 'icafe-id-for-member' ||
+    head === 'all-prices' ||
+    head === 'books' ||
+    head === 'cafe-booking-products' ||
+    head === 'cafe-bookings-icafe' ||
+    head === 'live-pcs'
+  );
 }
 
 export const persistOptions: PersistQueryClientProviderProps['persistOptions'] = {

@@ -90,7 +90,7 @@ function SheetDragShell({
     Animated.timing(translateY, {
       toValue: travel,
       duration: 220,
-      useNativeDriver: false,
+      useNativeDriver: true,
     }).start(() => {
       onRequestClose();
       closingRef.current = false;
@@ -104,7 +104,7 @@ function SheetDragShell({
       closingRef.current = false;
       Animated.spring(translateY, {
         toValue: 0,
-        useNativeDriver: false,
+        useNativeDriver: true,
         friction: 8,
         tension: 90,
       }).start();
@@ -152,7 +152,7 @@ function SheetDragShell({
             Animated.timing(translateY, {
               toValue: travel,
               duration: 240,
-              useNativeDriver: false,
+              useNativeDriver: true,
             }).start(() => {
               onCloseRef.current();
               closingRef.current = false;
@@ -160,7 +160,7 @@ function SheetDragShell({
           } else {
             Animated.spring(translateY, {
               toValue: 0,
-              useNativeDriver: false,
+              useNativeDriver: true,
               friction: 7,
               tension: 80,
             }).start();
