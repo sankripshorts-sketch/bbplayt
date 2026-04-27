@@ -5,12 +5,13 @@ import { queryKeys } from '../../query/queryKeys';
 /**
  * Список броней пользователя по всем клубам — держим в актуальном состоянии для баннеров и проверки пересечений.
  */
-export function useMemberBooksQuery(memberAccount: string | undefined) {
+export function useMemberBooksQuery(memberAccount: string | undefined, memberId: string | undefined) {
   const acc = memberAccount?.trim();
+  const id = memberId?.trim();
   return useQuery({
-    queryKey: queryKeys.books(acc),
-    queryFn: () => bookingFlowApi.memberBooks(acc),
-    enabled: !!acc,
+    queryKey: queryKeys.books(acc, id),
+    queryFn: () => bookingFlowApi.memberBooks({ memberAccount: acc, memberId: id }),
+    enabled: !!acc || !!id,
     staleTime: 10 * 1000,
     gcTime: 30 * 60 * 1000,
     refetchInterval: 30 * 1000,

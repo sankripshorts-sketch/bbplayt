@@ -22,8 +22,9 @@ import { VisitFeedbackProvider } from '../notifications/VisitFeedbackContext';
 import { useKnowledgeReady } from '../knowledge/KnowledgeContext';
 import { useAppBootstrap } from '../query/useAppBootstrap';
 import { queryKeys } from '../query/queryKeys';
-import { ClubDataLoader } from '../features/ui/ClubDataLoader';
 import { DiceWelcomePromoOverlay } from '../features/promos/DiceWelcomePromoOverlay';
+import { FirstLoginTutorialOverlay } from '../features/promos/FirstLoginTutorialOverlay';
+import { ClubDataLoader } from '../features/ui/ClubDataLoader';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const TAB_BAR_EDGE_BLEED_PX = 128;
@@ -64,13 +65,13 @@ function MainTabs() {
     const now = Date.now();
     if (now - lastRefreshAtRef.current < 5000) return;
     lastRefreshAtRef.current = now;
-    if (user?.memberAccount?.trim()) {
-      void qc.refetchQueries({ queryKey: queryKeys.books(user.memberAccount) });
+    if (user?.memberAccount?.trim() || user?.memberId?.trim()) {
+      void qc.refetchQueries({ queryKey: queryKeys.books(user?.memberAccount, user?.memberId) });
     }
     void refreshMemberBalance().catch(() => {
       /* синхронизация данных на фокусе вкладки — best effort */
     });
-  }, [qc, refreshMemberBalance, user?.memberAccount]);
+  }, [qc, refreshMemberBalance, user?.memberAccount, user?.memberId]);
 
   useEffect(() => {
     const sub = AppState.addEventListener('change', (state) => {
@@ -116,10 +117,10 @@ function MainTabs() {
         },
         tabBarBackground: () => (
           <View
+            pointerEvents="none"
             style={[
               StyleSheet.absoluteFillObject,
               styles.tabBarEdgeBleed,
-              styles.pointerNone,
               { backgroundColor: colors.card },
             ]}
           />
@@ -218,17 +219,44 @@ const styles = StyleSheet.create({
   tabBarEdgeBleed: {
     bottom: -TAB_BAR_EDGE_BLEED_PX,
   },
-  pointerNone: {
-    pointerEvents: 'none',
+  bootstrapRoot: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'stretch',
+  },
+  bootstrapLoader: {
+    flexGrow: 1,
+    justifyContent: 'center',
   },
 });
 
 export function RootNavigator() {
   const { user, ready } = useAuth();
   const colors = useThemeColors();
+  const { t } = useLocale();
   const knowledgeReady = useKnowledgeReady();
   const { dataReady } = useAppBootstrap();
+  const [promoUnlocked, setPromoUnlocked] = useState(false);
+  const promoUnlockTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [bootstrapDeadlinePassed, setBootstrapDeadlinePassed] = useState(false);
+  useEffect(() => {
+    if (!user) {
+      if (promoUnlockTimerRef.current) {
+        clearTimeout(promoUnlockTimerRef.current);
+        promoUnlockTimerRef.current = null;
+      }
+      setPromoUnlocked(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    return () => {
+      if (promoUnlockTimerRef.current) {
+        clearTimeout(promoUnlockTimerRef.current);
+      }
+    };
+  }, []);
+
   useEffect(() => {
     if (!ready) {
       setBootstrapDeadlinePassed(false);
@@ -240,6 +268,17 @@ export function RootNavigator() {
   const bootstrapping =
     !ready ||
     (!bootstrapDeadlinePassed && (!knowledgeReady || !dataReady));
+
+  const handleTutorialDone = useCallback(() => {
+    // Небольшая пауза между закрытием туториала и следующей акцией, чтобы переход не был резким.
+    if (promoUnlockTimerRef.current) {
+      clearTimeout(promoUnlockTimerRef.current);
+    }
+    promoUnlockTimerRef.current = setTimeout(() => {
+      setPromoUnlocked(true);
+      promoUnlockTimerRef.current = null;
+    }, 220);
+  }, []);
 
   const navTheme = useMemo(
     () => ({
@@ -258,15 +297,8 @@ export function RootNavigator() {
 
   if (bootstrapping) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: colors.bg,
-        }}
-      >
-        <ClubDataLoader imageSize={300} minHeight={400} style={{ transform: [{ translateY: 0 }] }} />
+      <View style={[styles.bootstrapRoot, { backgroundColor: colors.bg }]}>
+        <ClubDataLoader message={t('common.loadingData')} minHeight={0} style={styles.bootstrapLoader} />
       </View>
     );
   }
@@ -276,7 +308,8 @@ export function RootNavigator() {
       <NavigationContainer ref={navigationRef} theme={navTheme} linking={linking}>
         {user ? <MainTabs /> : <AuthNavigator />}
       </NavigationContainer>
-      {user ? <DiceWelcomePromoOverlay /> : null}
+      {user ? <FirstLoginTutorialOverlay onDone={handleTutorialDone} /> : null}
+      {user && promoUnlocked ? <DiceWelcomePromoOverlay /> : null}
     </>
   );
 }

@@ -97,10 +97,15 @@ export const bookingFlowApi = {
     return normalizeAllPricesData(raw);
   },
 
-  memberBooks: async (memberAccount?: string): Promise<AllBooksData> => {
-    const acc = memberAccount?.trim();
+  memberBooks: async (
+    params?: string | { memberAccount?: string; memberId?: string },
+  ): Promise<AllBooksData> => {
+    const acc =
+      typeof params === 'string' ? params.trim() : (params?.memberAccount?.trim() ?? '');
+    const memberId = typeof params === 'string' ? '' : (params?.memberId?.trim() ?? '');
     const query = {
       ...(acc ? { memberAccount: acc, member_account: acc } : {}),
+      ...(memberId ? { memberId, member_id: memberId } : {}),
       // Server-side history flags: keep mixed spellings for old/new gateways.
       includePast: true,
       include_past: true,

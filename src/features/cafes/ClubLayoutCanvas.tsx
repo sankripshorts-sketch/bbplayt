@@ -23,7 +23,7 @@ import {
   type PcAvailabilityState,
 } from './clubLayoutGeometry';
 import { HallMapStatusLegend } from './HallMapStatusLegend';
-import { HALL_PREVIEW } from './hallMapPreviewTokens';
+import { getHallPreviewTheme } from './hallMapPreviewTokens';
 import { formatPublicZoneLabel } from '../../utils/publicText';
 
 function hexColor(raw: string | undefined, fallback: string): string {
@@ -39,26 +39,32 @@ const ZONE_TITLE_INSET_PX = 22;
 /** Снижение яркости зон/чипов при блокировке (поверх оверлея). */
 const SCHEME_CONTENT_DIMMED_OPACITY = 0.2;
 
-function previewChipColors(state: PcAvailabilityState): { bg: string; text: string } {
+function previewChipColors(
+  state: PcAvailabilityState,
+  hallPreview: ReturnType<typeof getHallPreviewTheme>,
+): { bg: string; text: string } {
   switch (state) {
     case 'selected':
-      return { bg: HALL_PREVIEW.selected.fill, text: '#ffffff' };
+      return { bg: hallPreview.selected.fill, text: '#ffffff' };
     case 'busy':
     case 'liveBusy':
-      return { bg: HALL_PREVIEW.busy.fill, text: '#ffffff' };
+      return { bg: hallPreview.busy.fill, text: '#ffffff' };
     case 'free':
-      return { bg: 'transparent', text: HALL_PREVIEW.chipIdleText };
+      return { bg: 'transparent', text: hallPreview.chipIdleText };
     case 'unknown':
     default:
-      return { bg: HALL_PREVIEW.unavail.fill, text: '#0f172a' };
+      return { bg: hallPreview.unavail.fill, text: '#0f172a' };
   }
 }
 
-function zoneBorderPreview(areaName: string): string | null {
+function zoneBorderPreview(
+  areaName: string,
+  hallPreview: ReturnType<typeof getHallPreviewTheme>,
+): string | null {
   const k = normalizePcZoneKind(areaName);
-  if (k === 'BootCamp') return HALL_PREVIEW.zoneBoot;
-  if (k === 'GameZone') return HALL_PREVIEW.zoneGame;
-  if (k === 'VIP') return HALL_PREVIEW.zoneVip;
+  if (k === 'BootCamp') return hallPreview.zoneBoot;
+  if (k === 'GameZone') return hallPreview.zoneGame;
+  if (k === 'VIP') return hallPreview.zoneVip;
   return null;
 }
 
@@ -104,7 +110,7 @@ export type ClubLayoutCanvasProps = {
   dimContent?: boolean;
 };
 
-export function ClubLayoutCanvas({
+function ClubLayoutCanvasInner({
   rooms,
   colors,
   icafeId,
@@ -281,6 +287,7 @@ export function ClubLayoutCanvas({
     !(schemePreview && bookingCompact) && layout.canvasH < viewportMaxH - 0.5;
 
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const hallPreview = useMemo(() => getHallPreviewTheme(colors), [colors]);
 
   const renderViewport = () => (
     <View
@@ -309,7 +316,7 @@ export function ClubLayoutCanvas({
                 const r = rooms[idx]!;
                 const zf = layout.zoneFrames[idx]!;
                 const { left, top, w, h, extentH, aw, ax, ay } = zf;
-                const previewBorder = zoneBorderPreview(r.area_name ?? '');
+                const previewBorder = zoneBorderPreview(r.area_name ?? '', hallPreview);
                 const border =
                   schemePreview && previewBorder
                     ? previewBorder
@@ -402,7 +409,7 @@ export function ClubLayoutCanvas({
                         zoneFilter != null && zoneFilter.mode === 'kinds' && !matchesTariff;
                       const adj = applyPcHallTweaks(pc.pc_name, pl, pt, chipW, chipH, hallTweak);
                       const state = pcAvailability?.[pc.pc_name] ?? (schemePreview ? 'free' : 'unknown');
-                      const preview = schemePreview ? previewChipColors(state) : null;
+                      const preview = schemePreview ? previewChipColors(state, hallPreview) : null;
                       const bg = schemePreview
                         ? preview!.bg
                         : state === 'selected'
@@ -443,7 +450,7 @@ export function ClubLayoutCanvas({
                           minHeight: ch,
                           borderWidth: chipBorderW,
                           borderColor: schemePreview
-                            ? HALL_PREVIEW.chipIdleBorder
+                            ? hallPreview.chipIdleBorder
                             : state === 'free'
                               ? colors.pcFree
                               : colors.borderLight,
@@ -530,7 +537,7 @@ export function ClubLayoutCanvas({
               styles.viewportEdge,
               {
                 pointerEvents: 'none',
-                borderColor: schemePreview ? HALL_PREVIEW.mapEdge : colors.accent,
+                borderColor: schemePreview ? hallPreview.mapEdge : colors.accent,
                 opacity: schemePreview ? 0.92 : 0.55,
               },
             ]}
@@ -578,7 +585,7 @@ export function ClubLayoutCanvas({
             style={[
               styles.zoneLabelPreview,
               styles.zoneLabelPreviewBoot,
-              { color: HALL_PREVIEW.zoneBoot, fontSize: zoneTitleFontSize },
+              { color: hallPreview.zoneBoot, fontSize: zoneTitleFontSize },
             ]}
             numberOfLines={2}
             adjustsFontSizeToFit
@@ -593,7 +600,7 @@ export function ClubLayoutCanvas({
             style={[
               styles.zoneLabelPreview,
               styles.zoneLabelPreviewGame,
-              { color: HALL_PREVIEW.zoneGame, fontSize: zoneTitleFontSize },
+              { color: hallPreview.zoneGame, fontSize: zoneTitleFontSize },
             ]}
             numberOfLines={1}
             adjustsFontSizeToFit
@@ -605,7 +612,7 @@ export function ClubLayoutCanvas({
         <View style={{ width: columnLayout.gap }} />
         <View style={{ width: columnLayout.sideW }}>
           <Text
-            style={[styles.zoneLabelPreview, { color: HALL_PREVIEW.zoneVip, fontSize: zoneTitleFontSize }]}
+            style={[styles.zoneLabelPreview, { color: hallPreview.zoneVip, fontSize: zoneTitleFontSize }]}
             numberOfLines={1}
             adjustsFontSizeToFit
             minimumFontScale={0.75}
@@ -626,7 +633,7 @@ export function ClubLayoutCanvas({
             {
               padding: shellPad,
               backgroundColor: colors.card,
-              borderColor: HALL_PREVIEW.mapEdge,
+              borderColor: hallPreview.mapEdge,
             },
           ]}
         >
@@ -645,6 +652,38 @@ export function ClubLayoutCanvas({
     </View>
   );
 }
+
+function zoneFilterEquals(a: NearestZoneFilter | undefined, b: NearestZoneFilter | undefined): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  if (a.mode !== b.mode) return false;
+  if (a.mode === 'any') return true;
+  if (b.mode === 'any') return false;
+  if (a.kinds.length !== b.kinds.length) return false;
+  for (let i = 0; i < a.kinds.length; i += 1) {
+    if (a.kinds[i] !== b.kinds[i]) return false;
+  }
+  return true;
+}
+
+export const ClubLayoutCanvas = React.memo(ClubLayoutCanvasInner, (prev, next) => {
+  return (
+    prev.rooms === next.rooms &&
+    prev.colors === next.colors &&
+    prev.icafeId === next.icafeId &&
+    zoneFilterEquals(prev.zoneFilter, next.zoneFilter) &&
+    prev.pcAvailability === next.pcAvailability &&
+    prev.onPcPress === next.onPcPress &&
+    prev.horizontalPadding === next.horizontalPadding &&
+    prev.minHeight === next.minHeight &&
+    prev.embedPreviewChrome === next.embedPreviewChrome &&
+    prev.zoneTitlesAbove === next.zoneTitlesAbove &&
+    prev.bookingCompact === next.bookingCompact &&
+    prev.maxViewportHeight === next.maxViewportHeight &&
+    prev.bookingBlockedOverlay === next.bookingBlockedOverlay &&
+    prev.dimContent === next.dimContent
+  );
+});
 
 function createStyles(colors: ColorPalette) {
   return StyleSheet.create({

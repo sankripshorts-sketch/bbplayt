@@ -22,7 +22,16 @@ export type ProfileStackParamList = {
   InsightsHub: undefined;
   GameRankingUsers: { game: 'CS2' | 'Dota 2' | 'Valorant' | 'PUBG' };
   News: undefined;
-  Settings: undefined;
+  Settings:
+    | {
+        serviceAction?: 'linked' | 'unlinked';
+        serviceKey?: 'steam' | 'epicGames';
+        actionToken?: number;
+      }
+    | undefined;
+  ServiceAuthMock: {
+    serviceKey: 'steam' | 'epicGames';
+  };
   SettingsCity: undefined;
   SettingsFace: undefined;
   FaceCapture: undefined;

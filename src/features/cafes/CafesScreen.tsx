@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Alert,
   FlatList,
+  ImageBackground,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '../../components/DinText';
+import { useAppAlert } from '../../components/AppAlertContext';
 import { TextInput } from '../../components/DinTextInput';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
@@ -42,6 +43,8 @@ import { DimmedSheetModal } from '../../components/DimmedSheetModal';
 import { DraggableWheelSheet } from '../booking/DraggableWheelSheet';
 import { TodaysBookingBanner } from '../booking/TodaysBookingBanner';
 import type { MainTabParamList } from '../../navigation/types';
+
+const CLUB_HERO_IMAGE = require('../../../assets/club-hero-photo.png');
 
 function cafeMatchesSearchQuery(c: CafeItem, qy: string): boolean {
   const name = (c.name ?? '').trim().toLowerCase();
@@ -112,6 +115,7 @@ function CafeInfoRow(props: {
 
 export function CafesScreen() {
   const { t } = useLocale();
+  const { showAlert } = useAppAlert();
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
@@ -207,7 +211,7 @@ export function CafesScreen() {
       try {
         await fn();
       } catch {
-        Alert.alert('', t('cafes.mapsOpenFail'));
+        showAlert('', t('cafes.mapsOpenFail'));
       }
     },
     [t],
@@ -215,7 +219,7 @@ export function CafesScreen() {
 
   const onSortByDistance = useCallback(async () => {
     if (!catalogHasCoords) {
-      Alert.alert('', t('cafes.distanceSortUnavailable'));
+      showAlert('', t('cafes.distanceSortUnavailable'));
       return;
     }
     if (Platform.OS === 'web') {
@@ -225,18 +229,18 @@ export function CafesScreen() {
             setUserPos({ lat: pos.coords.latitude, lng: pos.coords.longitude });
             setSortByDistance(true);
           },
-          () => Alert.alert('', t('cafes.locationDenied')),
+          () => showAlert('', t('cafes.locationDenied')),
           { enableHighAccuracy: false, maximumAge: 60_000, timeout: 15_000 },
         );
       } else {
-        Alert.alert('', t('cafes.locationDenied'));
+        showAlert('', t('cafes.locationDenied'));
       }
       return;
     }
     const Location = await import('expo-location');
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('', t('cafes.locationDenied'));
+      showAlert('', t('cafes.locationDenied'));
       return;
     }
     try {
@@ -244,7 +248,7 @@ export function CafesScreen() {
       setUserPos({ lat: loc.coords.latitude, lng: loc.coords.longitude });
       setSortByDistance(true);
     } catch {
-      Alert.alert('', t('cafes.locationDenied'));
+      showAlert('', t('cafes.locationDenied'));
     }
   }, [catalogHasCoords, t]);
 
@@ -301,18 +305,16 @@ export function CafesScreen() {
     return (
       <View style={styles.clubCard}>
         <View style={[styles.heroShell, { height: heroHeight }]}>
-          <LinearGradient colors={[heroPair[0], heroPair[1]]} style={StyleSheet.absoluteFillObject} />
+          <ImageBackground
+            source={CLUB_HERO_IMAGE}
+            style={StyleSheet.absoluteFillObject}
+            resizeMode="cover"
+          />
           <LinearGradient
-            colors={['rgba(27,34,42,0)', 'rgba(27,34,42,0.65)', colors.card]}
-            locations={[0, 0.55, 1]}
+            colors={['rgba(10,12,15,0.18)', 'rgba(10,12,15,0.55)']}
             style={StyleSheet.absoluteFillObject}
           />
-          <MaterialCommunityIcons
-            name="storefront-outline"
-            size={56}
-            color="rgba(255,255,255,0.1)"
-            style={styles.heroWatermark}
-          />
+          <LinearGradient colors={[heroPair[0], heroPair[1]]} style={[StyleSheet.absoluteFillObject, { opacity: 0.18 }]} />
           {distKm != null ? (
             <Text style={styles.heroDist}>~{distKm.toFixed(1)} km</Text>
           ) : null}
@@ -324,7 +326,7 @@ export function CafesScreen() {
             <MaterialCommunityIcons
               name={fav ? 'star' : 'star-outline'}
               size={26}
-              color={fav ? colors.accentSecondary : colors.text}
+              color={fav ? colors.accentSecondary : '#FFFFFF'}
             />
           </Pressable>
         </View>
@@ -365,7 +367,7 @@ export function CafesScreen() {
                 try {
                   await dialPhone(item.phone!);
                 } catch {
-                  Alert.alert('', t('cafes.actionFail'));
+                  showAlert('', t('cafes.actionFail'));
                 }
               }}
             />
@@ -695,7 +697,7 @@ export function CafesScreen() {
 }
 
 function createStyles(colors: ColorPalette, windowHeight: number) {
-  const jobModalScrollMaxH = Math.min(640, Math.max(400, windowHeight * 0.58));
+  const jobModalScrollMaxH = Math.min(720, Math.max(440, windowHeight * 0.66));
   return StyleSheet.create({
     root: { flex: 1, backgroundColor: colors.bg },
     bodyFlex: { flex: 1, minHeight: 0 },
@@ -751,7 +753,6 @@ function createStyles(colors: ColorPalette, windowHeight: number) {
       position: 'relative',
       overflow: 'hidden',
     },
-    heroWatermark: { position: 'absolute', alignSelf: 'center', top: 28 },
     heroDist: {
       position: 'absolute',
       left: 12,
@@ -768,7 +769,9 @@ function createStyles(colors: ColorPalette, windowHeight: number) {
       minHeight: 44,
       padding: 6,
       borderRadius: 10,
-      backgroundColor: 'rgba(0,0,0,0.25)',
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.22)',
       justifyContent: 'center',
       alignItems: 'center',
     },
@@ -796,8 +799,10 @@ function createStyles(colors: ColorPalette, windowHeight: number) {
     routeBtn: {
       paddingVertical: 8,
       paddingHorizontal: 12,
+      minHeight: 40,
       borderRadius: 10,
       backgroundColor: colors.accentDim,
+      justifyContent: 'center',
     },
     routeBtnText: { color: colors.text, fontWeight: '600', fontSize: 13 },
     mapActionsRow: {
@@ -810,6 +815,7 @@ function createStyles(colors: ColorPalette, windowHeight: number) {
       flex: 1,
       paddingVertical: 10,
       paddingHorizontal: 12,
+      minHeight: 44,
       backgroundColor: 'transparent',
       borderRadius: 12,
       borderWidth: 1,
@@ -822,6 +828,7 @@ function createStyles(colors: ColorPalette, windowHeight: number) {
       flex: 1,
       paddingVertical: 10,
       paddingHorizontal: 12,
+      minHeight: 44,
       borderRadius: 12,
       backgroundColor: colors.accent,
       alignItems: 'center',
@@ -848,7 +855,7 @@ function createStyles(colors: ColorPalette, windowHeight: number) {
       paddingHorizontal: 20,
       paddingTop: 8,
       paddingBottom: 20,
-      maxHeight: '92%',
+      maxHeight: '95%',
       borderWidth: StyleSheet.hairlineWidth,
       borderBottomWidth: 0,
       borderColor: colors.border,
@@ -981,7 +988,7 @@ function createStyles(colors: ColorPalette, windowHeight: number) {
       color: colors.text,
       marginBottom: 12,
     },
-    clubPickList: { maxHeight: 320 },
+    clubPickList: { flexGrow: 0, maxHeight: 420 },
     clubPickRow: {
       paddingVertical: 12,
       paddingHorizontal: 12,

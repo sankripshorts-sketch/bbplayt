@@ -4,7 +4,6 @@ import {
   Easing,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Vibration,
   View,
@@ -14,6 +13,7 @@ import { Audio, type AVPlaybackSource } from 'expo-av';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Text } from '../../components/DinText';
 import { useLocale } from '../../i18n/LocaleContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { tryConsumeOneDiceRoll } from '../../preferences/diceMinigameRolls';
 import { getDiceRollsTotalAvailable, loadAppPreferences, patchAppPreferences } from '../../preferences/appPreferences';
 import type { ColorPalette } from '../../theme/palettes';
@@ -25,8 +25,8 @@ import { usePromoModalBodyHeight } from './usePromoModalMinBodyHeight';
 import { Dice3DView } from './dice3d/Dice3DView';
 
 /** Обычный бросок: 3 c; быстрый — заметно короче, та же кривая. */
-const ROLL_MS_NORMAL = 3000;
-const ROLL_MS_FAST = 1100;
+const ROLL_MS_NORMAL = 3200;
+const ROLL_MS_FAST = 1250;
 /** Быстрый старт, плавное замедление к концу для поставленного броска по keyframes. */
 const ROLL_EASING = Easing.out(Easing.cubic);
 /** iOS/Android: вращение на нативном потоке (без setState на кадр). Web: без native driver. */
@@ -34,8 +34,8 @@ const ROLL_USE_NATIVE_DRIVER = Platform.OS === 'ios' || Platform.OS === 'android
 const AUTO_ROLL_DELAY_MS = 1100;
 const DICE_ROLL_SOUND: AVPlaybackSource = require('../../../assets/promos/dice-roll-sound-2.mp3');
 /** Доп. полных оборотов: бросок должен выглядеть активным даже когда стартовая и итоговая грани совпали. */
-const EXTRA_FULL_TURNS_MIN = 2;
-const EXTRA_FULL_TURNS_MAX = 3;
+const EXTRA_FULL_TURNS_MIN = 3;
+const EXTRA_FULL_TURNS_MAX = 5;
 /** Фиксированная высота зоны под результат (одинаковая для всех состояний). */
 const RESULT_SLOT_H = 112;
 
@@ -270,15 +270,15 @@ function randomRollSpinPlan(): RollSpinPlan {
   const primary = randomSign();
   const secondary = randomSign();
   return {
-    xTurns: randomExtraTurns(),
-    yTurns: randomExtraTurns(),
-    zTurns: 1 + Math.floor(Math.random() * 2),
+    xTurns: 4 + Math.floor(Math.random() * 3),
+    yTurns: 4 + Math.floor(Math.random() * 3),
+    zTurns: 2 + Math.floor(Math.random() * 2),
     xDirection: primary,
     yDirection: secondary,
     zDirection: primary === secondary ? randomSign() : primary,
-    wobbleX: 14 + Math.random() * 10,
-    wobbleY: 12 + Math.random() * 10,
-    wobbleZ: 8 + Math.random() * 8,
+    wobbleX: 22 + Math.random() * 10,
+    wobbleY: 20 + Math.random() * 10,
+    wobbleZ: 16 + Math.random() * 8,
   };
 }
 
@@ -347,6 +347,28 @@ function RollingDice3D({ rx, ry, rz }: { rx: number; ry: number; rz: number }) {
   );
 }
 
+const AnimatedRollingDice3D = React.memo(function AnimatedRollingDice3D({
+  rollProgress,
+  getEulerForProgress,
+}: {
+  rollProgress: Animated.Value;
+  getEulerForProgress: (progress: number) => Euler;
+}) {
+  const [euler, setEuler] = useState<Euler>(() => getEulerForProgress(0));
+
+  useEffect(() => {
+    setEuler(getEulerForProgress(0));
+    const listenerId = rollProgress.addListener(({ value }) => {
+      setEuler(getEulerForProgress(value));
+    });
+    return () => {
+      rollProgress.removeListener(listenerId);
+    };
+  }, [getEulerForProgress, rollProgress]);
+
+  return <RollingDice3D rx={euler.x} ry={euler.y} rz={euler.z} />;
+});
+
 type Props = {
   visible: boolean;
   onClose: () => void;
@@ -358,8 +380,9 @@ type Outcome = 'win' | 'lose' | null;
 export function DiceMinigameModal({ visible, onClose, onLocalBonusChanged }: Props) {
   const { t } = useLocale();
   const colors = useThemeColors();
+  const insets = useSafeAreaInsets();
   const bodyHeight = usePromoModalBodyHeight();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors, insets.bottom), [colors, insets.bottom]);
   const [fastRoll, setFastRoll] = useState(false);
   const [autoRoll, setAutoRoll] = useState(false);
   const [pick, setPick] = useState(1);
@@ -388,9 +411,12 @@ export function DiceMinigameModal({ visible, onClose, onLocalBonusChanged }: Pro
   fastRollRef.current = fastRoll;
 
   const settleScale = useRef(new Animated.Value(1)).current;
-  const [rollingEuler, setRollingEuler] = useState<Euler>(FACE_FINAL[1]);
   const diceRollSoundRef = useRef<Audio.Sound | null>(null);
   const diceRollSoundLoadPromiseRef = useRef<Promise<Audio.Sound | null> | null>(null);
+  const getEulerForProgress = useCallback((progress: number): Euler => {
+    const result = (rollResultRef.current ?? 1) as DiceValue;
+    return rollEulerForProgress(progress, result, rollStartEuRef.current, rollSpinPlanRef.current);
+  }, []);
 
   const getDiceRollSound = useCallback(async () => {
     if (diceRollSoundRef.current) return diceRollSoundRef.current;
@@ -578,7 +604,7 @@ export function DiceMinigameModal({ visible, onClose, onLocalBonusChanged }: Pro
     () =>
       rollProgress.interpolate({
         inputRange: [0, 0.16, 0.38, 0.62, 0.82, 1],
-        outputRange: [0, 8, -7, 5, -2, 0],
+        outputRange: [0, 11, -10, 7, -3, 0],
         extrapolate: 'clamp',
       }),
     [rollProgress],
@@ -587,7 +613,7 @@ export function DiceMinigameModal({ visible, onClose, onLocalBonusChanged }: Pro
     () =>
       rollProgress.interpolate({
         inputRange: [0, 0.1, 0.28, 0.5, 0.7, 0.88, 1],
-        outputRange: [0, -6, -18, -14, -7, 2, 0],
+        outputRange: [0, -8, -24, -18, -9, 3, 0],
         extrapolate: 'clamp',
       }),
     [rollProgress],
@@ -597,7 +623,7 @@ export function DiceMinigameModal({ visible, onClose, onLocalBonusChanged }: Pro
     () =>
       rollProgress.interpolate({
         inputRange: [0, 0.18, 0.45, 0.68, 0.86, 1],
-        outputRange: [1, 1.05, 1.02, 0.98, 1.025, 1],
+        outputRange: [1, 1.075, 1.03, 0.965, 1.03, 1],
         extrapolate: 'clamp',
       }),
     [rollProgress],
@@ -620,19 +646,6 @@ export function DiceMinigameModal({ visible, onClose, onLocalBonusChanged }: Pro
       }),
     [rollProgress],
   );
-
-  useEffect(() => {
-    if (!rolling) return;
-    const updateEuler = (progress: number) => {
-      const result = (rollResultRef.current ?? 1) as DiceValue;
-      setRollingEuler(rollEulerForProgress(progress, result, rollStartEuRef.current, rollSpinPlanRef.current));
-    };
-    updateEuler(0);
-    const listenerId = rollProgress.addListener(({ value }) => updateEuler(value));
-    return () => {
-      rollProgress.removeListener(listenerId);
-    };
-  }, [rolling, rollProgress]);
 
   useEffect(() => {
     if (rolling || rolled == null) return;
@@ -717,7 +730,7 @@ export function DiceMinigameModal({ visible, onClose, onLocalBonusChanged }: Pro
   const idleDieEuler = FACE_FINAL[idleFace];
 
   const cardShell = (children: React.ReactNode, borderColor: string, accent: string, cardBg: string = colors.card) => (
-    <View
+    <Animated.View
       style={[
         styles.resultCard,
         { borderColor, minHeight: RESULT_SLOT_H, backgroundColor: cardBg },
@@ -727,7 +740,7 @@ export function DiceMinigameModal({ visible, onClose, onLocalBonusChanged }: Pro
     >
       <View style={[styles.resultAccent, { backgroundColor: accent }]} />
       {children}
-    </View>
+    </Animated.View>
   );
 
   const idleSub = rollsAvailable < 1 ? t('promo.diceIdleSubNoRolls') : t('promo.diceIdleSub');
@@ -816,13 +829,6 @@ export function DiceMinigameModal({ visible, onClose, onLocalBonusChanged }: Pro
   return (
     <CenteredCardModal visible={visible} title={title} onClose={onClose} noScroll bodyHeight={bodyHeight}>
       <View style={styles.bodyRoot}>
-        <ScrollView
-          style={styles.bodyScroll}
-          contentContainerStyle={styles.bodyScrollContent}
-          showsVerticalScrollIndicator
-          bounces
-          keyboardShouldPersistTaps="handled"
-        >
         <View style={styles.gameSection}>
           <View style={styles.resultSlot}>{resultBlock}</View>
 
@@ -887,7 +893,7 @@ export function DiceMinigameModal({ visible, onClose, onLocalBonusChanged }: Pro
                       },
                     ]}
                   >
-                    <RollingDice3D rx={rollingEuler.x} ry={rollingEuler.y} rz={rollingEuler.z} />
+                    <AnimatedRollingDice3D rollProgress={rollProgress} getEulerForProgress={getEulerForProgress} />
                   </Animated.View>
                 ) : (
                   <Animated.View
@@ -967,15 +973,13 @@ export function DiceMinigameModal({ visible, onClose, onLocalBonusChanged }: Pro
             <Text style={styles.rulesTitle}>{t('promo.diceRulesTitle')}</Text>
             <Text style={styles.rulesBody}>{t('promo.diceIntro')}</Text>
           </View>
-
         </View>
-        </ScrollView>
       </View>
     </CenteredCardModal>
   );
 }
 
-function createStyles(colors: ColorPalette) {
+function createStyles(colors: ColorPalette, safeBottomInset: number) {
   return StyleSheet.create({
     bodyRoot: {
       width: '100%',
@@ -984,17 +988,11 @@ function createStyles(colors: ColorPalette) {
       flexDirection: 'column',
       justifyContent: 'flex-start',
     },
-    bodyScroll: { flex: 1, minHeight: 0, width: '100%' },
-    bodyScrollContent: {
-      /** На маленьких экранах гарантируем докрутку до блока правил. */
-      paddingBottom: 20,
-      paddingTop: 2,
-    },
     rulesBlock: {
       width: '100%',
       flexShrink: 0,
-      marginTop: 8,
-      paddingVertical: 10,
+      marginTop: 6,
+      paddingVertical: 8,
       paddingHorizontal: 6,
     },
     rulesTitle: {
@@ -1005,13 +1003,20 @@ function createStyles(colors: ColorPalette) {
       marginBottom: 6,
     },
     rulesBody: {
-      fontSize: 14,
-      lineHeight: 20,
+      fontSize: 13,
+      lineHeight: 18,
       color: colors.text,
       opacity: 0.9,
       textAlign: 'center',
     },
-    gameSection: { width: '100%', justifyContent: 'flex-start', paddingTop: 0 },
+    gameSection: {
+      width: '100%',
+      justifyContent: 'space-between',
+      flex: 1,
+      minHeight: 0,
+      paddingTop: 2,
+      paddingBottom: Math.max(8, safeBottomInset > 0 ? 2 : 0),
+    },
     resultSlot: {
       minHeight: RESULT_SLOT_H,
       width: '100%',
@@ -1066,7 +1071,7 @@ function createStyles(colors: ColorPalette) {
     resultSubRolling: { fontSize: 14, lineHeight: 20, color: 'transparent' },
     resultTitleNeutral: { fontSize: 16, fontWeight: '800', color: colors.text, marginBottom: 2 },
     resultSubNeutral: { fontSize: 14, lineHeight: 20, color: colors.muted },
-    gameBlock: { width: '100%', flexShrink: 0, marginTop: 12, gap: 0, paddingBottom: 2 },
+    gameBlock: { width: '100%', flexShrink: 0, marginTop: 10, gap: 0, paddingBottom: 0 },
     rollsAvailableLine: {
       fontSize: 14,
       lineHeight: 20,
@@ -1077,7 +1082,7 @@ function createStyles(colors: ColorPalette) {
       marginBottom: 2,
     },
     pickerLabel: { fontSize: 12, fontWeight: '700', color: colors.muted, marginBottom: 8, letterSpacing: 0.2 },
-    nums: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12, justifyContent: 'center' },
+    nums: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10, justifyContent: 'center' },
     numChip: {
       width: 44,
       height: 44,
@@ -1087,7 +1092,7 @@ function createStyles(colors: ColorPalette) {
       justifyContent: 'center',
     },
     numText: { fontSize: 18, fontWeight: '800' },
-    diceRow: { alignItems: 'center', marginBottom: 12 },
+    diceRow: { alignItems: 'center', marginBottom: 10 },
     diceBox: {
       position: 'relative',
       width: 168,
@@ -1114,10 +1119,11 @@ function createStyles(colors: ColorPalette) {
       alignItems: 'center',
       justifyContent: 'center',
       gap: 10,
-      marginTop: 4,
+      marginTop: 2,
       backgroundColor: colors.accent,
       borderRadius: 16,
-      paddingVertical: 14,
+      paddingVertical: 12,
+      minHeight: 48,
       ...Platform.select({
         ios: {
           shadowColor: '#000',
@@ -1130,6 +1136,6 @@ function createStyles(colors: ColorPalette) {
         default: {},
       }),
     },
-    rollText: { color: colors.accentTextOnButton, fontWeight: '800', fontSize: 16 },
+    rollText: { color: colors.accentTextOnButton, fontWeight: '800', fontSize: 16, lineHeight: 20 },
   });
 }

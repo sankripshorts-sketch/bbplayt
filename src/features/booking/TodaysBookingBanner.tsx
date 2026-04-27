@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Animated,
   PanResponder,
   Pressable,
@@ -9,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { Text } from '../../components/DinText';
+import { useAppAlert } from '../../components/AppAlertContext';
 import { useQuery } from '@tanstack/react-query';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuth } from '../../auth/AuthContext';
@@ -45,6 +45,7 @@ type Props = {
 export function TodaysBookingBanner({ style }: Props) {
   const { user } = useAuth();
   const { t, locale } = useLocale();
+  const { showAlert } = useAppAlert();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [cancellingKey, setCancellingKey] = useState<string | null>(null);
@@ -53,7 +54,7 @@ export function TodaysBookingBanner({ style }: Props) {
   const progress = useRef(new Animated.Value(1)).current;
   const isFocused = useIsFocused();
 
-  const booksQ = useMemberBooksQuery(user?.memberAccount);
+  const booksQ = useMemberBooksQuery(user?.memberAccount, user?.memberId);
   const cafesQ = useQuery({
     queryKey: queryKeys.cafes(),
     queryFn: () => cafesApi.list(),
@@ -96,7 +97,7 @@ export function TodaysBookingBanner({ style }: Props) {
 
   const confirmCancel = useCallback(
     (line: TodayBookingLine) => {
-      Alert.alert(t('booking.cancelBookingTitle'), t('booking.cancelBookingBody'), [
+      showAlert(t('booking.cancelBookingTitle'), t('booking.cancelBookingBody'), [
         { text: t('booking.cancelBookingDismiss'), style: 'cancel' },
         {
           text: t('booking.cancelBookingConfirm'),
@@ -120,7 +121,7 @@ export function TodaysBookingBanner({ style }: Props) {
                 },
                 onError: (err) => {
                   const msg = formatPublicErrorMessage(err, t, 'booking.errorGeneric');
-                  Alert.alert(t('booking.errorGeneric'), msg);
+                  showAlert(t('booking.errorGeneric'), msg);
                 },
               },
             );
@@ -128,7 +129,7 @@ export function TodaysBookingBanner({ style }: Props) {
         },
       ]);
     },
-    [cancelMutation, t],
+    [cancelMutation, showAlert, t],
   );
 
   useEffect(() => {
@@ -279,6 +280,10 @@ export function TodaysBookingBanner({ style }: Props) {
                 inputRange: [0, 1],
                 outputRange: ['0%', '100%'],
               }),
+              opacity: progress.interpolate({
+                inputRange: [0, 0.08, 1],
+                outputRange: [0, 0.45, 1],
+              }),
             },
           ]}
         />
@@ -290,22 +295,26 @@ export function TodaysBookingBanner({ style }: Props) {
 function createStyles(colors: ColorPalette) {
   return StyleSheet.create({
     wrap: {
+      position: 'absolute',
+      top: 8,
+      left: 12,
+      right: 12,
+      zIndex: 1200,
       flexDirection: 'row',
       alignItems: 'flex-start',
       gap: 10,
-      paddingTop: 10,
-      paddingBottom: 12,
+      paddingTop: 12,
+      paddingBottom: 14,
       paddingHorizontal: 12,
-      marginBottom: 8,
-      borderRadius: 14,
+      borderRadius: 16,
       borderWidth: 1,
       borderColor: colors.accent,
       backgroundColor: colors.accentDim,
       overflow: 'hidden',
       shadowColor: '#000',
-      shadowOpacity: 0.2,
-      shadowRadius: 8,
-      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.22,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 5 },
       elevation: 8,
     },
     iconBadge: {
@@ -327,11 +336,11 @@ function createStyles(colors: ColorPalette) {
       marginBottom: 6,
     },
     title: {
-      fontSize: 13,
+      fontSize: 12,
       fontWeight: '800',
-      color: colors.text,
+      color: colors.accentBright,
       textTransform: 'uppercase',
-      letterSpacing: 0.2,
+      letterSpacing: 0.35,
     },
     lineRow: {
       flexDirection: 'row',
@@ -346,19 +355,19 @@ function createStyles(colors: ColorPalette) {
       color: colors.text,
       lineHeight: 20,
       fontWeight: '700',
-      backgroundColor: 'rgba(0,0,0,0.12)',
-      borderRadius: 10,
+      backgroundColor: 'rgba(0,0,0,0.16)',
+      borderRadius: 12,
       paddingVertical: 8,
-      paddingHorizontal: 10,
+      paddingHorizontal: 11,
     },
     cancelBtn: {
       minHeight: 38,
       paddingVertical: 8,
       paddingHorizontal: 12,
-      borderRadius: 8,
+      borderRadius: 10,
       borderWidth: 1,
       borderColor: colors.accent,
-      backgroundColor: 'rgba(0,0,0,0.14)',
+      backgroundColor: 'rgba(0,0,0,0.18)',
       justifyContent: 'center',
     },
     cancelBtnPressed: { opacity: 0.85 },
@@ -372,8 +381,8 @@ function createStyles(colors: ColorPalette) {
     ackBtn: {
       alignSelf: 'flex-start',
       paddingVertical: 8,
-      paddingHorizontal: 16,
-      borderRadius: 11,
+      paddingHorizontal: 18,
+      borderRadius: 12,
       backgroundColor: colors.accent,
       borderWidth: 1,
       borderColor: colors.accentBright,
@@ -382,22 +391,20 @@ function createStyles(colors: ColorPalette) {
     ackBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
     progressTrack: {
       position: 'absolute',
-      left: 0,
-      right: 0,
-      bottom: 0,
-      height: 4,
-      borderBottomLeftRadius: 13,
-      borderBottomRightRadius: 13,
+      left: 8,
+      right: 8,
+      bottom: 6,
+      height: 3,
+      borderRadius: 2,
       overflow: 'hidden',
-      backgroundColor: 'rgba(255,255,255,0.1)',
+      backgroundColor: 'rgba(255,255,255,0.06)',
     },
     progressFill: {
       position: 'absolute',
-      right: 0,
+      left: 0,
       top: 0,
       height: '100%',
-      borderTopLeftRadius: 2,
-      borderBottomLeftRadius: 2,
+      borderRadius: 2,
       backgroundColor: colors.accentBright,
     },
   });

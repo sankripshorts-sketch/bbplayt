@@ -19,7 +19,7 @@ import { formatPublicClubLabel, formatPublicPcLabel } from '../utils/publicText'
 export function TodayBookingNotificationSync() {
   const { user } = useAuth();
   const { t, locale } = useLocale();
-  const booksQ = useMemberBooksQuery(user?.memberAccount);
+  const booksQ = useMemberBooksQuery(user?.memberAccount, user?.memberId);
   const nowMs = useBookingNowMs(60_000);
   const cafesQ = useQuery({
     queryKey: queryKeys.cafes(),

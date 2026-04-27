@@ -3,7 +3,6 @@ import {
   FlatList,
   Image,
   KeyboardAvoidingView,
-  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -23,6 +22,7 @@ import { useThemeColors, fonts, type ColorPalette } from '../../theme';
 import { Text } from '../../components/DinText';
 import { TabScreenTopBar } from '../../components/TabScreenTopBar';
 import { DimmedSheetModal } from '../../components/DimmedSheetModal';
+import { useAppAlert } from '../../components/AppAlertContext';
 import { DraggableWheelSheet } from '../booking/DraggableWheelSheet';
 import { FOOD_CATEGORIES, type FoodCategoryId, type FoodProduct, FOOD_PRODUCTS, getProductById } from './foodCatalog';
 import { useFoodCart } from './FoodContext';
@@ -30,13 +30,6 @@ import { useFoodCart } from './FoodContext';
 const CATEGORY_ALL = 'all' as const;
 
 type CatFilter = typeof CATEGORY_ALL | FoodCategoryId;
-
-type PayResultState = {
-  ok: boolean;
-  title: string;
-  body: string;
-  showTopUp?: boolean;
-};
 
 type FoodLineStyles = ReturnType<typeof createStyles>;
 
@@ -120,6 +113,7 @@ export function FoodScreen() {
   const { width: windowWidth } = useWindowDimensions();
   const { t, locale } = useLocale();
   const { user, patchUser } = useAuth();
+  const { showAlert } = useAppAlert();
   const navigation = useNavigation<BottomTabNavigationProp<MainTabParamList, 'Food'>>();
   const {
     cart,
@@ -135,14 +129,10 @@ export function FoodScreen() {
   const [query, setQuery] = useState('');
   const [cat, setCat] = useState<CatFilter>(CATEGORY_ALL);
   const [cartOpen, setCartOpen] = useState(false);
-  const [lowBalanceOpen, setLowBalanceOpen] = useState(false);
-  const [lowBalanceNeed, setLowBalanceNeed] = useState(0);
-  const [lowBalanceHave, setLowBalanceHave] = useState('0');
   const [payBusy, setPayBusy] = useState(false);
   const [deliverToPc, setDeliverToPc] = useState(false);
   const [quickBuyProduct, setQuickBuyProduct] = useState<FoodProduct | null>(null);
   const [quickBuyQty, setQuickBuyQty] = useState(1);
-  const [payResult, setPayResult] = useState<PayResultState | null>(null);
 
   const styles = useMemo(
     () => createStyles(colors, 12 + insets.bottom, windowWidth),
@@ -150,8 +140,6 @@ export function FoodScreen() {
   );
 
   const goTopUp = useCallback(() => {
-    setLowBalanceOpen(false);
-    setPayResult(null);
     navigation.navigate('Profile', { screen: 'ProfileHome', params: { openTopUp: true } });
   }, [navigation]);
 
@@ -176,27 +164,26 @@ export function FoodScreen() {
   const runPurchase = useCallback(
     async (amountRub: number, delivery: boolean) => {
       if (!user?.memberId) {
-        setPayResult({
-          ok: false,
-          title: t('food.purchaseFailureTitle'),
-          body: t('food.purchaseNotSignedIn'),
-        });
+        showAlert(t('food.purchaseFailureTitle'), t('food.purchaseNotSignedIn'));
         return false;
       }
       const current = user.balanceRub;
       if (current === undefined) {
-        setPayResult({
-          ok: false,
-          title: t('food.purchaseFailureTitle'),
-          body: t('food.purchaseNoBalanceData'),
-          showTopUp: true,
-        });
+        showAlert(t('food.purchaseFailureTitle'), t('food.purchaseNoBalanceData'), [
+          { text: t('food.goTopUp'), onPress: goTopUp },
+          { text: t('profile.close'), style: 'cancel' },
+        ]);
         return false;
       }
       if (current < amountRub) {
-        setLowBalanceNeed(amountRub);
-        setLowBalanceHave(current.toFixed(2));
-        setLowBalanceOpen(true);
+        showAlert(
+          t('food.insufficientTitle'),
+          t('food.insufficientBody', { need: amountRub.toFixed(0), have: current.toFixed(2) }),
+          [
+            { text: t('food.goTopUp'), onPress: goTopUp },
+            { text: t('profile.close'), style: 'cancel' },
+          ],
+        );
         return false;
       }
       setPayBusy(true);
@@ -204,24 +191,16 @@ export function FoodScreen() {
         await patchUser({ balanceRub: current - amountRub });
         const base = t('food.purchaseDeducted', { amount: amountRub.toFixed(2) });
         const body = delivery ? `${base}\n\n${t('food.purchaseDeductedDelivery')}` : base;
-        setPayResult({
-          ok: true,
-          title: t('food.purchaseSuccessTitle'),
-          body,
-        });
+        showAlert(t('food.purchaseSuccessTitle'), body);
         return true;
       } catch {
-        setPayResult({
-          ok: false,
-          title: t('food.purchaseFailureTitle'),
-          body: t('food.purchaseError'),
-        });
+        showAlert(t('food.purchaseFailureTitle'), t('food.purchaseError'));
         return false;
       } finally {
         setPayBusy(false);
       }
     },
-    [user?.memberId, user?.balanceRub, patchUser, t],
+    [user?.memberId, user?.balanceRub, patchUser, t, showAlert, goTopUp],
   );
 
   const openQuickBuy = useCallback((p: FoodProduct) => {
@@ -587,67 +566,6 @@ export function FoodScreen() {
         )}
       </DimmedSheetModal>
 
-      <Modal
-        visible={!!payResult}
-        animationType="fade"
-        transparent
-        onRequestClose={() => setPayResult(null)}
-        presentationStyle={Platform.OS === 'ios' ? 'overFullScreen' : undefined}
-      >
-        <View style={styles.payResultOverlay}>
-          <View style={styles.payResultCard}>
-            <Text style={styles.payResultTitle}>{payResult?.title}</Text>
-            <Text style={styles.payResultBody}>{payResult?.body}</Text>
-            {payResult?.showTopUp ? (
-              <Pressable
-                style={({ pressed }) => [styles.checkoutBtn, pressed && styles.pressed, { marginTop: 16 }]}
-                onPress={goTopUp}
-              >
-                <Text style={styles.checkoutText}>{t('food.goTopUp')}</Text>
-              </Pressable>
-            ) : null}
-            <Pressable
-              style={({ pressed }) => [
-                payResult?.ok ? styles.payResultOkBtn : styles.payResultCloseBtn,
-                pressed && styles.pressed,
-                { marginTop: payResult?.showTopUp ? 10 : 20 },
-              ]}
-              onPress={() => setPayResult(null)}
-            >
-              <Text style={payResult?.ok ? styles.payResultOkBtnText : styles.payResultCloseBtnText}>
-                {t('verify.alertOk')}
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal
-        visible={lowBalanceOpen}
-        animationType="fade"
-        transparent
-        presentationStyle={Platform.OS === 'ios' ? 'overFullScreen' : undefined}
-      >
-        <View style={styles.modalBackdropCenter}>
-          <View style={styles.warnCard}>
-            <Text style={styles.warnTitle}>{t('food.insufficientTitle')}</Text>
-            <Text style={styles.warnBody}>
-              {t('food.insufficientBody', { need: lowBalanceNeed.toFixed(0), have: lowBalanceHave })}
-            </Text>
-            <View style={styles.warnBtns}>
-              <Pressable style={({ pressed }) => [styles.checkoutBtn, pressed && styles.pressed]} onPress={goTopUp}>
-                <Text style={styles.checkoutText}>{t('food.goTopUp')}</Text>
-              </Pressable>
-              <Pressable
-                style={({ pressed }) => [styles.btnGhostWide, pressed && styles.pressed]}
-                onPress={() => setLowBalanceOpen(false)}
-              >
-                <Text style={styles.btnGhostText}>{t('profile.close')}</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -802,7 +720,7 @@ function createStyles(colors: ColorPalette, listPadBottom: number, windowWidth: 
       backgroundColor: colors.bg,
       borderTopLeftRadius: 20,
       borderTopRightRadius: 20,
-      maxHeight: '78%',
+      maxHeight: '88%',
     },
     modalHeader: {
       flexDirection: 'row',
@@ -870,62 +788,10 @@ function createStyles(colors: ColorPalette, listPadBottom: number, windowWidth: 
       backgroundColor: colors.accent,
       borderRadius: 12,
       paddingVertical: 10,
+      minHeight: 48,
       alignItems: 'center',
+      justifyContent: 'center',
     },
     checkoutText: { fontSize: 17, fontFamily: fonts.semibold, color: colors.accentTextOnButton },
-    payResultOverlay: {
-      flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.95)',
-      justifyContent: 'center',
-      padding: 24,
-    },
-    payResultCard: { alignItems: 'stretch', maxWidth: 420, alignSelf: 'center', width: '100%' },
-    payResultTitle: {
-      color: colors.text,
-      fontSize: 26,
-      fontWeight: '700',
-      textAlign: 'center',
-      lineHeight: 34,
-      fontFamily: fonts.semibold,
-    },
-    payResultBody: {
-      color: colors.muted,
-      fontSize: 17,
-      textAlign: 'center',
-      marginTop: 20,
-      lineHeight: 26,
-      fontFamily: fonts.regular,
-    },
-    payResultOkBtn: {
-      backgroundColor: colors.success,
-      borderRadius: 12,
-      paddingVertical: 14,
-      paddingHorizontal: 24,
-      alignItems: 'center',
-    },
-    payResultOkBtnText: { color: colors.accentTextOnButton, fontWeight: '700', fontSize: 18, fontFamily: fonts.semibold },
-    payResultCloseBtn: {
-      backgroundColor: colors.card,
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: colors.border,
-      paddingVertical: 14,
-      paddingHorizontal: 24,
-      alignItems: 'center',
-    },
-    payResultCloseBtnText: { color: colors.text, fontWeight: '700', fontSize: 18, fontFamily: fonts.semibold },
-    modalBackdropCenter: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 20 },
-    warnCard: { backgroundColor: colors.card, borderRadius: 16, padding: 20, borderWidth: 1, borderColor: colors.border },
-    warnTitle: { fontSize: 18, fontFamily: fonts.semibold, color: colors.text, marginBottom: 8 },
-    warnBody: { fontSize: 15, lineHeight: 22, color: colors.text, fontFamily: fonts.regular, marginBottom: 16 },
-    warnBtns: { gap: 10 },
-    btnGhostWide: {
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 12,
-      paddingVertical: 12,
-      alignItems: 'center',
-    },
-    btnGhostText: { fontSize: 16, fontFamily: fonts.medium, color: colors.text },
   });
 }

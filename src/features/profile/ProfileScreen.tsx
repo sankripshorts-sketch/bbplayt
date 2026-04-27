@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -37,6 +36,12 @@ import { DiceMinigameModal } from '../promos/DiceMinigameModal';
 import type { PromoId } from '../promos/promoTypes';
 
 const TOP_UP_QUICK_AMOUNTS = [100, 200, 500, 1000, 1500] as const;
+type TopUpReceipt = {
+  amountRub: number;
+  bonusRub: number;
+  balanceRub: number;
+  bonusBalanceRub: number;
+};
 
 /** Фиксированные ширины полос в таблице бонусов (px). 100 ₽ — минимум, дальше — по заданной шкале. */
 const TOP_UP_TABLE_PILL_WIDTH: Record<(typeof TOP_UP_QUICK_AMOUNTS)[number], number> = {
@@ -62,6 +67,7 @@ export function ProfileScreen() {
   const [topUpPromo, setTopUpPromo] = useState('');
   const [topUpBusy, setTopUpBusy] = useState(false);
   const [topUpErr, setTopUpErr] = useState<string | null>(null);
+  const [topUpReceipt, setTopUpReceipt] = useState<TopUpReceipt | null>(null);
   const [topUpBonusByAmount, setTopUpBonusByAmount] = useState<
     Record<(typeof TOP_UP_QUICK_AMOUNTS)[number], number | null>
   >({} as Record<(typeof TOP_UP_QUICK_AMOUNTS)[number], number | null>);
@@ -150,7 +156,12 @@ export function ProfileScreen() {
       setTopUpOpen(false);
       setTopUpAmount('');
       setTopUpPromo('');
-      Alert.alert('', t('profile.mockTopupSuccess'));
+      setTopUpReceipt({
+        amountRub: amount,
+        bonusRub: bonus,
+        balanceRub: nextBalance,
+        bonusBalanceRub: nextBonus,
+      });
     } catch (e) {
       setTopUpErr(formatPublicErrorMessage(e, t, 'profile.mockTopupError'));
     } finally {
@@ -369,7 +380,7 @@ export function ProfileScreen() {
                         <View
                           style={[
                             styles.bonusAmountBar,
-                            { borderRightColor: colors.accent, width: TOP_UP_TABLE_PILL_WIDTH[amount] },
+                            { borderRightColor: colors.success, width: TOP_UP_TABLE_PILL_WIDTH[amount] },
                           ]}
                         >
                           <Text style={[styles.bonusAmountBarText, { color: colors.text }]}>
@@ -456,6 +467,55 @@ export function ProfileScreen() {
           </KeyboardAvoidingView>
         )}
       </DimmedSheetModal>
+      <DimmedSheetModal
+        visible={topUpReceipt != null}
+        onRequestClose={() => setTopUpReceipt(null)}
+        contentAlign="stretch"
+        contentWrapperStyle={styles.topUpReceiptHost}
+      >
+        {() => (
+          <View style={styles.topUpReceiptCard}>
+            <View style={styles.topUpReceiptIcon}>
+              <MaterialCommunityIcons name="check-circle" size={24} color={colors.success} />
+            </View>
+            <Text style={styles.topUpReceiptTitle}>{t('profile.topUpSuccessTitle')}</Text>
+            <Text style={styles.topUpReceiptLead}>
+              {t('profile.topUpSuccessAmount', {
+                amount: (topUpReceipt?.amountRub ?? 0).toFixed(0),
+              })}
+            </Text>
+            {topUpReceipt && topUpReceipt.bonusRub > 0 ? (
+              <Text style={styles.topUpReceiptBonus}>
+                {t('profile.topUpSuccessBonus', {
+                  bonus: topUpReceipt.bonusRub.toFixed(0),
+                })}
+              </Text>
+            ) : (
+              <Text style={styles.topUpReceiptMuted}>{t('profile.topUpSuccessBonusNone')}</Text>
+            )}
+            <View style={styles.topUpReceiptTotals}>
+              <Text style={styles.topUpReceiptTotalsText}>
+                {t('profile.topUpSuccessBalance', {
+                  balance: (topUpReceipt?.balanceRub ?? 0).toFixed(2),
+                })}
+              </Text>
+              <Text style={styles.topUpReceiptTotalsText}>
+                {t('profile.topUpSuccessBonusBalance', {
+                  bonusBalance: (topUpReceipt?.bonusBalanceRub ?? 0).toFixed(2),
+                })}
+              </Text>
+            </View>
+            <Pressable
+              style={({ pressed }) => [styles.topUpReceiptButton, pressed && styles.topUpReceiptButtonPressed]}
+              onPress={() => setTopUpReceipt(null)}
+              accessibilityRole="button"
+              accessibilityLabel={t('profile.topUpSuccessClose')}
+            >
+              <Text style={styles.topUpReceiptButtonText}>{t('profile.topUpSuccessClose')}</Text>
+            </Pressable>
+          </View>
+        )}
+      </DimmedSheetModal>
       <TodaysBookingBanner style={styles.bookingHeadsUpOverlay} />
     </SafeAreaView>
   );
@@ -472,6 +532,88 @@ function createStyles(colors: ColorPalette, contentPaddingBottom: number) {
       flex: 1,
       width: '100%',
       justifyContent: 'flex-end',
+    },
+    topUpReceiptHost: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 20,
+    },
+    topUpReceiptCard: {
+      width: '100%',
+      maxWidth: 380,
+      backgroundColor: colors.cardElevated,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: colors.border,
+      paddingHorizontal: 18,
+      paddingTop: 18,
+      paddingBottom: 14,
+      alignItems: 'stretch',
+      gap: 10,
+    },
+    topUpReceiptIcon: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: `${colors.success}22`,
+      borderWidth: 1,
+      borderColor: `${colors.success}55`,
+      alignSelf: 'center',
+    },
+    topUpReceiptTitle: {
+      color: colors.text,
+      fontSize: 21,
+      fontWeight: '800',
+      textAlign: 'center',
+    },
+    topUpReceiptLead: {
+      color: colors.text,
+      fontSize: 16,
+      fontWeight: '700',
+      textAlign: 'center',
+    },
+    topUpReceiptBonus: {
+      color: colors.success,
+      fontSize: 15,
+      fontWeight: '700',
+      textAlign: 'center',
+    },
+    topUpReceiptMuted: {
+      color: colors.muted,
+      fontSize: 14,
+      textAlign: 'center',
+    },
+    topUpReceiptTotals: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.card,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      gap: 4,
+    },
+    topUpReceiptTotalsText: {
+      color: colors.text,
+      fontSize: 14,
+      fontWeight: '600',
+      textAlign: 'center',
+    },
+    topUpReceiptButton: {
+      marginTop: 2,
+      borderRadius: 12,
+      backgroundColor: colors.accent,
+      paddingVertical: 11,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    topUpReceiptButtonPressed: { opacity: 0.9 },
+    topUpReceiptButtonText: {
+      color: colors.accentTextOnButton,
+      fontSize: 15,
+      fontWeight: '800',
     },
     /** Шапка вне скролла — заголовок и настройки всегда сверху */
     headerChrome: { paddingHorizontal: 16, paddingTop: 4 },
@@ -691,8 +833,8 @@ function createStyles(colors: ColorPalette, contentPaddingBottom: number) {
       justifyContent: 'center',
       borderWidth: 1,
       borderRightWidth: 3,
-      backgroundColor: colors.chipOn,
-      borderColor: colors.border,
+      backgroundColor: `${colors.success}22`,
+      borderColor: `${colors.success}44`,
       overflow: 'visible',
       position: 'relative',
     },

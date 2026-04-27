@@ -13,6 +13,7 @@ import { FoodProvider } from './src/features/food/FoodContext';
 import { LocaleProvider } from './src/i18n/LocaleContext';
 import { KnowledgeProvider } from './src/knowledge/KnowledgeContext';
 import { AppErrorBoundary } from './src/components/AppErrorBoundary';
+import { AppAlertProvider } from './src/components/AppAlertContext';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { ThemeProvider, applyDefaultTypography, useAppFonts } from './src/theme';
 
@@ -100,18 +101,20 @@ export default function App() {
       <SafeAreaProvider>
         <ThemeProvider>
           <LocaleProvider>
-            <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
-              <AuthProvider>
-                <FoodProvider>
-                  <KnowledgeProvider>
-                    <AppErrorBoundary>
-                      <StatusBar style="light" />
-                      <RootNavigator />
-                    </AppErrorBoundary>
-                  </KnowledgeProvider>
-                </FoodProvider>
-              </AuthProvider>
-            </PersistQueryClientProvider>
+            <AppAlertProvider>
+              <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
+                <AuthProvider>
+                  <FoodProvider>
+                    <KnowledgeProvider>
+                      <AppErrorBoundary>
+                        <StatusBar style="light" translucent={false} />
+                        <RootNavigator />
+                      </AppErrorBoundary>
+                    </KnowledgeProvider>
+                  </FoodProvider>
+                </AuthProvider>
+              </PersistQueryClientProvider>
+            </AppAlertProvider>
           </LocaleProvider>
         </ThemeProvider>
       </SafeAreaProvider>

@@ -25,7 +25,9 @@ export function usePromoModalBodyHeight() {
     const titleAndCardChrome = 100;
     const byBackdrop = Math.max(0, Math.floor(verticalRoom - titleAndCardChrome));
     const byCardCap = Math.floor(winH * CARD_MAX_HEIGHT_FRACTION - titleAndCardChrome - 6);
-    const capped = Math.min(720, byBackdrop, byCardCap);
+    /** Небольшой safety-зазор защищает от обрезания CTA внизу на устройствах с агрессивными системными inset'ами. */
+    const SAFETY_GAP = 24;
+    const capped = Math.min(720, byBackdrop, byCardCap) - SAFETY_GAP;
     return Math.max(180, capped);
   }, [winH, insets.top, insets.bottom]);
 }

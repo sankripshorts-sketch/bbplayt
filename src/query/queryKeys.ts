@@ -27,7 +27,8 @@ export const queryKeys = {
       p.isFindWindow,
       p.priceName,
     ] as const,
-  books: (memberAccount?: string) => ['books', memberAccount ?? ''] as const,
+  books: (memberAccount?: string, memberId?: string) =>
+    ['books', memberAccount?.trim() ?? '', memberId?.trim() ?? ''] as const,
   /** GET iCafe `/api/v2/cafe/{id}/bookings` — все брони клуба */
   cafeBookings: (cafeId: number) => ['cafe-bookings-icafe', cafeId] as const,
   /** Онлайн-состояние ПК (GET /api/v2/cafe/{id}/pcs) */

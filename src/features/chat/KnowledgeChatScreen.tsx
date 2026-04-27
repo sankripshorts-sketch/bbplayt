@@ -431,7 +431,7 @@ export function KnowledgeChatScreen() {
   };
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const booksQ = useMemberBooksQuery(user?.memberAccount);
+  const booksQ = useMemberBooksQuery(user?.memberAccount, user?.memberId);
   const nowMs = useBookingNowMs();
   const [adminUi, setAdminUi] = useState<'off' | 'active' | 'ended'>('off');
   const [adminMessages, setAdminMessages] = useState<AdminChatLine[]>([]);
@@ -989,7 +989,9 @@ export function KnowledgeChatScreen() {
           locale,
           llmExtraction: llmEx,
         });
-        await queryClient.invalidateQueries({ queryKey: queryKeys.books(user?.memberAccount) });
+        await queryClient.invalidateQueries({
+          queryKey: queryKeys.books(user?.memberAccount, user?.memberId),
+        });
         appendBot({ id: `b-${Date.now()}`, role: 'bot', ...stepReply });
         return;
       }
@@ -1017,7 +1019,9 @@ export function KnowledgeChatScreen() {
           llmExtraction: llmEx2,
         });
         if (reply.didBook) {
-          await queryClient.invalidateQueries({ queryKey: queryKeys.books(user?.memberAccount) });
+          await queryClient.invalidateQueries({
+            queryKey: queryKeys.books(user?.memberAccount, user?.memberId),
+          });
         }
         appendBot({
           id: `b-${Date.now()}`,

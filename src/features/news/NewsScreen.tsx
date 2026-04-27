@@ -74,7 +74,7 @@ function mergeTailPosts(prev: VkWallPost[], more: VkWallPost[]): VkWallPost[] {
 /** Интервал появления следующей карточки в первой порции (первая — сразу). */
 const POST_REVEAL_STAGGER_MS = 110;
 /** Сначала показываем столько постов; дальше — из уже загруженной первой страницы или сеть при догрузке. */
-const HEAD_BATCH = 10;
+const HEAD_BATCH = 8;
 
 export function NewsScreen() {
   const colors = useThemeColors();

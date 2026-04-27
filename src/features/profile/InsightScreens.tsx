@@ -29,7 +29,12 @@ import { useThemeColors } from '../../theme';
 import type { ProfileStackParamList } from '../../navigation/types';
 import { queryKeys } from '../../query/queryKeys';
 import { ClubDataLoader } from '../ui/ClubDataLoader';
-import { InsightMockPlaceholder, insightsUseLiveApi, type RankingGame } from './insightMockUi';
+import {
+  InsightMockPlaceholder,
+  insightMockTotalPages,
+  insightsUseLiveApi,
+  type RankingGame,
+} from './insightMockUi';
 
 const MAX_ROW_JSON_CHARS = 12_000;
 const MAX_FULL_JSON_CHARS = 80_000;
@@ -233,11 +238,13 @@ export function InsightsHubScreen() {
 
 export function BalanceHistoryScreen() {
   const { user } = useAuth();
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [page, setPage] = useState(1);
   const live = insightsUseLiveApi();
+  const mockTotalPages = useMemo(() => insightMockTotalPages('balance', locale), [locale]);
+  const pageInRange = Math.min(page, mockTotalPages);
 
   const icafeQ = useQuery({
     queryKey: queryKeys.icafeIdForMember(),
@@ -273,15 +280,23 @@ export function BalanceHistoryScreen() {
       <SafeAreaView style={styles.root} edges={['bottom']}>
         <View style={styles.screenWithBottomBar}>
           <ScrollView contentContainerStyle={[styles.scroll, styles.scrollWithBottomBar]}>
-            <InsightMockPlaceholder variant="balance" page={page} />
+            <InsightMockPlaceholder variant="balance" page={pageInRange} />
           </ScrollView>
           <View style={styles.bottomBar}>
             <View style={styles.pager}>
-              <Pressable style={styles.pagerBtn} onPress={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
+              <Pressable
+                style={styles.pagerBtn}
+                onPress={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={pageInRange <= 1}
+              >
                 <Text style={styles.pagerBtnText}>{t('profile.pagePrev')}</Text>
               </Pressable>
-              <Text style={styles.pagerInfo}>{page}</Text>
-              <Pressable style={styles.pagerBtn} onPress={() => setPage((p) => p + 1)}>
+              <Text style={styles.pagerInfo}>{pageInRange}</Text>
+              <Pressable
+                style={styles.pagerBtn}
+                onPress={() => setPage((p) => Math.min(mockTotalPages, p + 1))}
+                disabled={pageInRange >= mockTotalPages}
+              >
                 <Text style={styles.pagerBtnText}>{t('profile.pageNext')}</Text>
               </Pressable>
             </View>
@@ -304,11 +319,19 @@ export function BalanceHistoryScreen() {
         {phase === 'data' ? (
           <View style={styles.bottomBar}>
             <View style={styles.pager}>
-              <Pressable style={styles.pagerBtn} onPress={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
+              <Pressable
+                style={styles.pagerBtn}
+                onPress={() => setPage((p) => (q.isFetching ? p : Math.max(1, p - 1)))}
+                disabled={page <= 1 || q.isFetching}
+              >
                 <Text style={styles.pagerBtnText}>{t('profile.pagePrev')}</Text>
               </Pressable>
               <Text style={styles.pagerInfo}>{page}</Text>
-              <Pressable style={styles.pagerBtn} onPress={() => setPage((p) => p + 1)}>
+              <Pressable
+                style={styles.pagerBtn}
+                onPress={() => setPage((p) => (q.isFetching ? p : p + 1))}
+                disabled={q.isFetching}
+              >
                 <Text style={styles.pagerBtnText}>{t('profile.pageNext')}</Text>
               </Pressable>
             </View>
@@ -321,11 +344,13 @@ export function BalanceHistoryScreen() {
 
 export function GameSessionsScreen() {
   const { user } = useAuth();
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [page, setPage] = useState(1);
   const live = insightsUseLiveApi();
+  const mockTotalPages = useMemo(() => insightMockTotalPages('sessions', locale), [locale]);
+  const pageInRange = Math.min(page, mockTotalPages);
 
   const icafeQ = useQuery({
     queryKey: queryKeys.icafeIdForMember(),
@@ -361,15 +386,23 @@ export function GameSessionsScreen() {
       <SafeAreaView style={styles.root} edges={['bottom']}>
         <View style={styles.screenWithBottomBar}>
           <ScrollView contentContainerStyle={[styles.scroll, styles.scrollWithBottomBar]}>
-            <InsightMockPlaceholder variant="sessions" page={page} />
+            <InsightMockPlaceholder variant="sessions" page={pageInRange} />
           </ScrollView>
           <View style={styles.bottomBar}>
             <View style={styles.pager}>
-              <Pressable style={styles.pagerBtn} onPress={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
+              <Pressable
+                style={styles.pagerBtn}
+                onPress={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={pageInRange <= 1}
+              >
                 <Text style={styles.pagerBtnText}>{t('profile.pagePrev')}</Text>
               </Pressable>
-              <Text style={styles.pagerInfo}>{page}</Text>
-              <Pressable style={styles.pagerBtn} onPress={() => setPage((p) => p + 1)}>
+              <Text style={styles.pagerInfo}>{pageInRange}</Text>
+              <Pressable
+                style={styles.pagerBtn}
+                onPress={() => setPage((p) => Math.min(mockTotalPages, p + 1))}
+                disabled={pageInRange >= mockTotalPages}
+              >
                 <Text style={styles.pagerBtnText}>{t('profile.pageNext')}</Text>
               </Pressable>
             </View>
@@ -392,11 +425,19 @@ export function GameSessionsScreen() {
         {phase === 'data' ? (
           <View style={styles.bottomBar}>
             <View style={styles.pager}>
-              <Pressable style={styles.pagerBtn} onPress={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
+              <Pressable
+                style={styles.pagerBtn}
+                onPress={() => setPage((p) => (q.isFetching ? p : Math.max(1, p - 1)))}
+                disabled={page <= 1 || q.isFetching}
+              >
                 <Text style={styles.pagerBtnText}>{t('profile.pagePrev')}</Text>
               </Pressable>
               <Text style={styles.pagerInfo}>{page}</Text>
-              <Pressable style={styles.pagerBtn} onPress={() => setPage((p) => p + 1)}>
+              <Pressable
+                style={styles.pagerBtn}
+                onPress={() => setPage((p) => (q.isFetching ? p : p + 1))}
+                disabled={q.isFetching}
+              >
                 <Text style={styles.pagerBtnText}>{t('profile.pageNext')}</Text>
               </Pressable>
             </View>
@@ -546,11 +587,11 @@ export function RankingScreen() {
           {(gameRows).map((row, idx) => (
             <Pressable
               key={row.game}
-              style={[styles.statRow, idx === gameRows.length - 1 ? styles.statRowLast : null]}
+              style={[styles.rankRow, idx === gameRows.length - 1 ? styles.rankRowLast : null]}
               onPress={() => navigation.navigate('GameRankingUsers', { game: row.game })}
             >
-              <Text style={styles.statLabel}>{row.game}</Text>
-              <Text style={styles.statValue}>{row.topPoints}</Text>
+              <Text style={styles.rankNameText}>{row.game}</Text>
+              <Text style={styles.rankPointsText}>{row.topPoints}</Text>
             </Pressable>
           ))}
         </View>
@@ -618,7 +659,9 @@ function createStyles(colors: ColorPalette) {
       flexWrap: 'wrap',
     },
     hubTabBtn: {
-      width: '48%',
+      flexBasis: '48%',
+      flexGrow: 1,
+      minWidth: 0,
       borderRadius: 12,
       borderWidth: 1,
       borderColor: colors.border,
@@ -634,6 +677,7 @@ function createStyles(colors: ColorPalette) {
       backgroundColor: colors.chipOn,
     },
     hubTabBtnText: {
+      flexShrink: 1,
       color: colors.text,
       fontSize: 13,
       fontWeight: '700',

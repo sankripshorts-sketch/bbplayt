@@ -1,14 +1,11 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { Alert } from 'react-native';
 import bundled from '../../assets/knowledge.json';
+import { useAppAlert } from '../components/AppAlertContext';
 import { useLocale } from '../i18n/LocaleContext';
-import { getVkGroupId } from '../config/vkNewsConfig';
-import { fetchVkWallVideoPage } from '../features/news/fetchVkWallVideoPosts';
 import { bookingFlowApi, cafesApi } from '../api/endpoints';
 import type { AllPricesData, CafeItem, StructRoomsData } from '../api/types';
 import { buildPriceKnowledge } from './priceKnowledge';
 import { buildStructKnowledge } from './structKnowledge';
-import { buildVkSupplement } from './vkKnowledge';
 import { getKnowledgeJsonUrl } from '../config/knowledgeUrl';
 import type { KnowledgeCategory, KnowledgeEntry } from './types';
 import { isKnowledgeCategory } from './types';
@@ -182,12 +179,13 @@ let startupCafesLoadAlertShown = false;
 
 export function KnowledgeProvider({ children }: { children: React.ReactNode }) {
   const { t } = useLocale();
+  const { showAlert } = useAppAlert();
   const [entries, setEntries] = useState<KnowledgeEntry[]>(initialEntries);
-  const [knowledgeReady, setKnowledgeReady] = useState(false);
+  // Bundled knowledge is available synchronously, so the app can proceed immediately.
+  const [knowledgeReady, setKnowledgeReady] = useState(true);
 
   useEffect(() => {
     const url = getKnowledgeJsonUrl();
-    setKnowledgeReady(false);
     let cancelled = false;
     let cafesListLoadFailed = false;
 
@@ -249,24 +247,6 @@ export function KnowledgeProvider({ children }: { children: React.ReactNode }) {
         const apiEntries = buildApiKnowledge(cafes);
         const priceEntries = buildPriceKnowledge(cafes, pricesArr);
         const structEntries = buildStructKnowledge(cafes, structArr);
-        const apiKnownIds = new Set(
-          [...apiEntries, ...priceEntries, ...structEntries].map((entry) => entry.id),
-        );
-
-        const vkGid = getVkGroupId();
-        let vkEntries: ReturnType<typeof buildVkSupplement> = [];
-        if (!cancelled) {
-          try {
-            const page = await fetchVkWallVideoPage(0, { vkGroupId: vkGid });
-            vkEntries = buildVkSupplement({ posts: page.posts, vkGroupId: vkGid }).filter(
-              (entry) => !apiKnownIds.has(entry.id),
-            );
-          } catch (e) {
-            if (__DEV__) {
-              console.warn('[knowledge] VK wall supplement failed', e);
-            }
-          }
-        }
 
         if (cancelled) return;
         setEntries(
@@ -274,16 +254,16 @@ export function KnowledgeProvider({ children }: { children: React.ReactNode }) {
             ...apiEntries,
             ...priceEntries,
             ...structEntries,
-            ...vkEntries,
           ]),
         );
       })
       .finally(() => {
         if (cancelled) return;
+        // Keep readiness stable after first mount; background refresh should not re-block startup.
         setKnowledgeReady(true);
         if (cafesListLoadFailed && !startupCafesLoadAlertShown) {
           startupCafesLoadAlertShown = true;
-          Alert.alert(
+          showAlert(
             t('startup.cafesUnavailableTitle'),
             t('startup.cafesUnavailableMessage'),
             [{ text: t('verify.alertOk') }],

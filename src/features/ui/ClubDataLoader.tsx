@@ -15,7 +15,8 @@ import { useLocale } from '../../i18n/LocaleContext';
 import type { MessageKey } from '../../i18n/messagesRu';
 import { useThemeColors } from '../../theme';
 
-const LOADER_IMAGE = require('../../../assets/club-loading-bear.png') as ImageSourcePropType;
+const LOADER_IMAGE_ANIMATED = require('../../../assets/club-loading-bear-animated.gif') as ImageSourcePropType;
+const LOADER_IMAGE_FALLBACK = require('../../../assets/club-loading-bear.webp') as ImageSourcePropType;
 
 const CAPTION_INTERVAL_MS = 1800;
 
@@ -47,6 +48,7 @@ export function ClubDataLoader({
   const { t } = useLocale();
   const styles = useMemo(() => createStyles(imageSize), [imageSize]);
   const [captionIndex, setCaptionIndex] = useState(0);
+  const [useFallbackImage, setUseFallbackImage] = useState(false);
   const float = useRef(new Animated.Value(0)).current;
 
   const captions = useMemo(
@@ -116,7 +118,13 @@ export function ClubDataLoader({
       accessibilityLabel={message ?? t('common.loadingData')}
     >
       <Animated.View style={[styles.imageWrap, loaderTransform]}>
-        <Image source={LOADER_IMAGE} style={styles.image} resizeMode="contain" accessibilityIgnoresInvertColors />
+        <Image
+          source={useFallbackImage ? LOADER_IMAGE_FALLBACK : LOADER_IMAGE_ANIMATED}
+          style={styles.image}
+          resizeMode="contain"
+          accessibilityIgnoresInvertColors
+          onError={() => setUseFallbackImage(true)}
+        />
       </Animated.View>
       <Text style={[styles.message, { color: colors.text }]}>{message ?? t('common.loadingData')}</Text>
       <Text style={[styles.caption, { color: colors.muted }]}>
@@ -135,11 +143,11 @@ function createStyles(imageSize: number) {
       alignItems: 'center',
       paddingHorizontal: 20,
       paddingVertical: 18,
-      transform: [{ translateY: -52 }],
+      transform: [{ translateY: 0 }],
     },
     rootCompact: {
       paddingVertical: 12,
-      transform: [{ translateY: -24 }],
+      transform: [{ translateY: 0 }],
     },
     imageWrap: {
       width: imageSize,

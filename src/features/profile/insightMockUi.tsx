@@ -112,8 +112,8 @@ function createMockStyles(colors: ColorPalette) {
     },
     rowTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
     when: { fontSize: 12, color: colors.muted, marginBottom: 4 },
-    title: { fontSize: 16, fontWeight: '700', color: colors.text, flex: 1 },
-    amount: { fontSize: 16, fontWeight: '800' },
+    title: { fontSize: 16, fontWeight: '700', color: colors.text, flex: 1, minWidth: 0, paddingRight: 6 },
+    amount: { fontSize: 16, fontWeight: '800', flexShrink: 0, textAlign: 'right' },
     amountPos: { color: colors.success },
     amountNeg: { color: colors.danger },
     subLine: { fontSize: 13, color: colors.muted, marginTop: 6 },
@@ -127,7 +127,7 @@ function createMockStyles(colors: ColorPalette) {
     },
     statRowLast: { borderBottomWidth: 0 },
     statLabel: { fontSize: 14, color: colors.muted, flex: 1, paddingRight: 8 },
-    statValue: { fontSize: 15, fontWeight: '700', color: colors.text },
+    statValue: { fontSize: 15, fontWeight: '700', color: colors.text, flexShrink: 0, textAlign: 'right' },
     rankRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
@@ -170,6 +170,17 @@ function createMockStyles(colors: ColorPalette) {
 
 export type InsightMockVariant = 'balance' | 'sessions' | 'analysis' | 'ranking';
 export type RankingGame = 'CS2' | 'Dota 2' | 'Valorant' | 'PUBG';
+
+export function insightMockTotalPages(
+  variant: 'balance' | 'sessions',
+  locale: string,
+): number {
+  const loc = locFrom(locale);
+  if (variant === 'balance') {
+    return Math.max(1, Math.ceil(allMockBalanceRows(loc).length / PAGE_SIZE));
+  }
+  return Math.max(1, Math.ceil(allMockSessionRows(loc).length / PAGE_SIZE));
+}
 
 export function InsightMockPlaceholder({
   variant,

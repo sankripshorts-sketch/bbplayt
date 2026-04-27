@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { Animated, Modal, Platform, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 
 const DEFAULT_DIM = 0.72;
@@ -17,6 +17,8 @@ type Props = {
   contentAlign: 'flex-end' | 'stretch';
   /** Стили для обёртки `children` (например flex:1 при full sheet) */
   contentWrapperStyle?: ViewStyle;
+  /** Базовая сила затемнения фона (0..1). */
+  dimOpacity?: number;
 };
 
 /**
@@ -30,21 +32,22 @@ export function DimmedSheetModal({
   children,
   contentAlign,
   contentWrapperStyle,
+  dimOpacity = DEFAULT_DIM,
 }: Props) {
-  const opacity = useRef(new Animated.Value(DEFAULT_DIM)).current;
+  const opacity = useRef(new Animated.Value(dimOpacity)).current;
   const resolvedPresentationStyle =
     presentationStyle ?? (Platform.OS === 'ios' ? 'overFullScreen' : undefined);
 
   useEffect(() => {
     if (visible) {
-      opacity.setValue(DEFAULT_DIM);
+      opacity.setValue(dimOpacity);
     }
-  }, [visible, opacity]);
+  }, [visible, opacity, dimOpacity]);
 
-  const onDrag = (offsetPx: number, maxOffsetPx: number) => {
+  const onDrag = useCallback((offsetPx: number, maxOffsetPx: number) => {
     const k = maxOffsetPx > 1 ? Math.min(1, Math.max(0, offsetPx / maxOffsetPx)) : 0;
-    opacity.setValue(DEFAULT_DIM * (1 - k));
-  };
+    opacity.setValue(dimOpacity * (1 - k));
+  }, [opacity, dimOpacity]);
 
   return (
     <Modal
@@ -59,7 +62,7 @@ export function DimmedSheetModal({
           style={[
             StyleSheet.absoluteFillObject,
             {
-              backgroundColor: 'rgba(0,0,0,0.72)',
+              backgroundColor: `rgba(0,0,0,${dimOpacity})`,
               opacity,
               zIndex: 0,
               ...(Platform.OS === 'android' ? { elevation: 0 } : {}),

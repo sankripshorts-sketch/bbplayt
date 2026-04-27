@@ -29,6 +29,15 @@ export const messagesEn: Record<MessageKey, string> = {
   'login.errorGeneric': 'Could not sign in',
   'login.showPassword': 'Show password',
   'login.hidePassword': 'Hide password',
+  'login.forgot.link': 'Forgot password?',
+  'login.forgot.title': 'Password recovery',
+  'login.forgot.subtitle':
+    'Enter your username or email. In demo mode we locally simulate a successful password reset.',
+  'login.forgot.placeholder': 'Username or email',
+  'login.forgot.submit': 'Reset password',
+  'login.forgot.errorEmpty': 'Enter your username or email',
+  'login.forgot.success':
+    'Password has been reset (demo). Use the new password from SMS/email once backend is connected.',
 
   'register.title': 'Register',
   'register.subClub':
@@ -103,6 +112,21 @@ export const messagesEn: Record<MessageKey, string> = {
   'profile.qrLoginCancel': 'Cancel',
   'profile.qrLoginAccountFallback': 'account',
   'profile.qrLoginMockSuccess': 'Sign-in for {{account}} confirmed. Later this will call the PC.',
+  'profile.qrLoginPcNameLabel': 'PC',
+  'profile.qrLoginPcClubLabel': 'Club',
+  'profile.qrLoginPcLocationLabel': 'Location',
+  'profile.qrLoginLinkedServicesToggle': 'Sign in to linked services (Steam, Epic Games)',
+  'profile.qrLoginLinkedServicesHint': 'Will sign in to: Steam — {{steam}}, Epic Games — {{epic}}.',
+  'profile.qrLoginServiceLinked': 'Linked',
+  'profile.qrLoginServiceBind': 'Link',
+  'profile.qrLoginServiceNotLinked': '{{service}} is not linked yet. Link it in profile settings.',
+  'profile.qrLoginApprove': 'Confirm',
+  'profile.qrLoginReject': 'Decline',
+  'profile.qrLoginSuccessTitle': 'Sign-in confirmed',
+  'profile.qrLoginSuccessBody': 'You have successfully signed in on this PC.',
+  'profile.qrLoginSuccessCta': 'Great',
+  'profile.qrLoginRejectedTitle': 'Sign-in declined',
+  'profile.qrLoginRejectedBody': 'You cancelled sign-in on this PC.',
 
   'profile.balance': 'Balance',
   'profile.bonusBalance': 'Bonus',
@@ -147,6 +171,30 @@ export const messagesEn: Record<MessageKey, string> = {
   'profile.settingsCityIntro':
     'Pick a city manually, or leave Automatic: we use your last booking / favorite club, and if you have none yet — one-time location on first launch.',
   'profile.settingsHubBookingReminders': 'Booking reminder',
+  'profile.settingsHubLinkedServices': 'Service linking',
+  'profile.settingsHubLinkedServicesSubtitle': 'Steam and Epic Games',
+  'profile.servicesSteam': 'Steam',
+  'profile.servicesEpic': 'Epic Games',
+  'profile.serviceConnected': 'Linked',
+  'profile.serviceNotConnected': 'Not linked',
+  'profile.serviceLinkAction': 'Link',
+  'profile.serviceUnlinkAction': 'Unlink',
+  'profile.serviceLinking': 'Signing in…',
+  'profile.serviceLinkedTitle': 'Service linked',
+  'profile.serviceLinkedBody': '{{service}} account has been linked to BlackBears Play.',
+  'profile.serviceUnlinkedTitle': 'Service unlinked',
+  'profile.serviceUnlinkedBody': '{{service}} account has been unlinked from BlackBears Play.',
+  'profile.serviceAlreadyLinkedTitle': 'Already linked',
+  'profile.serviceAlreadyLinkedBody': '{{service}} is already linked to your profile.',
+  'profile.serviceLocalHint': 'Demo mode: links are stored locally on this device only.',
+  'profile.serviceAuthTitle': 'Service sign-in',
+  'profile.serviceAuthHint': 'Local demo sign-in for {{service}}. Data is not sent to server.',
+  'profile.serviceAuthName': 'Name',
+  'profile.serviceAuthLogin': 'Login',
+  'profile.serviceAuthPassword': 'Password',
+  'profile.serviceAuthSignIn': 'Sign in',
+  'profile.serviceAuthRequiredTitle': 'Fill required fields',
+  'profile.serviceAuthRequiredBody': 'Enter name, login and password to continue.',
   'profile.settingsSectionAction': 'Configure',
   'profile.settingsExpandHint': 'Expand or collapse this section',
   'profile.sectionFace': 'Face',
@@ -175,6 +223,8 @@ export const messagesEn: Record<MessageKey, string> = {
   'profile.faceRetakeNoFace': 'No clear face in the frame. Please retake so your face is visible.',
   'profile.faceRetakeMultiple': 'Only one person should be in the frame. Please retake the photo.',
   'profile.facePreviewA11y': 'Current face photo in your profile',
+  'profile.faceAddedAlertTitle': 'Face photo added',
+  'profile.faceAddedAlertBody': 'Face was saved successfully on this device.',
   'profile.minutesValue': '{{n}} min',
   'profile.hoursValue': '{{n}} h',
 
@@ -213,6 +263,23 @@ export const messagesEn: Record<MessageKey, string> = {
   'promo.diceWelcomeBody': 'Open the app every day, roll the dice, and get a free bonus.',
   'promo.diceWelcomePlay': 'Play',
   'promo.diceWelcomeDismiss': 'Got it',
+  'tutorial.title': 'Quick app tour',
+  'tutorial.subtitle': 'The most useful features in 20 seconds. You can skip and continue right away.',
+  'tutorial.skip': 'Skip',
+  'tutorial.next': 'Next',
+  'tutorial.finish': 'Start',
+  'tutorial.step.booking.title': 'Book in a few taps',
+  'tutorial.step.booking.body':
+    'Use the Booking tab to pick a club, time, and seat on the floor plan, then confirm right in the app.',
+  'tutorial.step.food.title': 'Food and drinks',
+  'tutorial.step.food.body':
+    'In the Food tab, you can quickly order snacks and drinks and pay from your account balance.',
+  'tutorial.step.news.title': 'News and updates',
+  'tutorial.step.news.body':
+    'Open Profile -> News to see fresh posts, promos, and announcements from the clubs.',
+  'tutorial.step.help.title': 'Help in one tap',
+  'tutorial.step.help.body':
+    'In the Help tab, ask about rates, booking, and club policies and get the next best step.',
 
   'chat.title': 'Help',
   'chat.welcomeKnowledge':
@@ -616,6 +683,12 @@ export const messagesEn: Record<MessageKey, string> = {
   'hints.bookingMap':
     'Drag to pan. The plan scales to the screen width.',
   'hints.clubsRoute': 'Filter clubs by address and open directions in Yandex, Google, or system maps.',
+  'hints.profileQrScan':
+    'Point the frame at the QR code on the PC screen. After scan, check the club and PC number before confirming sign-in.',
+  'hints.profileFaceAdd':
+    'Add your face photo in good lighting and keep your face centered in frame to speed up check-in at the club.',
+  'hints.profileServicesLink':
+    'Link Steam and Epic Games once, then you can use them automatically when signing in on PC via QR.',
 
   'profile.reminderTitle': 'Booking reminders',
   'profile.reminderMode': 'Mode',
@@ -702,6 +775,13 @@ export const messagesEn: Record<MessageKey, string> = {
   'profile.mockTopupAutoHint':
     'The amount and bonus from the table will appear in the app. 500₽+ adds a dice minigame roll. A promo code may increase the bonus.',
   'profile.mockTopupSuccess': 'Done: balance and bonus updated',
+  'profile.topUpSuccessTitle': 'Top-up successful',
+  'profile.topUpSuccessAmount': 'Balance topped up by {{amount}} ₽',
+  'profile.topUpSuccessBonus': 'Bonus credited: +{{bonus}} ₽',
+  'profile.topUpSuccessBonusNone': 'No bonus was credited for this top-up',
+  'profile.topUpSuccessBalance': 'Main balance: {{balance}} ₽',
+  'profile.topUpSuccessBonusBalance': 'Bonus balance: {{bonusBalance}} ₽',
+  'profile.topUpSuccessClose': 'Great',
   'profile.mockTopupError': 'Top-up failed',
   'profile.topUpExternalBlocked':
     'This is not the payment page. Try another top-up option or contact the club.',

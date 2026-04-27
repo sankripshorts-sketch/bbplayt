@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { Text } from '../../components/DinText';
 import { useLocale } from '../../i18n/LocaleContext';
 import { useTheme } from '../../theme';
-import { HALL_PREVIEW } from './hallMapPreviewTokens';
+import { getHallPreviewTheme } from './hallMapPreviewTokens';
 
 export type HallMapStatusLegendProps = {
   /** `embed` — под схемой в белой рамке (с разделителем). `booking` — сразу под картой на экране брони, без верхнего зазора. */
@@ -13,7 +13,11 @@ export type HallMapStatusLegendProps = {
 export function HallMapStatusLegend({ variant = 'embed' }: HallMapStatusLegendProps) {
   const { t } = useLocale();
   const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(variant, colors.muted), [variant, colors.muted]);
+  const hallPreview = useMemo(() => getHallPreviewTheme(colors), [colors]);
+  const styles = useMemo(
+    () => createStyles(variant, colors.muted, hallPreview.legendSeparator),
+    [variant, colors.muted, hallPreview.legendSeparator],
+  );
 
   const items = useMemo(
     () =>
@@ -53,7 +57,7 @@ export function HallMapStatusLegend({ variant = 'embed' }: HallMapStatusLegendPr
   );
 }
 
-function createStyles(variant: 'embed' | 'booking', labelColor: string) {
+function createStyles(variant: 'embed' | 'booking', labelColor: string, legendSeparator: string) {
   const booking = variant === 'booking';
   return StyleSheet.create({
     wrap: {
@@ -69,7 +73,7 @@ function createStyles(variant: 'embed' | 'booking', labelColor: string) {
       paddingBottom: booking ? 2 : 0,
       paddingHorizontal: booking ? 2 : 0,
       borderTopWidth: booking ? 0 : 1,
-      borderTopColor: HALL_PREVIEW.legendSeparator,
+      borderTopColor: legendSeparator,
     },
     item: { flexDirection: 'row', alignItems: 'center', gap: 7 },
     swatch: {

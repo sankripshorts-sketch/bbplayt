@@ -34,6 +34,11 @@ export function LoginScreen() {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [recoveryLogin, setRecoveryLogin] = useState('');
+  const [recoveryError, setRecoveryError] = useState<string | null>(null);
+  const [recoverySuccess, setRecoverySuccess] = useState<string | null>(null);
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
   const passwordRef = useRef<RnTextInput>(null);
 
   const onSubmit = async () => {
@@ -49,6 +54,30 @@ export function LoginScreen() {
       setError(formatPublicErrorMessage(e, t, 'login.errorGeneric'));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const onForgotPasswordToggle = () => {
+    setForgotOpen((prev) => !prev);
+    setRecoveryError(null);
+    setRecoverySuccess(null);
+  };
+
+  const onRecoverySubmit = async () => {
+    const normalizedLogin = recoveryLogin.trim();
+    setRecoveryError(null);
+    setRecoverySuccess(null);
+    if (!normalizedLogin) {
+      setRecoveryError(t('login.forgot.errorEmpty'));
+      return;
+    }
+    setRecoveryLoading(true);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 900));
+      setRecoverySuccess(t('login.forgot.success'));
+      setRecoveryLogin('');
+    } finally {
+      setRecoveryLoading(false);
     }
   };
 
@@ -107,6 +136,44 @@ export function LoginScreen() {
               />
             </Pressable>
           </View>
+          <Pressable
+            onPress={onForgotPasswordToggle}
+            style={({ pressed }) => [styles.forgotLink, pressed && styles.forgotLinkPressed]}
+          >
+            <Text style={styles.forgotLinkText}>{t('login.forgot.link')}</Text>
+          </Pressable>
+
+          {forgotOpen ? (
+            <View style={styles.forgotCard}>
+              <Text style={styles.forgotTitle}>{t('login.forgot.title')}</Text>
+              <Text style={styles.forgotSubtitle}>{t('login.forgot.subtitle')}</Text>
+              <TextInput
+                style={styles.input}
+                placeholder={t('login.forgot.placeholder')}
+                placeholderTextColor={colors.muted}
+                autoCapitalize="none"
+                autoCorrect={false}
+                value={recoveryLogin}
+                onChangeText={setRecoveryLogin}
+                editable={!recoveryLoading}
+                returnKeyType="send"
+                onSubmitEditing={onRecoverySubmit}
+              />
+              {recoveryError ? <Text style={styles.error}>{recoveryError}</Text> : null}
+              {recoverySuccess ? <Text style={styles.success}>{recoverySuccess}</Text> : null}
+              <Pressable
+                style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
+                onPress={onRecoverySubmit}
+                disabled={recoveryLoading}
+              >
+                {recoveryLoading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>{t('login.forgot.submit')}</Text>
+                )}
+              </Pressable>
+            </View>
+          ) : null}
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
 
@@ -192,8 +259,42 @@ function createStyles(colors: ColorPalette) {
       alignItems: 'center',
     },
     eyeBtnPressed: { opacity: 0.7 },
+    forgotLink: {
+      alignSelf: 'flex-end',
+      marginBottom: 10,
+    },
+    forgotLinkPressed: {
+      opacity: 0.75,
+    },
+    forgotLinkText: {
+      color: colors.accentBright,
+      fontSize: 14,
+    },
+    forgotCard: {
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 12,
+      padding: 14,
+      marginBottom: 12,
+    },
+    forgotTitle: {
+      color: colors.text,
+      fontSize: 16,
+      fontWeight: '600',
+      marginBottom: 4,
+    },
+    forgotSubtitle: {
+      color: colors.muted,
+      fontSize: 14,
+      marginBottom: 10,
+    },
     error: {
       color: colors.danger,
+      marginBottom: 12,
+    },
+    success: {
+      color: colors.accentBright,
       marginBottom: 12,
     },
     button: {
@@ -202,6 +303,12 @@ function createStyles(colors: ColorPalette) {
       paddingVertical: 16,
       alignItems: 'center',
       marginTop: 8,
+    },
+    secondaryButton: {
+      backgroundColor: colors.accent,
+      borderRadius: 12,
+      paddingVertical: 14,
+      alignItems: 'center',
     },
     buttonPressed: {
       opacity: 0.85,

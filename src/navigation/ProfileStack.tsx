@@ -20,6 +20,7 @@ import { SettingsCityScreen } from '../features/profile/SettingsCityScreen';
 import { SettingsFaceScreen } from '../features/profile/SettingsFaceScreen';
 import { FaceCaptureScreen } from '../features/profile/FaceCaptureScreen';
 import { QrLoginScreen } from '../features/profile/QrLoginScreen';
+import { ServiceAuthMockScreen } from '../features/profile/ServiceAuthMockScreen';
 import { NewsScreen } from '../features/news/NewsScreen';
 import { useLocale } from '../i18n/LocaleContext';
 import { fonts, useThemeColors } from '../theme';
@@ -83,6 +84,14 @@ export function ProfileStack() {
         component={SettingsScreen}
         options={({ navigation }) => ({
           title: t('profile.settings'),
+          ...headerBackOrProfileHome(navigation),
+        })}
+      />
+      <Stack.Screen
+        name="ServiceAuthMock"
+        component={ServiceAuthMockScreen}
+        options={({ navigation }) => ({
+          title: t('profile.serviceAuthTitle'),
           ...headerBackOrProfileHome(navigation),
         })}
       />

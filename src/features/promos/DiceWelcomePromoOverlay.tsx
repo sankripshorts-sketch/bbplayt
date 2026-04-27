@@ -207,12 +207,15 @@ function createStyles(colors: ColorPalette, bodyHeight: number, winH: number) {
       justifyContent: 'center',
       gap: 10,
       paddingVertical: 14,
+      minHeight: 52,
       borderRadius: 14,
       backgroundColor: colors.accent,
     },
     btnSecondary: {
       paddingVertical: 13,
+      minHeight: 50,
       alignItems: 'center',
+      justifyContent: 'center',
       borderRadius: 14,
       borderWidth: 1,
       borderColor: colors.border,
@@ -223,11 +226,13 @@ function createStyles(colors: ColorPalette, bodyHeight: number, winH: number) {
       color: colors.accentTextOnButton,
       fontFamily: fonts.semibold,
       fontSize: 16,
+      lineHeight: 22,
     },
     btnSecondaryText: {
       color: colors.text,
       fontFamily: fonts.semibold,
       fontSize: 15,
+      lineHeight: 21,
     },
   });
 }

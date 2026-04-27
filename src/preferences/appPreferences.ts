@@ -63,6 +63,8 @@ export type AppPreferences = {
   diceMinigameExtraRolls: number;
   /** Один раз после входа: полноэкранное объявление мини-игры с кубиками */
   diceWelcomePromoSeen: boolean;
+  /** Туториал по ключевым функциям после первого входа */
+  appTutorialSeen: boolean;
 };
 
 const defaults: AppPreferences = {
@@ -87,6 +89,7 @@ const defaults: AppPreferences = {
   diceMinigameDailyUsed: false,
   diceMinigameExtraRolls: 0,
   diceWelcomePromoSeen: false,
+  appTutorialSeen: false,
 };
 
 const DICE_PERIOD_MS = 24 * 60 * 60 * 1000;
@@ -188,6 +191,10 @@ export async function loadAppPreferences(): Promise<AppPreferences> {
         typeof parsed.diceWelcomePromoSeen === 'boolean'
           ? parsed.diceWelcomePromoSeen
           : defaults.diceWelcomePromoSeen,
+      appTutorialSeen:
+        typeof parsed.appTutorialSeen === 'boolean'
+          ? parsed.appTutorialSeen
+          : defaults.appTutorialSeen,
     };
     const withDice = reconcileDiceMinigameState(merged);
     if (diceMinigameStateChanged(merged, withDice)) {
@@ -256,6 +263,7 @@ export async function patchAppPreferences(patch: Partial<AppPreferences>): Promi
         : cur.diceMinigameExtraRolls,
     diceWelcomePromoSeen:
       patch.diceWelcomePromoSeen !== undefined ? patch.diceWelcomePromoSeen : cur.diceWelcomePromoSeen,
+    appTutorialSeen: patch.appTutorialSeen !== undefined ? patch.appTutorialSeen : cur.appTutorialSeen,
   };
   const fin = reconcileDiceMinigameState(next);
   await saveAppPreferences(fin);

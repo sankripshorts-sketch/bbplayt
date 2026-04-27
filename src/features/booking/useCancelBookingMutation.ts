@@ -36,7 +36,8 @@ export function useCancelBookingMutation() {
     },
     onSuccess: async (_data, params) => {
       const acc = user?.memberAccount?.trim();
-      await queryClient.invalidateQueries({ queryKey: queryKeys.books(acc) });
+      const mid = user?.memberId?.trim();
+      await queryClient.invalidateQueries({ queryKey: queryKeys.books(acc, mid) });
       await queryClient.invalidateQueries({ queryKey: queryKeys.cafeBookings(params.icafeId) });
     },
   });

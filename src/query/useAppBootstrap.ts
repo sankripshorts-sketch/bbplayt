@@ -40,23 +40,22 @@ export function useAppBootstrap() {
     void (async () => {
       try {
         const prefs = await loadAppPreferences();
+        // Startup-critical data only: cafes feed multiple first screens.
+        await qc.fetchQuery({
+          queryKey: queryKeys.cafes(),
+          queryFn: () => cafesApi.list(),
+          staleTime: 10 * 60 * 1000,
+        });
 
-        const tasks: Promise<unknown>[] = [
-          qc.fetchQuery({
-            queryKey: queryKeys.cafes(),
-            queryFn: () => cafesApi.list(),
-            staleTime: 10 * 60 * 1000,
-          }),
-        ];
-
+        // The rest is warmed up in background and must not block first render.
         if (user) {
-          tasks.push(
-            qc.fetchQuery({
+          void qc
+            .prefetchQuery({
               queryKey: queryKeys.icafeIdForMember(),
               queryFn: () => bookingFlowApi.icafeIdForMember(),
               staleTime: 10 * 60 * 1000,
-            }),
-          );
+            })
+            .catch(() => {});
 
           const cafeId = prefs.favoriteClubId ?? prefs.lastBookingClubId;
           if (cafeId != null) {
@@ -66,15 +65,16 @@ export function useAppBootstrap() {
             const day = String(today.getDate()).padStart(2, '0');
             const bookingDate = `${y}-${m}-${day}`;
 
-            tasks.push(
-              qc.fetchQuery({
+            void qc
+              .prefetchQuery({
                 queryKey: queryKeys.structRooms(cafeId),
                 queryFn: () => bookingFlowApi.structRooms(cafeId),
                 staleTime: 30 * 60 * 1000,
-              }),
-            );
-            tasks.push(
-              qc.fetchQuery({
+              })
+              .catch(() => {});
+
+            void qc
+              .prefetchQuery({
                 queryKey: queryKeys.allPrices({
                   cafeId,
                   memberId: user.memberId,
@@ -89,23 +89,23 @@ export function useAppBootstrap() {
                     bookingDate,
                   }),
                 staleTime: 2 * 60 * 1000,
-              }),
-            );
+              })
+              .catch(() => {});
           }
 
           const acc = user.memberAccount?.trim();
-          if (acc) {
-            tasks.push(
-              qc.fetchQuery({
-                queryKey: queryKeys.books(acc),
-                queryFn: () => bookingFlowApi.memberBooks(acc),
+          const memberId = user.memberId?.trim();
+          if (acc || memberId) {
+            void qc
+              .prefetchQuery({
+                queryKey: queryKeys.books(acc, memberId),
+                queryFn: () =>
+                  bookingFlowApi.memberBooks({ memberAccount: acc, memberId }),
                 staleTime: 15 * 1000,
-              }),
-            );
+              })
+              .catch(() => {});
           }
         }
-
-        await Promise.allSettled(tasks);
 
         const prefsAfter = await loadAppPreferences();
         const cafesData = qc.getQueryData<CafeItem[]>(queryKeys.cafes());
@@ -149,24 +149,20 @@ async function warmupVkNewsFeed(
   qc: QueryClient,
   vkGroupId: number,
 ): Promise<void> {
+  const STARTUP_VK_HEAD_LIMIT = 8;
   const cachedFeed = qc.getQueryData<VkWallFetchResult>(queryKeys.vkWallFeed(vkGroupId));
-  let feedPosts = cachedFeed?.posts ?? [];
+  let feedPosts = (cachedFeed?.posts ?? []).slice(0, STARTUP_VK_HEAD_LIMIT);
   let nextOffset: number | null = cachedFeed?.nextOffset ?? null;
 
   try {
     const first = await fetchVkWallVideoPage(0, { vkGroupId });
-    qc.setQueryData<VkWallFetchResult>(queryKeys.vkWallFirstPage(vkGroupId), first);
-    feedPosts = mergeUniquePosts(first.posts, feedPosts);
+    const startupHead = first.posts.slice(0, STARTUP_VK_HEAD_LIMIT);
+    qc.setQueryData<VkWallFetchResult>(queryKeys.vkWallFirstPage(vkGroupId), {
+      ...first,
+      posts: startupHead,
+    });
+    feedPosts = mergeUniquePosts(startupHead, feedPosts).slice(0, STARTUP_VK_HEAD_LIMIT);
     nextOffset = first.nextOffset;
-
-    const MAX_BG_PAGES = 2;
-    let loadedPages = 0;
-    while (nextOffset != null && loadedPages < MAX_BG_PAGES) {
-      const page = await fetchVkWallVideoPage(nextOffset, { vkGroupId });
-      feedPosts = mergeUniquePosts(feedPosts, page.posts);
-      nextOffset = page.nextOffset;
-      loadedPages += 1;
-    }
 
     qc.setQueryData<VkWallFetchResult>(queryKeys.vkWallFeed(vkGroupId), {
       posts: feedPosts,

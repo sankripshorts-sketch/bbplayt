@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Dimensions,
+  FlatList,
   Linking,
+  type ListRenderItemInfo,
   Modal,
   Platform,
   Pressable,
@@ -150,6 +151,7 @@ import { loadAppPreferences, patchAppPreferences } from '../../preferences/appPr
 import { queryKeys } from '../../query/queryKeys';
 import { ClubDataLoader } from '../ui/ClubDataLoader';
 import { TabScreenTopBar } from '../../components/TabScreenTopBar';
+import { useAppAlert } from '../../components/AppAlertContext';
 import type { BookingPrefillParams, MainTabParamList } from '../../navigation/types';
 import { TodaysBookingBanner } from './TodaysBookingBanner';
 import { DimmedSheetModal } from '../../components/DimmedSheetModal';
@@ -273,7 +275,9 @@ function packageSavingPercentForPresetPackageMinutes(
   pricesList: PriceItem[],
   productsCatalog: ProductItem[],
   packageZone: PcZoneKind,
+  showSavingBenefit: boolean,
 ): number | null {
+  if (!showSavingBenefit) return null;
   const match = productsCatalog.find((p) => bookingPackageWheelDisplayMins(p, 0) === mins);
   if (match) {
     const fromCatalog = packageSavingPercentForWheel(match, pricesList, productsCatalog, packageZone);
@@ -297,6 +301,7 @@ function presetDurationWheelLabel(
   pricesList: PriceItem[],
   productsCatalog: ProductItem[],
   packageZone: PcZoneKind,
+  showSavingBenefit: boolean,
 ): WheelPickerItem {
   if (HOURLY_DURATION_PRESETS_BASE.includes(mins)) {
     return hourlyPresetLineLabel(mins, t, locale);
@@ -304,7 +309,13 @@ function presetDurationWheelLabel(
   const dur = formatBookingDurationHuman(mins, locale);
   const line1 = t('booking.packageWheelLine1', { duration: dur });
   if (!pricesList.length && !productsCatalog.length) return line1;
-  const pct = packageSavingPercentForPresetPackageMinutes(mins, pricesList, productsCatalog, packageZone);
+  const pct = packageSavingPercentForPresetPackageMinutes(
+    mins,
+    pricesList,
+    productsCatalog,
+    packageZone,
+    showSavingBenefit,
+  );
   if (pct != null) return { main: line1, sub: t('booking.packageVsHourlyPercent', { n: pct }) };
   return line1;
 }
@@ -316,6 +327,7 @@ function productWheelLineLabel(
   pricesList: PriceItem[],
   productsCatalog: ProductItem[],
   packageZone: PcZoneKind,
+  showSavingBenefit: boolean,
 ): WheelPickerItem {
   const mins = bookingPackageWheelDisplayMins(p, 0);
   const dur = formatBookingDurationHuman(mins, locale);
@@ -323,7 +335,7 @@ function productWheelLineLabel(
     ? t('booking.packageWheelLine1', { duration: dur })
     : t('booking.packageWheelNoDuration', { line: productTierLabel(p) });
   if (!pricesList.length && !productsCatalog.length) return line1;
-  const pct = packageSavingPercentForWheel(p, pricesList, productsCatalog, packageZone);
+  const pct = showSavingBenefit ? packageSavingPercentForWheel(p, pricesList, productsCatalog, packageZone) : null;
   if (pct != null) return { main: line1, sub: t('booking.packageVsHourlyPercent', { n: pct }) };
   return line1;
 }
@@ -334,6 +346,127 @@ const ZONE_WHEEL_KEYS = ['any', 'VIP', 'BootCamp', 'GameZone'] as const;
 const IS_FIND_WINDOW_MAIN = false;
 
 type BookingStyles = ReturnType<typeof createBookingStyles>;
+type PcListSection = {
+  key: 'GameZone' | 'BootCamp' | 'VIP' | 'Other';
+  title: string;
+  pairs: PcListItem[][];
+};
+type PcStatusMeta = {
+  selected: boolean;
+  busy: boolean;
+  statusLine: string;
+};
+type PcFlatListRow = {
+  key: string;
+  sectionTitle: string;
+  showSectionTitle: boolean;
+  pair: PcListItem[];
+};
+
+const MemoClubLayoutCanvas = React.memo(ClubLayoutCanvas);
+
+const BookingPcCard = React.memo(function BookingPcCard({
+  item,
+  meta,
+  canSelectPc,
+  styles,
+  colors,
+  onPress,
+  uiPcLabel,
+  t,
+}: {
+  item: PcListItem;
+  meta: PcStatusMeta;
+  canSelectPc: boolean;
+  styles: BookingStyles;
+  colors: ColorPalette;
+  onPress: (item: PcListItem) => void;
+  uiPcLabel: (pcName: string) => string;
+  t: (key: MessageKey, vars?: Record<string, string | number>) => string;
+}) {
+  return (
+    <Pressable
+      style={[
+        styles.pcCard,
+        styles.pcCardGridHalf,
+        meta.busy && styles.pcCardBusy,
+        meta.selected && styles.pcCardSelected,
+        !canSelectPc && { pointerEvents: 'none' },
+      ]}
+      onPress={() => onPress(item)}
+      disabled={canSelectPc && meta.busy}
+    >
+      {!canSelectPc ? <View style={[styles.pcCardDimLock, { pointerEvents: 'none' }]} /> : null}
+      <View style={styles.pcCardBodyAboveDim}>
+        <Text style={styles.pcName} numberOfLines={1}>
+          {uiPcLabel(item.pc_name)}
+        </Text>
+        <Text style={styles.pcSub} numberOfLines={2}>
+          {formatPublicZoneLabel(pcZoneLabel(item) || '', t)} · {meta.statusLine}
+        </Text>
+      </View>
+      {meta.selected ? (
+        <View style={styles.pcCardCheckAboveDim}>
+          <MaterialCommunityIcons
+            name="check-circle"
+            size={18}
+            color={colors.pcSelected}
+          />
+        </View>
+      ) : null}
+    </Pressable>
+  );
+});
+
+const BookingPcListRow = React.memo(function BookingPcListRow({
+  row,
+  styles,
+  colors,
+  canSelectPc,
+  pcStatusByPc,
+  onPressPc,
+  uiPcLabel,
+  t,
+}: {
+  row: PcFlatListRow;
+  styles: BookingStyles;
+  colors: ColorPalette;
+  canSelectPc: boolean;
+  pcStatusByPc: Map<string, PcStatusMeta>;
+  onPressPc: (item: PcListItem) => void;
+  uiPcLabel: (pcName: string) => string;
+  t: (key: MessageKey, vars?: Record<string, string | number>) => string;
+}) {
+  return (
+    <View style={styles.pcZoneSection}>
+      {row.showSectionTitle ? <Text style={styles.pcZoneSectionTitle}>{row.sectionTitle}</Text> : null}
+      <View style={styles.pcListRow}>
+        {row.pair.map((item, ii) => {
+          const lk = String(item.pc_name).trim().toLowerCase();
+          const meta = pcStatusByPc.get(lk) ?? {
+            selected: false,
+            busy: false,
+            statusLine: t('booking.pcStatusFree'),
+          };
+          return (
+            <BookingPcCard
+              key={`${item.pc_name}-${row.key}-${ii}`}
+              item={item}
+              meta={meta}
+              canSelectPc={canSelectPc}
+              styles={styles}
+              colors={colors}
+              onPress={onPressPc}
+              uiPcLabel={uiPcLabel}
+              t={t}
+            />
+          );
+        })}
+        {row.pair.length === 1 ? <View style={styles.pcListCellSpacer} /> : null}
+      </View>
+    </View>
+  );
+});
 
 export function BookingScreen() {
   const { user, refreshMemberBalance } = useAuth();
@@ -342,6 +475,7 @@ export function BookingScreen() {
   const navigation = useNavigation<BottomTabNavigationProp<MainTabParamList>>();
   const route = useRoute<RouteProp<MainTabParamList, 'Booking'>>();
   const { t, locale } = useLocale();
+  const { showAlert } = useAppAlert();
   const { colors, theme } = useTheme();
   const insets = useSafeAreaInsets();
   const { height: windowHeight, width: windowWidth } = useWindowDimensions();
@@ -454,15 +588,11 @@ export function BookingScreen() {
     if (selectedPcs.length > 0) return pcZoneKindFromPc(selectedPcs[0]!);
     return 'GameZone';
   }, [selectedPcs]);
+  const showSavingBenefit = selectedPcs.length > 0;
   const [modalOccupancy, setModalOccupancy] = useState(false);
   /** `null` — ближайшие брони по времени; иначе фильтр по календарному дню YYYY-MM-DD (МСК). */
   const [occupancyFilterDay, setOccupancyFilterDay] = useState<string | null>(null);
   const [pendingPrefill, setPendingPrefill] = useState<BookingPrefillParams | null>(null);
-  const [successOpen, setSuccessOpen] = useState(false);
-  const [successPcLine, setSuccessPcLine] = useState<string | null>(null);
-  const [successPartyCount, setSuccessPartyCount] = useState(1);
-  /** Вместо системного Alert — сообщения в стиле приложения (зона компании и т.п.). */
-  const [bookingNotice, setBookingNotice] = useState<{ title: string; message: string } | null>(null);
   const [cancellingBookKey, setCancellingBookKey] = useState<string | null>(null);
   /** Только жест «потянуть» — иначе фоновый refetch (отмена, invalidate, интервал) даёт моргание индикатора. */
   const [myBookingsPullRefresh, setMyBookingsPullRefresh] = useState(false);
@@ -593,9 +723,8 @@ export function BookingScreen() {
     [dateStart, timeStart, minsNum],
   );
 
-  const onAddBookingToCalendar = useCallback(async () => {
-    if (!cafe || !successPcLine) return;
-    const pcLine = successPcLine;
+  const onAddBookingToCalendar = useCallback(async (pcLine: string) => {
+    if (!cafe) return;
     const planStart = plannedInterval(dateStart, timeStart, minsNum)?.start;
     const eventId = await addBookingEventToCalendar({
       title: `BBplay · ${cafe.address}`,
@@ -606,18 +735,16 @@ export function BookingScreen() {
       durationMins: minsNum,
       startDate: planStart,
     });
-    setSuccessPcLine(null);
-    setSuccessOpen(false);
     if (eventId) {
-      Alert.alert('', t('booking.calendarDone'));
+      showAlert('', t('booking.calendarDone'));
       return;
     }
     const perm = await getCalendarPermissionsAsyncSafe();
-    Alert.alert(
+    showAlert(
       '',
       !perm ? t('booking.calendarFail') : perm.status !== 'granted' ? t('booking.calendarDenied') : t('booking.calendarFail'),
     );
-  }, [cafe, successPcLine, dateStart, timeStart, minsNum, t]);
+  }, [cafe, dateStart, timeStart, minsNum, t, showAlert]);
 
   const pricesQ = useQuery({
     queryKey: queryKeys.allPrices({
@@ -756,10 +883,10 @@ export function BookingScreen() {
     () =>
       durationWheelEntries.map((e) =>
         e.kind === 'preset'
-          ? presetDurationWheelLabel(e.mins, t, locale, pricesList, products, effectivePackageZone)
-          : productWheelLineLabel(e.product, locale, t, pricesList, products, effectivePackageZone),
+          ? presetDurationWheelLabel(e.mins, t, locale, pricesList, products, effectivePackageZone, showSavingBenefit)
+          : productWheelLineLabel(e.product, locale, t, pricesList, products, effectivePackageZone, showSavingBenefit),
       ),
-    [durationWheelEntries, locale, t, pricesList, products, effectivePackageZone],
+    [durationWheelEntries, locale, t, pricesList, products, effectivePackageZone, showSavingBenefit],
   );
 
   const zoneWheelLabels = useMemo(
@@ -893,8 +1020,10 @@ export function BookingScreen() {
       let cancelled = false;
       const id = setTimeout(() => {
         if (cancelled) return;
-        if (user?.memberAccount) {
-          void qc.refetchQueries({ queryKey: queryKeys.books(user.memberAccount) });
+        if (user?.memberAccount?.trim() || user?.memberId?.trim()) {
+          void qc.refetchQueries({
+            queryKey: queryKeys.books(user?.memberAccount, user?.memberId),
+          });
         }
         if (cafe && memberProfileReady && minsNum > 0) {
           void qc.invalidateQueries({ queryKey: availKey });
@@ -905,8 +1034,15 @@ export function BookingScreen() {
         cancelled = true;
         clearTimeout(id);
       };
-    }, [qc, availKey, cafe, memberProfileReady, minsNum, user?.memberAccount]),
+    }, [qc, availKey, cafe, memberProfileReady, minsNum, user?.memberAccount, user?.memberId]),
   );
+
+  /**
+   * Во время прокрутки колес в фильтрах временно замораживаем «живые» запросы:
+   * иначе фоновые refetch'и конкурируют за кадры и дергают wheel-анимации.
+   */
+  const isBookingFilterSheetOpen =
+    modalClub || modalDate || modalTimeDuration || modalTariff || modalNearestDay;
 
   /** Слот брони: только vibe `GET /available-pcs-for-booking` (не iCafe `.../pcs`). */
   const pcsQuery = useQuery({
@@ -920,22 +1056,28 @@ export function BookingScreen() {
         isFindWindow: IS_FIND_WINDOW_MAIN,
         priceName: priceNameForAvailability || undefined,
       }),
-    enabled: !!cafe && memberProfileReady && minsNum > 0,
+    enabled: !!cafe && memberProfileReady && minsNum > 0 && !isBookingFilterSheetOpen,
     staleTime: 0,
     refetchOnMount: 'always',
-    refetchInterval: isFocused ? PC_REFETCH_INTERVAL_MS : false,
+    refetchInterval: isFocused && !isBookingFilterSheetOpen ? PC_REFETCH_INTERVAL_MS : false,
   });
 
   /** «Занят сейчас»: iCafe `member_pcs` → fallback `GET .../pcs` — не используется для доступности слота. */
-  const livePcsQuery = useLivePcsQuery(cafe?.icafe_id, !!cafe && memberProfileReady && isFocused);
+  const livePcsQuery = useLivePcsQuery(
+    cafe?.icafe_id,
+    !!cafe && memberProfileReady && isFocused && !isBookingFilterSheetOpen,
+  );
 
-  const booksQ = useMemberBooksQuery(user?.memberAccount);
+  const booksQ = useMemberBooksQuery(user?.memberAccount, user?.memberId);
   const hasMemberBookingHistory = useMemo(() => hasAnyMemberBookingRows(booksQ.data), [booksQ.data]);
   const myBookingsListCount = useMemo(
     () => countTotalMemberBookingsInData(booksQ.data),
     [booksQ.data],
   );
-  const cafeBooksQ = useCafeBookingsQuery(cafe?.icafe_id, !!cafe && memberProfileReady);
+  const cafeBooksQ = useCafeBookingsQuery(
+    cafe?.icafe_id,
+    !!cafe && memberProfileReady && !isBookingFilterSheetOpen,
+  );
   /** Пока не подтянули брони клуба (все участники), нельзя честно отметить места с пересечением по слоту. */
   const cafeBookingsOverlapLoading = !!(cafe && memberProfileReady && cafeBooksQ.isPending);
   const bookingNowMs = useBookingNowMs(Platform.OS === 'web' ? 45_000 : 15_000);
@@ -1015,9 +1157,9 @@ export function BookingScreen() {
   const sessionQ = useQuery<MemberPcSessionInfo, Error>({
     queryKey: ['member-pc-session', cafe?.icafe_id, user?.memberId],
     queryFn: () => fetchMemberPcSessionInfo(cafe!.icafe_id, user!.memberId),
-    enabled: Boolean(cafe && user?.memberId && memberProfileReady && isFocused),
+    enabled: Boolean(cafe && user?.memberId && memberProfileReady && isFocused && !isBookingFilterSheetOpen),
     staleTime: 15_000,
-    refetchInterval: 28_000,
+    refetchInterval: isBookingFilterSheetOpen ? false : 28_000,
   });
 
   const pcs = pcsQuery.data?.pc_list ?? null;
@@ -1029,7 +1171,7 @@ export function BookingScreen() {
   }, [pcs, bookingMapZoneFilter]);
 
   /** Режим списка: группируем по зонам и в каждой зоне рендерим по 2 карточки в ряд. */
-  const pcListSections = useMemo(() => {
+  const pcListSections = useMemo<PcListSection[]>(() => {
     const list = pcsForUi ?? [];
     const byZone: Record<PcZoneKind, PcListItem[]> = {
       VIP: [],
@@ -1064,6 +1206,21 @@ export function BookingScreen() {
       { key: 'Other' as const, title: t('booking.zoneKindOther'), pairs: buildPairs(byZone.Other) },
     ].filter((section) => section.pairs.length > 0);
   }, [pcsForUi, t]);
+
+  const pcListRows = useMemo<PcFlatListRow[]>(() => {
+    const rows: PcFlatListRow[] = [];
+    for (const section of pcListSections) {
+      section.pairs.forEach((pair, idx) => {
+        rows.push({
+          key: `pc-row-${section.key}-${idx}`,
+          sectionTitle: section.title,
+          showSectionTitle: idx === 0,
+          pair,
+        });
+      });
+    }
+    return rows;
+  }, [pcListSections]);
 
   const pcsForNearestSearchUi = useMemo(() => {
     if (!pcs) return null;
@@ -1159,6 +1316,15 @@ export function BookingScreen() {
 
   useEffect(() => {
     if (!pendingPrefill || !pcs || pcsQuery.isFetching) return;
+    const prefillDate = pendingPrefill.dateISO?.trim() ?? null;
+    const prefillTime = pendingPrefill.timeHHmm?.trim() ?? null;
+    const prefillAligned =
+      cafe?.icafe_id === pendingPrefill.icafeId &&
+      (!prefillDate || prefillDate === dateStart) &&
+      (!prefillTime || prefillTime === timeStart);
+    // Ждём, пока фильтры экрана применят prefill (клуб/дата/время),
+    // иначе можно попытаться выбрать ПК по старому списку и потерять pendingPrefill.
+    if (!prefillAligned) return;
     const wantPc = pendingPrefill.pcName?.trim();
     if (!wantPc) return;
     const m = pcs.find((x) => {
@@ -1178,8 +1344,11 @@ export function BookingScreen() {
     }
   }, [
     pendingPrefill,
+    cafe?.icafe_id,
     pcs,
     pcsQuery.isFetching,
+    dateStart,
+    timeStart,
     planIv,
     bookingNowMs,
     planOverlapBusyPcsLower,
@@ -1315,34 +1484,103 @@ export function BookingScreen() {
     canSelectPc,
   ]);
 
+  const selectedPcsSet = useMemo(() => {
+    const set = new Set<string>();
+    for (const item of selectedPcs) {
+      set.add(String(item.pc_name).trim().toLowerCase());
+    }
+    return set;
+  }, [selectedPcs]);
+
+  const busyUntilByPc = useMemo(() => {
+    const map = new Map<string, Date | null>();
+    for (const item of pcsForUi ?? []) {
+      const lk = String(item.pc_name).trim().toLowerCase();
+      const slotBusy =
+        planOverlapBusyPcsLower.has(lk) ||
+        (planIv ? effectivePcBusyForPlan(item, planIv, bookingNowMs) : item.is_using);
+      map.set(
+        lk,
+        slotBusy
+          ? busyUntilInstantForPcListItem(item, planIv, cafeBookingRowsForOverlap, bookingNowMs)
+          : null,
+      );
+    }
+    return map;
+  }, [pcsForUi, planOverlapBusyPcsLower, planIv, bookingNowMs, cafeBookingRowsForOverlap]);
+
+  const pcStatusByPc = useMemo(() => {
+    const map = new Map<string, PcStatusMeta>();
+    for (const item of pcsForUi ?? []) {
+      const lk = String(item.pc_name).trim().toLowerCase();
+      const busyUntil = busyUntilByPc.get(lk) ?? null;
+      const slotBusy =
+        planOverlapBusyPcsLower.has(lk) ||
+        (planIv ? effectivePcBusyForPlan(item, planIv, bookingNowMs) : item.is_using);
+      const statusLine =
+        busyUntil != null
+          ? t('booking.pcStatusBusyAfter', {
+              time: formatInstantMoscowWallForLocale(busyUntil, locale),
+            })
+          : slotBusy
+            ? t('booking.pcStatusBusy')
+            : t('booking.pcStatusFree');
+      map.set(lk, {
+        selected: selectedPcsSet.has(lk),
+        busy: slotBusy,
+        statusLine,
+      });
+    }
+    return map;
+  }, [
+    pcsForUi,
+    busyUntilByPc,
+    planOverlapBusyPcsLower,
+    planIv,
+    bookingNowMs,
+    selectedPcsSet,
+    t,
+    locale,
+  ]);
+
+  const renderPcListRow = useCallback(
+    ({ item }: ListRenderItemInfo<PcFlatListRow>) => (
+      <BookingPcListRow
+        row={item}
+        styles={styles}
+        colors={colors}
+        canSelectPc={canSelectPc}
+        pcStatusByPc={pcStatusByPc}
+        onPressPc={togglePcSelection}
+        uiPcLabel={uiPcLabel}
+        t={t}
+      />
+    ),
+    [styles, colors, canSelectPc, pcStatusByPc, togglePcSelection, uiPcLabel, t],
+  );
+
   const nearestSearchZoneReady =
     nearestSearchPcZone === 'any' || nearestSearchPcZoneCommitted;
 
   const alertSelectPcBlockedIfNeeded = useCallback(() => {
     if (!cafe) {
-      setBookingNotice({ title: t('booking.alertPc'), message: t('booking.selectPcBlockedNeedClub') });
+      showAlert(t('booking.alertPc'), t('booking.selectPcBlockedNeedClub'));
       return;
     }
     if (!memberProfileReady) {
-      setBookingNotice({ title: t('booking.alertPc'), message: t('booking.selectPcBlockedNeedProfile') });
+      showAlert(t('booking.alertPc'), t('booking.selectPcBlockedNeedProfile'));
       return;
     }
     if (!dateFilterCommitted) {
-      setBookingNotice({ title: t('booking.alertPc'), message: t('booking.selectPcBlockedNeedDate') });
+      showAlert(t('booking.alertPc'), t('booking.selectPcBlockedNeedDate'));
       return;
     }
     if (!timeAndDurationReady) {
-      setBookingNotice({
-        title: t('booking.alertPc'),
-        message: t('booking.selectPcBlockedNeedTimeDuration'),
-      });
+      showAlert(t('booking.alertPc'), t('booking.selectPcBlockedNeedTimeDuration'));
       return;
     }
     if (cafeBookingsOverlapLoading) {
-      setBookingNotice({
-        title: t('booking.alertPc'),
-        message: t('booking.selectPcBlockedLoadingClubBookings'),
-      });
+      showAlert(t('booking.alertPc'), t('booking.selectPcBlockedLoadingClubBookings'));
       return;
     }
   }, [
@@ -1352,6 +1590,7 @@ export function BookingScreen() {
     dateFilterCommitted,
     timeAndDurationReady,
     t,
+    showAlert,
   ]);
 
   const pcSelectionLockHint = useMemo(() => {
@@ -1466,7 +1705,7 @@ export function BookingScreen() {
         },
         onError: (err) => {
           const msg = formatPublicErrorMessage(err, t, 'booking.errorGeneric');
-          Alert.alert(t('booking.errorGeneric'), msg);
+          showAlert(t('booking.errorGeneric'), msg);
         },
       },
     );
@@ -1484,8 +1723,8 @@ export function BookingScreen() {
   }, [modalNearestMenu]);
 
   useEffect(() => {
-    if (modalBooks && user?.memberAccount) void booksQ.refetch();
-  }, [modalBooks, user?.memberAccount, booksQ.refetch]);
+    if (modalBooks && (user?.memberAccount?.trim() || user?.memberId?.trim())) void booksQ.refetch();
+  }, [modalBooks, user?.memberAccount, user?.memberId, booksQ.refetch]);
 
   const overlapConflict = useMemo(() => {
     if (!cafe || !selectedPcs.length || !cafeBookingRowsForOverlap.length || !planIv) return null;
@@ -1654,7 +1893,7 @@ export function BookingScreen() {
     onError: (e: unknown) => {
       if (e instanceof Error && e.name === 'AbortError') return;
       const msg = formatPublicErrorMessage(e, t, 'booking.errorGeneric');
-      Alert.alert(t('booking.alertBooking'), msg);
+      showAlert(t('booking.alertBooking'), msg);
     },
   });
 
@@ -1667,7 +1906,7 @@ export function BookingScreen() {
           ? selectedPcs.length
           : 1;
       if (picked.length < requestedPartySize) {
-        Alert.alert(t('booking.alertBooking'), t('booking.errorPcStale'));
+        showAlert(t('booking.alertBooking'), t('booking.errorPcStale'));
         return;
       }
       setDateStart(slot.dateISO);
@@ -1803,7 +2042,7 @@ export function BookingScreen() {
         void (async () => {
           try {
             await Promise.all([
-              qc.refetchQueries({ queryKey: queryKeys.books(user?.memberAccount) }),
+              qc.refetchQueries({ queryKey: queryKeys.books(user?.memberAccount, user?.memberId) }),
               qc.refetchQueries({ queryKey: availKey }),
               cafe ? qc.invalidateQueries({ queryKey: queryKeys.cafeBookings(cafe.icafe_id) }) : Promise.resolve(),
               cafe ? qc.invalidateQueries({ queryKey: queryKeys.structRooms(cafe.icafe_id) }) : Promise.resolve(),
@@ -1817,13 +2056,13 @@ export function BookingScreen() {
       };
 
       if (result.ok.length === 0 && result.failed.length) {
-        Alert.alert(t('booking.alertBooking'), result.failed[0].err);
+        showAlert(t('booking.alertBooking'), result.failed[0].err);
         refreshCachesAfterBooking();
         return;
       }
       const partial = result.failed.length > 0 && result.ok.length > 0;
       if (partial) {
-        Alert.alert(
+        showAlert(
           t('booking.partialBookingTitle'),
           t('booking.partialBookingBody', {
             ok: uiPcList(result.ok),
@@ -1840,9 +2079,22 @@ export function BookingScreen() {
           ...(tariff ? { lastTariff: tariffToSaved(tariff) } : {}),
         });
         if (!partial) {
-          setSuccessPcLine(uiPcList(result.ok));
-          setSuccessPartyCount(result.ok.length);
-          setSuccessOpen(true);
+          const pcLine = uiPcList(result.ok);
+          const successBody = pcLine.includes(',')
+            ? t('booking.successTextMany', { pcs: pcLine })
+            : result.ok.length > 1
+              ? `${t('booking.successText')} ${t('booking.successParty', { n: result.ok.length })}`
+              : t('booking.successText');
+          showAlert(t('booking.successTitle'), successBody, [
+            {
+              text: t('booking.addToCalendar'),
+              style: 'cancel',
+              onPress: () => {
+                void onAddBookingToCalendar(pcLine);
+              },
+            },
+            { text: t('booking.successOk'), style: 'default' },
+          ]);
         }
         try {
           const prefs = await loadAppPreferences();
@@ -1894,7 +2146,7 @@ export function BookingScreen() {
     },
     onError: (e: unknown) => {
       const msg = formatPublicErrorMessage(e, t, 'booking.errorGeneric');
-      Alert.alert(t('booking.alertBooking'), msg);
+      showAlert(t('booking.alertBooking'), msg);
     },
   });
 
@@ -2041,11 +2293,11 @@ export function BookingScreen() {
   const onMainBookingPress = () => {
     if (!canBook) return;
     if (!signHintOk) {
-      Alert.alert(t('booking.signTitle'), t('booking.signBody'));
+      showAlert(t('booking.signTitle'), t('booking.signBody'));
       return;
     }
     if (needPay) {
-      Alert.alert(t('booking.lowBalanceTitle'), t('booking.lowBalanceBody'), [
+      showAlert(t('booking.lowBalanceTitle'), t('booking.lowBalanceBody'), [
         { text: t('booking.cancel'), style: 'cancel' },
         { text: t('booking.topUp'), onPress: () => Linking.openURL(topUpUrl) },
       ]);
@@ -2070,6 +2322,7 @@ export function BookingScreen() {
             pricesList,
             products,
             effectivePackageZone,
+            showSavingBenefit,
           )
         : '',
     [
@@ -2084,6 +2337,7 @@ export function BookingScreen() {
       pricesList,
       products,
       effectivePackageZone,
+      showSavingBenefit,
     ],
   );
 
@@ -2102,6 +2356,7 @@ export function BookingScreen() {
             pricesList,
             products,
             effectivePackageZone,
+            showSavingBenefit,
           )
         : '',
     [
@@ -2117,6 +2372,7 @@ export function BookingScreen() {
       pricesList,
       products,
       effectivePackageZone,
+      showSavingBenefit,
     ],
   );
 
@@ -2300,7 +2556,7 @@ export function BookingScreen() {
       const nDur = entries.length;
       if (!cafe) return;
       if (!nTime || !nDur) {
-        Alert.alert(t('booking.alertBooking'), t('booking.errorGeneric'));
+        showAlert(t('booking.alertBooking'), t('booking.errorGeneric'));
         return;
       }
       let tiSafe: number;
@@ -2329,7 +2585,7 @@ export function BookingScreen() {
       let slot = slots[tiSafe];
       let entry = entries[diSafe];
       if (!slot || !entry) {
-        Alert.alert(t('booking.alertBooking'), t('booking.errorGeneric'));
+        showAlert(t('booking.alertBooking'), t('booking.errorGeneric'));
         return;
       }
 
@@ -2372,7 +2628,7 @@ export function BookingScreen() {
           });
           prices = data?.prices ?? [];
         } catch {
-          Alert.alert(t('booking.alertBooking'), t('booking.errorGeneric'));
+          showAlert(t('booking.alertBooking'), t('booking.errorGeneric'));
           return;
         }
       }
@@ -2381,14 +2637,14 @@ export function BookingScreen() {
       entry = durationWheelEntriesRef.current[diSafe];
       slot = (forNearest ? timeSlotsRef.current : mainTimeSlotsRef.current)[tiSafe];
       if (!slot || !entry) {
-        Alert.alert(t('booking.alertBooking'), t('booking.errorGeneric'));
+        showAlert(t('booking.alertBooking'), t('booking.errorGeneric'));
         return;
       }
 
       if (entry.kind === 'preset') {
         const tpl = pickHourlyTemplateForSessionMins(prices, entry.mins);
         if (!tpl) {
-          Alert.alert(t('booking.alertBooking'), t('booking.noHourlyTier'));
+          showAlert(t('booking.alertBooking'), t('booking.noHourlyTier'));
           return;
         }
         const next = matchPriceTierToMinutes(prices, tpl, entry.mins);
@@ -2403,7 +2659,7 @@ export function BookingScreen() {
           setMins(String(bookingPackageWheelDisplayMins(entry.product, minsNum)));
         } catch (e) {
           console.warn('booking package select', e);
-          Alert.alert(t('booking.alertBooking'), t('booking.errorGeneric'));
+          showAlert(t('booking.alertBooking'), t('booking.errorGeneric'));
           return;
         }
       }
@@ -2511,11 +2767,13 @@ export function BookingScreen() {
           onLayout={(e) => setMainScrollViewportH(e.nativeEvent.layout.height)}
           onContentSizeChange={(_, h) => setMainScrollContentH(h)}
         >
-        <TabScreenTopBar
-          title={t('tabs.booking')}
-          dense={compactVertical}
-          horizontalPadding={0}
-        />
+        <View style={styles.topBarLift}>
+          <TabScreenTopBar
+            title={t('tabs.booking')}
+            dense={compactVertical}
+            horizontalPadding={0}
+          />
+        </View>
 
         <TodaysBookingBanner />
 
@@ -2635,7 +2893,7 @@ export function BookingScreen() {
                       <ClubDataLoader message={t('common.loader.captionPc')} compact minHeight={240} />
                     ) : structQ.data?.rooms?.length ? (
                       <>
-                        <ClubLayoutCanvas
+                        <MemoClubLayoutCanvas
                           rooms={structQ.data.rooms}
                           colors={colors}
                           icafeId={cafe.icafe_id}
@@ -2707,87 +2965,21 @@ export function BookingScreen() {
                       { flex: 1, minHeight: 0 },
                     ]}
                   >
-                    <ScrollView
+                    <FlatList
+                      data={pcListRows}
+                      renderItem={renderPcListRow}
+                      keyExtractor={(item) => item.key}
                       nestedScrollEnabled
                       keyboardShouldPersistTaps="handled"
                       style={{ flex: 1, minHeight: 0 }}
                       contentContainerStyle={{ paddingBottom: 4 }}
                       showsVerticalScrollIndicator
-                    >
-                        {pcsForUi
-                          ? pcListSections.map((section) => (
-                              <View key={`pc-section-${section.key}`} style={styles.pcZoneSection}>
-                                <Text style={styles.pcZoneSectionTitle}>{section.title}</Text>
-                                {section.pairs.map((pair, ri) => (
-                                  <View key={`pc-row-${section.key}-${ri}`} style={styles.pcListRow}>
-                                    {pair.map((item, ii) => {
-                                      const sel = selectedPcs.some((s) => s.pc_name === item.pc_name);
-                                      const lk = String(item.pc_name).trim().toLowerCase();
-                                      const slotBusy =
-                                        planOverlapBusyPcsLower.has(lk) ||
-                                        (planIv
-                                          ? effectivePcBusyForPlan(item, planIv, bookingNowMs)
-                                          : item.is_using);
-                                      const busyUntil = slotBusy
-                                        ? busyUntilInstantForPcListItem(
-                                            item,
-                                            planIv,
-                                            cafeBookingRowsForOverlap,
-                                            bookingNowMs,
-                                          )
-                                        : null;
-                                      const pcStatusLine =
-                                        busyUntil != null
-                                          ? t('booking.pcStatusBusyAfter', {
-                                              time: formatInstantMoscowWallForLocale(busyUntil, locale),
-                                            })
-                                          : slotBusy
-                                            ? t('booking.pcStatusBusy')
-                                            : t('booking.pcStatusFree');
-                                      return (
-                                        <Pressable
-                                          key={`${item.pc_name}-${section.key}-${ri}-${ii}`}
-                                          style={[
-                                            styles.pcCard,
-                                            styles.pcCardGridHalf,
-                                            slotBusy && styles.pcCardBusy,
-                                            sel && styles.pcCardSelected,
-                                            !canSelectPc && { pointerEvents: 'none' },
-                                          ]}
-                                          onPress={() => togglePcSelection(item)}
-                                          disabled={canSelectPc && slotBusy}
-                                        >
-                                          {!canSelectPc ? (
-                                            <View style={[styles.pcCardDimLock, { pointerEvents: 'none' }]} />
-                                          ) : null}
-                                          <View style={styles.pcCardBodyAboveDim}>
-                                            <Text style={styles.pcName} numberOfLines={1}>
-                                              {uiPcLabel(item.pc_name)}
-                                            </Text>
-                                            <Text style={styles.pcSub} numberOfLines={2}>
-                                              {formatPublicZoneLabel(pcZoneLabel(item) || '', t)} ·{' '}
-                                              {pcStatusLine}
-                                            </Text>
-                                          </View>
-                                          {sel ? (
-                                            <View style={styles.pcCardCheckAboveDim}>
-                                              <MaterialCommunityIcons
-                                                name="check-circle"
-                                                size={18}
-                                                color={colors.pcSelected}
-                                              />
-                                            </View>
-                                          ) : null}
-                                        </Pressable>
-                                      );
-                                    })}
-                                    {pair.length === 1 ? <View style={styles.pcListCellSpacer} /> : null}
-                                  </View>
-                                ))}
-                              </View>
-                            ))
-                          : null}
-                    </ScrollView>
+                      removeClippedSubviews={Platform.OS !== 'web'}
+                      initialNumToRender={10}
+                      windowSize={9}
+                      maxToRenderPerBatch={10}
+                      updateCellsBatchingPeriod={16}
+                    />
                     {selectedPcs.length > 0 ? (
                       <Pressable
                         style={({ pressed }) => [
@@ -3112,7 +3304,7 @@ export function BookingScreen() {
                     ) : seatLayoutMode === 'scheme' ? (
                       structQ.data?.rooms?.length ? (
                         <View style={[styles.mapBlock, styles.mapBlockScheme]}>
-                          <ClubLayoutCanvas
+                          <MemoClubLayoutCanvas
                             rooms={structQ.data.rooms}
                             colors={colors}
                             icafeId={cafe.icafe_id}
@@ -3979,66 +4171,6 @@ export function BookingScreen() {
         </View>
       </Modal>
 
-      <Modal
-        visible={!!bookingNotice}
-        animationType="fade"
-        transparent
-        onRequestClose={() => setBookingNotice(null)}
-        presentationStyle={Platform.OS === 'ios' ? 'overFullScreen' : undefined}
-      >
-        <Pressable style={styles.bookingNoticeOverlay} onPress={() => setBookingNotice(null)}>
-          <Pressable style={styles.bookingNoticeCard} onPress={(e) => e.stopPropagation()}>
-            <Text style={styles.bookingNoticeTitle}>{bookingNotice?.title}</Text>
-            <Text style={styles.bookingNoticeMessage}>{bookingNotice?.message}</Text>
-            <View style={styles.bookingNoticeBtnRow}>
-              <Pressable
-                style={({ pressed }) => [styles.bookingNoticeBtn, pressed && styles.pressed]}
-                onPress={() => setBookingNotice(null)}
-                accessibilityRole="button"
-              >
-                <Text style={styles.bookingNoticeBtnText}>{t('verify.alertOk')}</Text>
-              </Pressable>
-            </View>
-          </Pressable>
-        </Pressable>
-      </Modal>
-
-      <Modal
-        visible={successOpen}
-        animationType="fade"
-        transparent
-        onRequestClose={() => setSuccessOpen(false)}
-        presentationStyle={Platform.OS === 'ios' ? 'overFullScreen' : undefined}
-      >
-        <View style={styles.successOverlay}>
-          <View style={styles.successCard}>
-            <Text style={styles.successTitle}>{t('booking.successTitle')}</Text>
-            <Text style={styles.successDescr}>
-              {successPcLine && successPcLine.includes(',')
-                ? t('booking.successTextMany', { pcs: successPcLine })
-                : successPartyCount > 1
-                  ? `${t('booking.successText')} ${t('booking.successParty', { n: successPartyCount })}`
-                  : t('booking.successText')}
-            </Text>
-            <Pressable
-              style={styles.successBtnSecondary}
-              onPress={() => void onAddBookingToCalendar()}
-              accessibilityRole="button"
-            >
-              <Text style={styles.successBtnSecondaryText}>{t('booking.addToCalendar')}</Text>
-            </Pressable>
-            <Pressable
-              style={styles.successBtn}
-              onPress={() => {
-                setSuccessPcLine(null);
-                setSuccessOpen(false);
-              }}
-            >
-              <Text style={styles.successBtnText}>{t('booking.successOk')}</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -4076,6 +4208,7 @@ function buildTimeDurationFilterSubtitle(
   pricesList: PriceItem[],
   productsCatalog: ProductItem[],
   packageZone: PcZoneKind,
+  showSavingBenefit: boolean,
 ): React.ReactNode {
   if (!tariff) return `${timePart} · ${t('booking.durationNotChosen')}`;
   if (tariff.kind === 'product') {
@@ -4085,7 +4218,7 @@ function buildTimeDurationFilterSubtitle(
     }
     const line1 = t('booking.packageWheelLine1', { duration });
     const pct =
-      pricesList.length || productsCatalog.length
+      showSavingBenefit && (pricesList.length || productsCatalog.length)
         ? packageSavingPercentForWheel(tariff.item, pricesList, productsCatalog, packageZone)
         : null;
     const head = `${timePart} · ${line1}`;
@@ -4110,8 +4243,14 @@ function buildTimeDurationFilterSubtitle(
     const dur = formatBookingDurationHuman(minsNum, locale);
     const line1 = t('booking.packageWheelLine1', { duration: dur });
     const pct =
-      pricesList.length || productsCatalog.length
-        ? packageSavingPercentForPresetPackageMinutes(minsNum, pricesList, productsCatalog, packageZone)
+      showSavingBenefit && (pricesList.length || productsCatalog.length)
+        ? packageSavingPercentForPresetPackageMinutes(
+            minsNum,
+            pricesList,
+            productsCatalog,
+            packageZone,
+            showSavingBenefit,
+          )
         : null;
     const head = `${timePart} · ${line1}`;
     if (pct == null) {
@@ -4349,6 +4488,8 @@ function createBookingStyles(colors: ColorPalette, theme: ThemeName, scrollHPad:
       paddingTop: 14,
       backgroundColor: colors.bg,
     },
+    /** Чуть поднимаем контент к заголовку, не меняя сам верхний отступ от SafeArea до «Бронь». */
+    topBarLift: { marginBottom: -8 },
     scroll: { paddingHorizontal: scrollHPad, paddingTop: 2, paddingBottom: 10 },
     warn: { color: colors.danger, marginBottom: 12, lineHeight: 22, fontSize: 15 },
     choiceRow: {

@@ -1,11 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
-import { useFocusEffect } from '@react-navigation/native';
-import { Image } from 'expo-image';
-import React, { useCallback, useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { cafesApi } from '../../api/endpoints';
 import { useAuth } from '../../auth/AuthContext';
+import { Text } from '../../components/DinText';
+import { useAppAlert } from '../../components/AppAlertContext';
+import { FirstHintBanner } from '../../hints/FirstHintBanner';
 import { cityDisplayName, isKnownCityId } from '../../config/citiesCatalog';
 import { useLocale } from '../../i18n/LocaleContext';
 import { loadAppPreferences, type AppPreferences } from '../../preferences/appPreferences';
@@ -14,11 +17,17 @@ import { queryKeys } from '../../query/queryKeys';
 import { useTheme, useThemeColors } from '../../theme';
 import { EditProfileSection } from './EditProfileScreen';
 import { faceProfileKey, loadFaceEnrollment, type FaceEnrollment } from './faceEnrollmentStorage';
+import {
+  loadServiceBindings,
+  patchServiceBindings,
+  type ServiceBindings,
+} from './serviceBindingsStorage';
 import { SettingsAppearancePanel } from './SettingsAppearanceScreen';
 import { SettingsBookingRemindersPanel } from './SettingsBookingRemindersScreen';
 import { SettingsCityPanel } from './SettingsCityScreen';
 import { faceEnrollmentSummary, SettingsFacePanel } from './SettingsFaceScreen';
 import { createSettingsStyles, SettingsExpandableSection, SettingsTile } from './settingsShared';
+import type { ProfileStackParamList } from '../../navigation/types';
 
 type OpenSection = {
   profile: boolean;
@@ -26,11 +35,15 @@ type OpenSection = {
   face: boolean;
   appearance: boolean;
   reminders: boolean;
+  services: boolean;
 };
 
 export function SettingsScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
+  const route = useRoute();
   const { user, logout } = useAuth();
   const { t, locale } = useLocale();
+  const { showAlert } = useAppAlert();
   const { theme } = useTheme();
   const colors = useThemeColors();
   const styles = useMemo(() => createSettingsStyles(colors), [colors]);
@@ -42,7 +55,15 @@ export function SettingsScreen() {
     face: false,
     appearance: false,
     reminders: false,
+    services: false,
   });
+  const [serviceBindings, setServiceBindings] = useState<ServiceBindings>({
+    steam: false,
+    epicGames: false,
+  });
+  const [serviceActionInProgress, setServiceActionInProgress] = useState<keyof ServiceBindings | null>(null);
+  const serviceBindingsRef = useRef<ServiceBindings>(serviceBindings);
+  const lastActionTokenRef = useRef<number | null>(null);
 
   const toggle = useCallback((key: keyof OpenSection) => {
     setOpen((s) => ({ ...s, [key]: !s[key] }));
@@ -66,7 +87,52 @@ export function SettingsScreen() {
     useCallback(() => {
       void loadAppPreferences().then(setPrefs);
       void loadFaceEnrollment(faceProfileKey(user?.memberId)).then(setFaceEnrollment);
+      void loadServiceBindings().then(setServiceBindings);
     }, [user?.memberId]),
+  );
+
+  useEffect(() => {
+    serviceBindingsRef.current = serviceBindings;
+  }, [serviceBindings]);
+
+  const unlinkService = useCallback(
+    (key: keyof ServiceBindings) => {
+      if (serviceActionInProgress) return;
+      setServiceActionInProgress(key);
+      void patchServiceBindings({ [key]: false })
+        .then((saved) => {
+          setServiceBindings(saved);
+          serviceBindingsRef.current = saved;
+          showAlert(
+            t('profile.serviceUnlinkedTitle'),
+            t('profile.serviceUnlinkedBody', {
+              service: key === 'steam' ? t('profile.servicesSteam') : t('profile.servicesEpic'),
+            }),
+          );
+        })
+        .finally(() => setServiceActionInProgress((current) => (current === key ? null : current)));
+    },
+    [serviceActionInProgress, showAlert, t],
+  );
+
+  const openBindService = useCallback(
+    (key: keyof ServiceBindings) => {
+      if (serviceActionInProgress) return;
+      navigation.navigate('ServiceAuthMock', { serviceKey: key });
+    },
+    [navigation, serviceActionInProgress],
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      const params = (route as { params?: ProfileStackParamList['Settings'] }).params;
+      if (!params?.actionToken || params.actionToken === lastActionTokenRef.current) return;
+      lastActionTokenRef.current = params.actionToken;
+      if (params.serviceAction === 'linked' && params.serviceKey) {
+        const label = params.serviceKey === 'steam' ? t('profile.servicesSteam') : t('profile.servicesEpic');
+        showAlert(t('profile.serviceLinkedTitle'), t('profile.serviceLinkedBody', { service: label }));
+      }
+    }, [route, showAlert, t]),
   );
 
   const appearanceSummary = [
@@ -97,18 +163,6 @@ export function SettingsScreen() {
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
         >
-          {user?.memberId && faceEnrollment?.captures?.center?.uri ? (
-            <View style={styles.settingsFacePhotoWrap} accessibilityLabel={t('profile.facePreviewA11y')}>
-              <Image
-                source={{ uri: faceEnrollment.captures.center.uri }}
-                style={styles.settingsFacePhoto}
-                contentFit="cover"
-                cachePolicy="memory-disk"
-                transition={120}
-              />
-            </View>
-          ) : null}
-
           {user?.memberId ? (
             <SettingsExpandableSection
               label={t('profile.sectionProfile')}
@@ -166,6 +220,68 @@ export function SettingsScreen() {
             accessibilityHint={t('profile.settingsExpandHint')}
           >
             <SettingsBookingRemindersPanel styles={styles} />
+          </SettingsExpandableSection>
+
+          <SettingsExpandableSection
+            label={t('profile.settingsHubLinkedServices')}
+            summary={t('profile.settingsHubLinkedServicesSubtitle')}
+            expanded={open.services}
+            onToggle={() => toggle('services')}
+            styles={styles}
+            accessibilityHint={t('profile.settingsExpandHint')}
+          >
+            <View style={{ gap: 10 }}>
+              <FirstHintBanner hintId="profile_services_link" messageKey="hints.profileServicesLink" />
+              <Pressable
+                style={({ pressed }) => [styles.tile, pressed && styles.tilePressed, { marginBottom: 0 }]}
+                onPress={() =>
+                  serviceBindings.steam ? unlinkService('steam') : openBindService('steam')
+                }
+                disabled={serviceActionInProgress != null}
+                accessibilityRole="button"
+                accessibilityState={{ disabled: serviceActionInProgress != null }}
+                accessibilityLabel={t('profile.servicesSteam')}
+              >
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                    <Text style={styles.tileLabel}>{t('profile.servicesSteam')}</Text>
+                  </View>
+                </View>
+                <Text style={styles.tileValue}>
+                  {serviceActionInProgress === 'steam'
+                    ? t('profile.serviceLinking')
+                    : serviceBindings.steam
+                      ? t('profile.serviceUnlinkAction')
+                      : t('profile.serviceLinkAction')}
+                </Text>
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [styles.tile, pressed && styles.tilePressed, { marginBottom: 0 }]}
+                onPress={() =>
+                  serviceBindings.epicGames ? unlinkService('epicGames') : openBindService('epicGames')
+                }
+                disabled={serviceActionInProgress != null}
+                accessibilityRole="button"
+                accessibilityState={{ disabled: serviceActionInProgress != null }}
+                accessibilityLabel={t('profile.servicesEpic')}
+              >
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                    <Text style={styles.tileLabel}>{t('profile.servicesEpic')}</Text>
+                  </View>
+                </View>
+                <Text style={styles.tileValue}>
+                  {serviceActionInProgress === 'epicGames'
+                    ? t('profile.serviceLinking')
+                    : serviceBindings.epicGames
+                      ? t('profile.serviceUnlinkAction')
+                      : t('profile.serviceLinkAction')}
+                </Text>
+              </Pressable>
+              <Text style={{ color: colors.muted, fontSize: 13, lineHeight: 18 }}>
+                {t('profile.serviceLocalHint')}
+              </Text>
+            </View>
           </SettingsExpandableSection>
         </ScrollView>
 

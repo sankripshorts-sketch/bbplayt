@@ -88,10 +88,11 @@ export function CenteredCardModal({
                   style={styles.scroll}
                   contentContainerStyle={styles.scrollContent}
                   showsVerticalScrollIndicator={false}
-                  scrollEnabled={canScroll}
+                  scrollEnabled
                   bounces={canScroll}
                   alwaysBounceVertical={false}
                   overScrollMode="never"
+                  keyboardShouldPersistTaps="handled"
                   onLayout={(event) => {
                     const next = event.nativeEvent.layout.height;
                     if (next > 0) setViewportHeight(next);
@@ -121,9 +122,11 @@ function createStyles(
   const fixedBody =
     bodyHeight != null
       ? {
+          /** Фиксированное тело: не схлопывать `flex`-контент (игра/оверлей), но и не давать ему расти. */
           height: bodyHeight,
-          minHeight: bodyHeight,
           maxHeight: bodyHeight,
+          minHeight: bodyHeight,
+          flexShrink: 1,
         }
       : {};
   return StyleSheet.create({
@@ -147,7 +150,8 @@ function createStyles(
       borderRadius: 22,
       borderWidth: 1,
       borderColor: colors.border,
-      maxHeight: '96%',
+      maxHeight: '100%',
+      minHeight: 0,
       overflow: 'hidden',
       ...Platform.select({
         ios: {
@@ -178,13 +182,14 @@ function createStyles(
       lineHeight: 26,
     },
     closeBtn: { padding: 4, marginTop: -2 },
-    scroll: { maxHeight: scrollMax, flexGrow: 0 },
-    scrollContent: { paddingHorizontal: 18, paddingBottom: 20 + bottomPad },
+    scroll: { maxHeight: scrollMax, minHeight: 0, flexGrow: 0, flexShrink: 1 },
+    scrollContent: { paddingHorizontal: 18, paddingBottom: 20 + bottomPad, minHeight: 0 },
     bodyStatic: {
       paddingHorizontal: 18,
       /** Симметрия с `titleRow.paddingTop`: отступ от края карточки к контенту */
-      paddingBottom: 20 + bottomPad,
+      paddingBottom: 24 + bottomPad,
       flexGrow: 0,
+      minHeight: 0,
       alignSelf: 'stretch',
       ...fixedBody,
     },

@@ -3,8 +3,10 @@ import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Image } from 'expo-image';
 import { Text } from '../../components/DinText';
 import { useAuth } from '../../auth/AuthContext';
+import { FirstHintBanner } from '../../hints/FirstHintBanner';
 import { useLocale } from '../../i18n/LocaleContext';
 import { useThemeColors } from '../../theme';
 import type { ProfileStackParamList } from '../../navigation/types';
@@ -67,6 +69,18 @@ export function SettingsFacePanel({
 
   return (
     <View>
+      {enrollment?.captures?.center?.uri ? (
+        <View style={styles.settingsFacePhotoWrap} accessibilityLabel={t('profile.facePreviewA11y')}>
+          <Image
+            source={{ uri: enrollment.captures.center.uri }}
+            style={styles.settingsFacePhoto}
+            contentFit="cover"
+            cachePolicy="memory-disk"
+            transition={120}
+          />
+        </View>
+      ) : null}
+      <FirstHintBanner hintId="profile_face_add" messageKey="hints.profileFaceAdd" />
       <Text style={introStyle}>{t('profile.faceIntro')}</Text>
       <SettingsTile
         styles={styles}

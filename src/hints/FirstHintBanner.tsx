@@ -57,7 +57,7 @@ function createStyles(colors: ColorPalette) {
       borderColor: colors.accent,
     },
     text: { color: colors.text, fontSize: 14, lineHeight: 20, marginBottom: 8 },
-    btn: { alignSelf: 'flex-end', paddingVertical: 6, paddingHorizontal: 12 },
-    btnText: { color: colors.text, fontWeight: '700', fontSize: 14 },
+    btn: { alignSelf: 'flex-end', paddingVertical: 8, paddingHorizontal: 12, minHeight: 36, justifyContent: 'center' },
+    btnText: { color: colors.text, fontWeight: '700', fontSize: 14, lineHeight: 20 },
   });
 }

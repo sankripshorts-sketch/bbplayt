@@ -27,7 +27,9 @@ export function SettingsTile({
       accessibilityLabel={value.trim() ? `${label}: ${value}` : label}
       accessibilityHint={accessibilityHint}
       android_ripple={
-        Platform.OS === 'android' ? { color: 'rgba(128,128,128,0.25)', borderless: false } : undefined
+        Platform.OS === 'android'
+          ? { color: 'rgba(128,128,128,0.25)', borderless: false, radius: 24 }
+          : undefined
       }
       style={({ pressed }) => [
         styles.tile,
@@ -74,7 +76,9 @@ export function SettingsExpandableSection({
         accessibilityHint={accessibilityHint}
         accessibilityState={{ expanded }}
         android_ripple={
-          Platform.OS === 'android' ? { color: 'rgba(128,128,128,0.25)', borderless: false } : undefined
+          Platform.OS === 'android'
+            ? { color: 'rgba(128,128,128,0.25)', borderless: false, radius: 24 }
+            : undefined
         }
         style={({ pressed }) => [styles.accordionHeader, pressed && styles.tilePressed]}
       >
@@ -122,7 +126,9 @@ export function SettingsNavigationCard({
         accessibilityLabel={summary.trim() ? `${label}. ${summary}` : label}
         accessibilityHint={accessibilityHint}
         android_ripple={
-          Platform.OS === 'android' ? { color: 'rgba(128,128,128,0.25)', borderless: false } : undefined
+          Platform.OS === 'android'
+            ? { color: 'rgba(128,128,128,0.25)', borderless: false, radius: 24 }
+            : undefined
         }
         style={({ pressed }) => [styles.accordionHeader, pressed && styles.tilePressed]}
       >
@@ -159,7 +165,9 @@ export function SettingsSubRow({
       accessibilityLabel={label}
       accessibilityHint={accessibilityHint}
       android_ripple={
-        Platform.OS === 'android' ? { color: 'rgba(128,128,128,0.2)', borderless: false } : undefined
+        Platform.OS === 'android'
+          ? { color: 'rgba(128,128,128,0.2)', borderless: false, radius: 24 }
+          : undefined
       }
       style={({ pressed }) => [styles.subRow, pressed && styles.tilePressed]}
     >
@@ -229,8 +237,10 @@ export function createSettingsStyles(colors: ColorPalette) {
     tile: {
       backgroundColor: colors.card,
       borderRadius: 16,
+      overflow: 'hidden',
       paddingVertical: 14,
       paddingHorizontal: 16,
+      minHeight: 56,
       borderWidth: 1,
       borderColor: colors.border,
       marginBottom: 10,
@@ -256,6 +266,7 @@ export function createSettingsStyles(colors: ColorPalette) {
       fontWeight: '600',
       fontSize: 14,
       textAlign: 'right',
+      flexShrink: 1,
       maxWidth: '52%',
     },
     tileValueDanger: { color: colors.danger },

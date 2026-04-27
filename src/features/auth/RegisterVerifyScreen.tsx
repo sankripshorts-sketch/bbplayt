@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
   StyleSheet,
 } from 'react-native';
+import { useAppAlert } from '../../components/AppAlertContext';
 import { Text } from '../../components/DinText';
 import { TextInput } from '../../components/DinTextInput';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -69,6 +69,7 @@ function VerifyResendControl({
 export function RegisterVerifyScreen({ navigation, route }: Props) {
   const { memberId, privateKey, phone, memberAccount } = route.params;
   const { t } = useLocale();
+  const { showAlert } = useAppAlert();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -111,7 +112,7 @@ export function RegisterVerifyScreen({ navigation, route }: Props) {
         encodedData: encodedData ?? '',
         code: code.trim(),
       });
-      Alert.alert(t('verify.alertTitle'), t('verify.alertBody', { account: memberAccount }), [
+      showAlert(t('verify.alertTitle'), t('verify.alertBody', { account: memberAccount }), [
         { text: t('verify.alertOk'), onPress: () => navigation.popToTop() },
       ]);
     } catch (e) {

@@ -2,7 +2,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const KEY = 'bbplay.hints.v1';
 
-export type HintId = 'booking_map' | 'clubs_route';
+export type HintId =
+  | 'booking_map'
+  | 'clubs_route'
+  | 'profile_qr_scan'
+  | 'profile_face_add'
+  | 'profile_services_link';
 
 type Store = Partial<Record<HintId, boolean>>;
 

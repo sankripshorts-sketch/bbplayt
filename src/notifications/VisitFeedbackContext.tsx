@@ -43,7 +43,7 @@ export function VisitFeedbackProvider({ children }: { children: React.ReactNode 
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { user } = useAuth();
-  const booksQ = useMemberBooksQuery(user?.memberAccount);
+  const booksQ = useMemberBooksQuery(user?.memberAccount, user?.memberId);
   const nowMs = useBookingNowMs(60_000);
   const cafesQ = useQuery({
     queryKey: queryKeys.cafes(),

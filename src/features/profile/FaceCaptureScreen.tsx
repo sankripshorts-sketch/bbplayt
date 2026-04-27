@@ -1,4 +1,5 @@
 import { CameraView, useCameraPermissions, type CameraCapturedPicture } from 'expo-camera';
+import Constants from 'expo-constants';
 import * as FileSystem from 'expo-file-system';
 import * as Haptics from 'expo-haptics';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -6,6 +7,7 @@ import { ActivityIndicator, Platform, Pressable, StyleSheet, View } from 'react-
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '../../components/DinText';
+import { useAppAlert } from '../../components/AppAlertContext';
 import { useAuth } from '../../auth/AuthContext';
 import { useLocale } from '../../i18n/LocaleContext';
 import { useThemeColors } from '../../theme';
@@ -32,7 +34,7 @@ const CAPTURE_STEPS: Array<{
 ];
 
 const FACE_SCAN_INTERVAL_MS = 700;
-const STABLE_FACES_TO_AUTO = 2;
+const STABLE_FACES_TO_CONFIRM = 2;
 
 type FaceCheckStatus = 'READY' | 'NO_FACE' | 'MULTIPLE_FACES' | string;
 
@@ -46,6 +48,8 @@ let checkFaceImplPromise: Promise<FaceCheckFn | null> | null = null;
 
 async function getCheckFaceImpl(): Promise<FaceCheckFn | null> {
   if (Platform.OS === 'web') return null;
+  // Expo Go does not contain the native ExpoFaceCheck module.
+  if (Constants.appOwnership === 'expo') return null;
   if (!checkFaceImplPromise) {
     checkFaceImplPromise = import('expo-face-check')
       .then((mod) => mod.checkFace)
@@ -65,7 +69,7 @@ function isFaceOk(status: FaceCheckStatus): boolean {
 }
 
 /**
- * Полноэкранная съёмка лица: авто-затвор при детекте, ручной — с проверкой.
+ * Полноэкранная съёмка лица: фиксация лица в рамке + сохранение по кнопке.
  * Нативный модуль `expo-face-check` (нужен dev build / prebuild, не Expo Go).
  */
 export function FaceCaptureScreen() {
@@ -73,6 +77,7 @@ export function FaceCaptureScreen() {
   const isFocused = useIsFocused();
   const { user } = useAuth();
   const { t } = useLocale();
+  const { showAlert } = useAppAlert();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const profileKey = faceProfileKey(user?.memberId);
@@ -87,7 +92,6 @@ export function FaceCaptureScreen() {
   const [faceScanOn, setFaceScanOn] = useState(true);
   const step = CAPTURE_STEPS[stepIndex];
 
-  const autoFinishedRef = useRef(false);
   const probingRef = useRef(false);
   const stableRef = useRef(0);
   const faceModuleFailedRef = useRef(false);
@@ -95,7 +99,10 @@ export function FaceCaptureScreen() {
   const finishWithEnrollment = useCallback(() => {
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     navigation.goBack();
-  }, [navigation]);
+    setTimeout(() => {
+      showAlert(t('profile.faceAddedAlertTitle'), t('profile.faceAddedAlertBody'));
+    }, 80);
+  }, [navigation, showAlert, t]);
 
   const persistIfDone = useCallback(
     async (nextCaptures: Partial<Record<FaceCapturePose, FaceCapture>>) => {
@@ -120,7 +127,7 @@ export function FaceCaptureScreen() {
   );
 
   const manualCapture = useCallback(async () => {
-    if (!cameraRef.current || !ready || saving || autoFinishedRef.current) return;
+    if (!cameraRef.current || !ready || saving) return;
     setSaving(true);
     setError('');
     try {
@@ -159,36 +166,11 @@ export function FaceCaptureScreen() {
     }
   }, [ready, saveFromPhoto, saving, t]);
 
-  const runAutoSave = useCallback(async () => {
-    if (!cameraRef.current || !ready || saving || autoFinishedRef.current) return;
-    autoFinishedRef.current = true;
-    setFaceScanOn(false);
-    setSaving(true);
-    setError('');
-    try {
-      const photo: CameraCapturedPicture | undefined = await cameraRef.current.takePictureAsync({
-        quality: 0.86,
-        base64: false,
-        exif: false,
-      });
-      if (!photo?.uri) throw new Error('empty');
-      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-      await saveFromPhoto(photo);
-    } catch {
-      autoFinishedRef.current = false;
-      setFaceScanOn(true);
-      setError(t('profile.faceCaptureError'));
-    } finally {
-      setSaving(false);
-    }
-  }, [ready, saveFromPhoto, saving, t]);
-
   const probeFace = useCallback(async () => {
     if (
       !cameraRef.current ||
       !ready ||
       saving ||
-      autoFinishedRef.current ||
       faceModuleFailedRef.current ||
       probingRef.current
     ) {
@@ -221,8 +203,9 @@ export function FaceCaptureScreen() {
       }
       if (isFaceOk(result.status)) {
         stableRef.current += 1;
-        if (stableRef.current >= STABLE_FACES_TO_AUTO) {
-          await runAutoSave();
+        if (stableRef.current >= STABLE_FACES_TO_CONFIRM) {
+          void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+          stableRef.current = 0;
         }
       } else {
         stableRef.current = 0;
@@ -235,7 +218,7 @@ export function FaceCaptureScreen() {
       }
       probingRef.current = false;
     }
-  }, [ready, runAutoSave, saving]);
+  }, [ready, saving]);
 
   useEffect(() => {
     if (!isFocused) stableRef.current = 0;
@@ -305,10 +288,10 @@ export function FaceCaptureScreen() {
           </Pressable>
           <Pressable
             onPress={manualCapture}
-            disabled={!ready || saving || autoFinishedRef.current}
+            disabled={!ready || saving}
             style={({ pressed }) => [
               styles.shutterOuter,
-              (!ready || saving || autoFinishedRef.current) && styles.disabled,
+              (!ready || saving) && styles.disabled,
               pressed && styles.pressed,
             ]}
           >
@@ -453,9 +436,11 @@ function createStyles(colors: ColorPalette) {
     },
     cancelButton: {
       minWidth: 86,
+      minHeight: 46,
       borderRadius: 14,
       paddingVertical: 12,
       paddingHorizontal: 14,
+      justifyContent: 'center',
       backgroundColor: 'rgba(0,0,0,0.48)',
     },
     cancelButtonPlaceholder: {
@@ -464,6 +449,7 @@ function createStyles(colors: ColorPalette) {
     cancelButtonText: {
       color: '#fff',
       fontSize: 14,
+      lineHeight: 20,
       fontWeight: '700',
       textAlign: 'center',
     },
