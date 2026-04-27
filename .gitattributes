@@ -1,1 +1,2 @@
 android/app/build/outputs/apk/release/*.apk filter=lfs diff=lfs merge=lfs -text
+release-apk/*.apk filter=lfs diff=lfs merge=lfs -text
