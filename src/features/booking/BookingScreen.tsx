@@ -466,6 +466,24 @@ const BookingPcListRow = React.memo(function BookingPcListRow({
       </View>
     </View>
   );
+}, (prev, next) => {
+  if (prev.row !== next.row) return false;
+  if (prev.styles !== next.styles) return false;
+  if (prev.colors !== next.colors) return false;
+  if (prev.canSelectPc !== next.canSelectPc) return false;
+  if (prev.onPressPc !== next.onPressPc) return false;
+  if (prev.uiPcLabel !== next.uiPcLabel) return false;
+  if (prev.t !== next.t) return false;
+  if (prev.pcStatusByPc === next.pcStatusByPc) return true;
+  for (const item of prev.row.pair) {
+    const lk = String(item.pc_name).trim().toLowerCase();
+    const a = prev.pcStatusByPc.get(lk);
+    const b = next.pcStatusByPc.get(lk);
+    if ((a?.selected ?? false) !== (b?.selected ?? false)) return false;
+    if ((a?.busy ?? false) !== (b?.busy ?? false)) return false;
+    if ((a?.statusLine ?? '') !== (b?.statusLine ?? '')) return false;
+  }
+  return true;
 });
 
 export function BookingScreen() {
@@ -520,8 +538,13 @@ export function BookingScreen() {
   const [pendingTimeIdx, setPendingTimeIdx] = useState(0);
   const [pendingDurIdx, setPendingDurIdx] = useState(0);
   const [pendingZoneIdx, setPendingZoneIdx] = useState(0);
+  const pendingCityIdxRef = useRef(0);
+  const pendingClubIdxRef = useRef(0);
+  const pendingDateIdxRef = useRef(0);
   const pendingTimeIdxRef = useRef(0);
   const pendingDurIdxRef = useRef(0);
+  const pendingZoneIdxRef = useRef(0);
+  const pendingNearestDayIdxRef = useRef(0);
   const clubWheelRef = useRef<WheelPickerColumnHandle>(null);
   const cityWheelRef = useRef<WheelPickerColumnHandle>(null);
   const dateWheelRef = useRef<WheelPickerColumnHandle>(null);
@@ -1033,6 +1056,15 @@ export function BookingScreen() {
     }, [qc, user?.memberAccount, user?.memberId]),
   );
 
+  /** Данные по ПК тянем только после подтверждения фильтров слота. */
+  const pcDataFetchReady = Boolean(
+    cafe &&
+    memberProfileReady &&
+    dateFilterCommitted &&
+    timeDurationFilterCommitted &&
+    tariff != null,
+  );
+
   /** Слот брони: только vibe `GET /available-pcs-for-booking` (не iCafe `.../pcs`). */
   const pcsQuery = useQuery({
     queryKey: availKey,
@@ -1045,13 +1077,7 @@ export function BookingScreen() {
         isFindWindow: IS_FIND_WINDOW_MAIN,
         priceName: priceNameForAvailability || undefined,
       }),
-    enabled:
-      !!cafe &&
-      memberProfileReady &&
-      minsNum > 0 &&
-      dateFilterCommitted &&
-      timeAndDurationReady &&
-      !isBookingFilterSheetOpen,
+    enabled: pcDataFetchReady && minsNum > 0 && !isBookingFilterSheetOpen,
     staleTime: 15_000,
     refetchOnMount: true,
     refetchInterval: isFocused && !isBookingFilterSheetOpen ? PC_REFETCH_INTERVAL_MS : false,
@@ -1060,7 +1086,7 @@ export function BookingScreen() {
   /** «Занят сейчас»: iCafe `member_pcs` → fallback `GET .../pcs` — не используется для доступности слота. */
   const livePcsQuery = useLivePcsQuery(
     cafe?.icafe_id,
-    !!cafe && memberProfileReady && isFocused && !isBookingFilterSheetOpen,
+    pcDataFetchReady && isFocused && !isBookingFilterSheetOpen,
   );
 
   const booksQ = useMemberBooksQuery(user?.memberAccount, user?.memberId);
@@ -1071,10 +1097,10 @@ export function BookingScreen() {
   );
   const cafeBooksQ = useCafeBookingsQuery(
     cafe?.icafe_id,
-    !!cafe && memberProfileReady && !isBookingFilterSheetOpen,
+    pcDataFetchReady && !isBookingFilterSheetOpen,
   );
   /** Пока не подтянули брони клуба (все участники), нельзя честно отметить места с пересечением по слоту. */
-  const cafeBookingsOverlapLoading = !!(cafe && memberProfileReady && cafeBooksQ.isPending);
+  const cafeBookingsOverlapLoading = !!(pcDataFetchReady && cafeBooksQ.isPending);
   const bookingNowMs = useBookingNowMs(Platform.OS === 'web' ? 45_000 : 15_000);
 
   /** Дата для сетки времени в шторке «время / длительность»: при открытом поиске «ближайшее окно» — день поиска или «сегодня» при «Без разницы». */
@@ -1152,7 +1178,7 @@ export function BookingScreen() {
   const sessionQ = useQuery<MemberPcSessionInfo, Error>({
     queryKey: ['member-pc-session', cafe?.icafe_id, user?.memberId],
     queryFn: () => fetchMemberPcSessionInfo(cafe!.icafe_id, user!.memberId),
-    enabled: Boolean(cafe && user?.memberId && memberProfileReady && isFocused && !isBookingFilterSheetOpen),
+    enabled: Boolean(pcDataFetchReady && user?.memberId && isFocused && !isBookingFilterSheetOpen),
     staleTime: 15_000,
     refetchInterval: isBookingFilterSheetOpen ? false : 28_000,
   });
@@ -2157,6 +2183,8 @@ export function BookingScreen() {
     if (pickerCities.length === 0) {
       setPendingCityIdx(0);
       setPendingClubIdx(0);
+      pendingCityIdxRef.current = 0;
+      pendingClubIdxRef.current = 0;
       setModalClub(true);
       return;
     }
@@ -2174,6 +2202,8 @@ export function BookingScreen() {
     if (clubIdx < 0) clubIdx = 0;
     setPendingCityIdx(cityIdx);
     setPendingClubIdx(clubIdx);
+    pendingCityIdxRef.current = cityIdx;
+    pendingClubIdxRef.current = clubIdx;
     setModalClub(true);
   }, [cafe, cafesAll, pickerCities]);
 
@@ -2434,9 +2464,6 @@ export function BookingScreen() {
     () => defaultTimeSlotWheelIndex(mainTimeSlots, dateStart, bookingNowMs, slotStep, false),
     [mainTimeSlots, dateStart, bookingNowMs, slotStep],
   );
-
-  pendingTimeIdxRef.current = pendingTimeIdx;
-  pendingDurIdxRef.current = pendingDurIdx;
 
   const occupancyDaysStrip = useMemo(() => {
     const out: string[] = [];
@@ -2802,7 +2829,9 @@ export function BookingScreen() {
           disabled={!cafe}
           onPress={() => {
             if (!cafe) return;
-            setPendingDateIdx(wheelIndexForCalendarIso(dateStart, datesList));
+            const nextDateIdx = wheelIndexForCalendarIso(dateStart, datesList);
+            setPendingDateIdx(nextDateIdx);
+            pendingDateIdxRef.current = nextDateIdx;
             setModalDate(true);
           }}
         />
@@ -2829,6 +2858,8 @@ export function BookingScreen() {
                 : mainSuggestedTimeIdx;
             setPendingTimeIdx(ti);
             setPendingDurIdx(resolvedDurationWheelIndex);
+            pendingTimeIdxRef.current = ti;
+            pendingDurIdxRef.current = resolvedDurationWheelIndex;
             setModalTimeDuration(true);
           }}
         />
@@ -3213,9 +3244,9 @@ export function BookingScreen() {
                       nearestSearchDayISO == null
                         ? 0
                         : 1 + wheelIndexForCalendarIso(nearestSearchDayISO, datesList);
-                    setPendingNearestDayIdx(
-                      Math.min(Math.max(0, idx), Math.max(0, nearestSearchDayLabels.length - 1)),
-                    );
+                    const safeIdx = Math.min(Math.max(0, idx), Math.max(0, nearestSearchDayLabels.length - 1));
+                    setPendingNearestDayIdx(safeIdx);
+                    pendingNearestDayIdxRef.current = safeIdx;
                     setModalNearestDay(true);
                   }}
                 />
@@ -3244,6 +3275,8 @@ export function BookingScreen() {
                           : 1 + suggestedTimeIdx;
                     setPendingTimeIdx(ti);
                     setPendingDurIdx(resolvedDurationWheelIndex);
+                    pendingTimeIdxRef.current = ti;
+                    pendingDurIdxRef.current = resolvedDurationWheelIndex;
                     void pricesQ.refetch();
                     setModalTimeDuration(true);
                   }}
@@ -3260,6 +3293,7 @@ export function BookingScreen() {
                   onPress={() => {
                     void pricesQ.refetch();
                     setPendingZoneIdx(resolvedZoneWheelIndex);
+                    pendingZoneIdxRef.current = resolvedZoneWheelIndex;
                     setModalTariff(true);
                   }}
                 />
@@ -3434,11 +3468,15 @@ export function BookingScreen() {
                       onChangeIndex={(i) => {
                         setPendingCityIdx(i);
                         setPendingClubIdx(0);
+                        pendingCityIdxRef.current = i;
+                        pendingClubIdxRef.current = 0;
                       }}
                       colors={colors}
                       onItemPress={(i) => {
                         setPendingCityIdx(i);
                         setPendingClubIdx(0);
+                        pendingCityIdxRef.current = i;
+                        pendingClubIdxRef.current = 0;
                       }}
                     />
                   </View>
@@ -3454,7 +3492,10 @@ export function BookingScreen() {
                           pendingClubIdx,
                           Math.max(0, clubsInPendingCity.length - 1),
                         )}
-                        onChangeIndex={setPendingClubIdx}
+                        onChangeIndex={(idx) => {
+                          setPendingClubIdx(idx);
+                          pendingClubIdxRef.current = idx;
+                        }}
                         colors={colors}
                         onItemPress={(j) =>
                           applyClubWheelSelection(
@@ -3481,13 +3522,13 @@ export function BookingScreen() {
               onPress={() => {
                 if (pickerCities.length === 0) return;
                 const ci = Math.min(
-                  Math.max(0, cityWheelRef.current?.getCenterIndex() ?? pendingCityIdx),
+                  Math.max(0, cityWheelRef.current?.getCenterIndex() ?? pendingCityIdxRef.current),
                   pickerCities.length - 1,
                 );
                 const pool = cafesInCity(cafesAll, pickerCities[ci]!.id);
                 if (pool.length === 0) return;
                 const bi = Math.min(
-                  Math.max(0, clubWheelRef.current?.getCenterIndex() ?? pendingClubIdx),
+                  Math.max(0, clubWheelRef.current?.getCenterIndex() ?? pendingClubIdxRef.current),
                   pool.length - 1,
                 );
                 applyClubWheelSelection(ci, bi);
@@ -3527,13 +3568,17 @@ export function BookingScreen() {
               active={modalDate}
               data={dateListLabels}
               valueIndex={pendingDateIdx}
-              onChangeIndex={setPendingDateIdx}
+              onChangeIndex={(idx) => {
+                pendingDateIdxRef.current = idx;
+              }}
               colors={colors}
               onItemPress={applyDateWheelSelection}
             />
             <Pressable
               style={styles.wheelSheetDone}
-              onPress={() => applyDateWheelSelection(dateWheelRef.current?.getCenterIndex() ?? pendingDateIdx)}
+              onPress={() =>
+                applyDateWheelSelection(dateWheelRef.current?.getCenterIndex() ?? pendingDateIdxRef.current)
+              }
             >
               <View style={styles.wheelSheetDoneTextWrap}>
                 <Text style={styles.wheelSheetDoneText}>{t('booking.done')}</Text>
@@ -3586,7 +3631,9 @@ export function BookingScreen() {
                   active={modalTimeDuration}
                   data={timeLabelsForDurationModal}
                   valueIndex={pendingTimeIdx}
-                  onChangeIndex={setPendingTimeIdx}
+                  onChangeIndex={(idx) => {
+                    pendingTimeIdxRef.current = idx;
+                  }}
                   colors={colors}
                   onItemPress={(i) =>
                     applyTimeDurationSelectionFromWheels({
@@ -3602,7 +3649,9 @@ export function BookingScreen() {
                   active={modalTimeDuration}
                   data={durationWheelItems}
                   valueIndex={pendingDurIdx}
-                  onChangeIndex={setPendingDurIdx}
+                  onChangeIndex={(idx) => {
+                    pendingDurIdxRef.current = idx;
+                  }}
                   colors={colors}
                   onItemPress={(j) =>
                     applyTimeDurationSelectionFromWheels({
@@ -3663,7 +3712,9 @@ export function BookingScreen() {
                     active={modalTariff}
                     data={zoneWheelLabels}
                     valueIndex={pendingZoneIdx}
-                    onChangeIndex={setPendingZoneIdx}
+                    onChangeIndex={(idx) => {
+                      pendingZoneIdxRef.current = idx;
+                    }}
                     colors={colors}
                     onItemPress={applyZoneWheelSelection}
                   />
@@ -3675,7 +3726,9 @@ export function BookingScreen() {
             )}
             <Pressable
               style={styles.wheelSheetDone}
-              onPress={() => applyZoneWheelSelection(zoneWheelRef.current?.getCenterIndex() ?? pendingZoneIdx)}
+              onPress={() =>
+                applyZoneWheelSelection(zoneWheelRef.current?.getCenterIndex() ?? pendingZoneIdxRef.current)
+              }
             >
               <View style={styles.wheelSheetDoneTextWrap}>
                 <Text style={styles.wheelSheetDoneText}>{t('booking.done')}</Text>
@@ -3813,7 +3866,9 @@ export function BookingScreen() {
               active={modalNearestDay}
               data={nearestSearchDayLabels}
               valueIndex={pendingNearestDayIdx}
-              onChangeIndex={setPendingNearestDayIdx}
+              onChangeIndex={(idx) => {
+                pendingNearestDayIdxRef.current = idx;
+              }}
               colors={colors}
               onItemPress={applyNearestDayWheelSelection}
             />
@@ -3821,7 +3876,7 @@ export function BookingScreen() {
               style={styles.wheelSheetDone}
               onPress={() =>
                 applyNearestDayWheelSelection(
-                  nearestDayWheelRef.current?.getCenterIndex() ?? pendingNearestDayIdx,
+                  nearestDayWheelRef.current?.getCenterIndex() ?? pendingNearestDayIdxRef.current,
                 )
               }
             >
