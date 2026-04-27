@@ -3177,9 +3177,10 @@ async function handleBookingDraftStep(args: {
   const isRu = locale !== 'en';
   const parsedDateTime = parseDateTimeFromChat(text);
   const parsedDuration = parseDurationMins(text);
+  const explicitPcOverride = parsePcOverride(text);
   let next: BookingDraft = {
     icafeId: resolveClubFromText(text, cafes) ?? draft.icafeId ?? preferredClubId ?? rows[0]?.icafeId ?? singleClubId(cafes) ?? null,
-    pcName: parsePcOverride(text) ?? draft.pcName,
+    pcName: explicitPcOverride ?? draft.pcName,
     mins: parsedDuration ?? draft.mins ?? (rows[0]?.row.product_mins ? Number(rows[0].row.product_mins) : 60),
     dateISO: parsedDateTime.dateISO ?? draft.dateISO,
     hhmm: parsedDateTime.hhmm ?? draft.hhmm,
@@ -3189,7 +3190,13 @@ async function handleBookingDraftStep(args: {
   if (hasChangeIntent(text, 'date')) next = { ...next, dateISO: null };
   if (hasChangeIntent(text, 'time')) next = { ...next, hhmm: null };
   if (hasChangeIntent(text, 'mins')) next = { ...next, mins: null, durationNeedsConfirm: true };
-  if (hasChangeIntent(text, 'pc')) next = { ...next, pcName: null };
+  if (
+    hasChangeIntent(text, 'pc') &&
+    !explicitPcOverride &&
+    !(llmExtraction?.pc_seat && llmExtraction.pc_seat.trim())
+  ) {
+    next = { ...next, pcName: null };
+  }
   if (bookingLlmHasAnyField(llmExtraction)) {
     next = mergeBookingLlmIntoDraft(next, llmExtraction!, cafes, preferredClubId);
   }

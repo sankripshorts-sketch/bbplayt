@@ -363,7 +363,7 @@ type PcFlatListRow = {
   pair: PcListItem[];
 };
 
-const MemoClubLayoutCanvas = React.memo(ClubLayoutCanvas);
+const MemoClubLayoutCanvas = ClubLayoutCanvas;
 
 const BookingPcCard = React.memo(function BookingPcCard({
   item,
@@ -559,6 +559,12 @@ export function BookingScreen() {
   const [pendingNearestDayIdx, setPendingNearestDayIdx] = useState(0);
   /** Шторка «время/длительность» открыта из меню ближайшего окна — в колесе времени есть пункт «Без разницы». */
   const [timeModalForNearestSlotSearch, setTimeModalForNearestSlotSearch] = useState(false);
+  /**
+   * Во время прокрутки колес/фильтров временно замораживаем «живые» запросы:
+   * иначе фоновые refetch'и конкурируют за кадры и дергают анимации.
+   */
+  const isBookingFilterSheetOpen =
+    modalClub || modalDate || modalTimeDuration || modalTariff || modalNearestDay || modalNearestMenu;
 
   /** Тип ПК только для поиска «ближайшее окно» (не смешивает зоны для компании — см. pickPcsForPartyForPlan). */
   const [nearestSearchPcZone, setNearestSearchPcZone] = useState<'any' | 'VIP' | 'BootCamp' | 'GameZone'>('any');
@@ -1017,32 +1023,15 @@ export function BookingScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      let cancelled = false;
-      const id = setTimeout(() => {
-        if (cancelled) return;
-        if (user?.memberAccount?.trim() || user?.memberId?.trim()) {
-          void qc.refetchQueries({
-            queryKey: queryKeys.books(user?.memberAccount, user?.memberId),
-          });
-        }
-        if (cafe && memberProfileReady && minsNum > 0) {
-          void qc.invalidateQueries({ queryKey: availKey });
-          void qc.invalidateQueries({ queryKey: queryKeys.cafeBookings(cafe.icafe_id) });
-        }
-      }, 0);
-      return () => {
-        cancelled = true;
-        clearTimeout(id);
-      };
-    }, [qc, availKey, cafe, memberProfileReady, minsNum, user?.memberAccount, user?.memberId]),
+      // На возврате во вкладку не делаем агрессивный hard refresh:
+      // показываем кэш сразу, а обновление идет по интервалам query.
+      if (user?.memberAccount?.trim() || user?.memberId?.trim()) {
+        void qc.invalidateQueries({
+          queryKey: queryKeys.books(user?.memberAccount, user?.memberId),
+        });
+      }
+    }, [qc, user?.memberAccount, user?.memberId]),
   );
-
-  /**
-   * Во время прокрутки колес в фильтрах временно замораживаем «живые» запросы:
-   * иначе фоновые refetch'и конкурируют за кадры и дергают wheel-анимации.
-   */
-  const isBookingFilterSheetOpen =
-    modalClub || modalDate || modalTimeDuration || modalTariff || modalNearestDay;
 
   /** Слот брони: только vibe `GET /available-pcs-for-booking` (не iCafe `.../pcs`). */
   const pcsQuery = useQuery({
@@ -1056,9 +1045,15 @@ export function BookingScreen() {
         isFindWindow: IS_FIND_WINDOW_MAIN,
         priceName: priceNameForAvailability || undefined,
       }),
-    enabled: !!cafe && memberProfileReady && minsNum > 0 && !isBookingFilterSheetOpen,
-    staleTime: 0,
-    refetchOnMount: 'always',
+    enabled:
+      !!cafe &&
+      memberProfileReady &&
+      minsNum > 0 &&
+      dateFilterCommitted &&
+      timeAndDurationReady &&
+      !isBookingFilterSheetOpen,
+    staleTime: 15_000,
+    refetchOnMount: true,
     refetchInterval: isFocused && !isBookingFilterSheetOpen ? PC_REFETCH_INTERVAL_MS : false,
   });
 
@@ -1420,16 +1415,8 @@ export function BookingScreen() {
       memberProfileReady &&
       dateFilterCommitted &&
       timeAndDurationReady &&
-      pcTierFilterReady &&
-      !cafeBookingsOverlapLoading,
-    [
-      cafe,
-      memberProfileReady,
-      dateFilterCommitted,
-      timeAndDurationReady,
       pcTierFilterReady,
-      cafeBookingsOverlapLoading,
-    ],
+    [cafe, memberProfileReady, dateFilterCommitted, timeAndDurationReady, pcTierFilterReady],
   );
 
   const pcAvailability = useMemo(() => {
@@ -1579,14 +1566,9 @@ export function BookingScreen() {
       showAlert(t('booking.alertPc'), t('booking.selectPcBlockedNeedTimeDuration'));
       return;
     }
-    if (cafeBookingsOverlapLoading) {
-      showAlert(t('booking.alertPc'), t('booking.selectPcBlockedLoadingClubBookings'));
-      return;
-    }
   }, [
     cafe,
     memberProfileReady,
-    cafeBookingsOverlapLoading,
     dateFilterCommitted,
     timeAndDurationReady,
     t,
@@ -1598,12 +1580,10 @@ export function BookingScreen() {
     if (!memberProfileReady) return t('booking.selectPcBlockedNeedProfile');
     if (!dateFilterCommitted) return t('booking.selectPcBlockedNeedDate');
     if (!timeAndDurationReady) return t('booking.selectPcBlockedNeedTimeDuration');
-    if (cafeBookingsOverlapLoading) return t('booking.selectPcBlockedLoadingClubBookings');
     return '';
   }, [
     cafe,
     memberProfileReady,
-    cafeBookingsOverlapLoading,
     dateFilterCommitted,
     timeAndDurationReady,
     t,

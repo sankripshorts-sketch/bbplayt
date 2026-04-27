@@ -12,9 +12,9 @@ export function useMemberBooksQuery(memberAccount: string | undefined, memberId:
     queryKey: queryKeys.books(acc, id),
     queryFn: () => bookingFlowApi.memberBooks({ memberAccount: acc, memberId: id }),
     enabled: !!acc || !!id,
-    staleTime: 10 * 1000,
+    staleTime: 60 * 1000,
     gcTime: 30 * 60 * 1000,
-    refetchInterval: 30 * 1000,
+    refetchInterval: 60 * 1000,
     refetchOnReconnect: true,
   });
 }

@@ -61,24 +61,24 @@ function MainTabs() {
   const tabBarBottomPad = Platform.OS === 'android' ? Math.max(insets.bottom, 16) : Math.max(insets.bottom, 8);
   const lastRefreshAtRef = useRef(0);
 
-  const refreshSessionDataOnTabFocus = useCallback(() => {
+  const refreshSessionData = useCallback(() => {
     const now = Date.now();
-    if (now - lastRefreshAtRef.current < 5000) return;
+    if (now - lastRefreshAtRef.current < 60_000) return;
     lastRefreshAtRef.current = now;
     if (user?.memberAccount?.trim() || user?.memberId?.trim()) {
-      void qc.refetchQueries({ queryKey: queryKeys.books(user?.memberAccount, user?.memberId) });
+      void qc.invalidateQueries({ queryKey: queryKeys.books(user?.memberAccount, user?.memberId) });
     }
     void refreshMemberBalance().catch(() => {
-      /* синхронизация данных на фокусе вкладки — best effort */
+      /* синхронизация данных после возврата в приложение — best effort */
     });
   }, [qc, refreshMemberBalance, user?.memberAccount, user?.memberId]);
 
   useEffect(() => {
     const sub = AppState.addEventListener('change', (state) => {
-      if (state === 'active') refreshSessionDataOnTabFocus();
+      if (state === 'active') refreshSessionData();
     });
     return () => sub.remove();
-  }, [refreshSessionDataOnTabFocus]);
+  }, [refreshSessionData]);
 
   return (
     <VisitFeedbackProvider>
@@ -86,10 +86,8 @@ function MainTabs() {
       <BookingNotificationListener />
       <Tab.Navigator
       sceneContainerStyle={{ backgroundColor: colors.bg }}
-      screenListeners={{
-        focus: refreshSessionDataOnTabFocus,
-      }}
       screenOptions={{
+        lazy: false,
         unmountOnBlur: false,
         headerStyle: { backgroundColor: colors.card, borderBottomColor: colors.border },
         headerTintColor: colors.text,

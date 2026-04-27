@@ -4,6 +4,8 @@ import type { QueryClient } from '@tanstack/react-query';
 import { useAuth } from '../auth/AuthContext';
 import { useKnowledgeReady } from '../knowledge/KnowledgeContext';
 import { bookingFlowApi, cafesApi } from '../api/endpoints';
+import { fetchIcafeCafeBookings } from '../api/icafeCafeBookings';
+import { fetchLivePcsForUi } from '../api/icafeLivePcs';
 import { loadAppPreferences, patchAppPreferences } from '../preferences/appPreferences';
 import {
   resolveEffectiveCityId,
@@ -16,6 +18,7 @@ import type { VkWallFetchResult } from '../features/news/fetchVkWallVideoPosts';
 import type { VkWallPost } from '../features/news/vkWallHtmlParser';
 import { queryKeys } from './queryKeys';
 import type { CafeItem } from '../api/types';
+import { buildBookingTimeSlots } from '../features/booking/bookingTimeSlots';
 
 /**
  * Единый стартовый запрос данных с API: кафе, при входе — iCafe, схема/прайс для сохранённого клуба, брони.
@@ -64,6 +67,7 @@ export function useAppBootstrap() {
             const m = String(today.getMonth() + 1).padStart(2, '0');
             const day = String(today.getDate()).padStart(2, '0');
             const bookingDate = `${y}-${m}-${day}`;
+            const defaultBookingTime = buildBookingTimeSlots(bookingDate)[0] ?? '12:00';
 
             void qc
               .prefetchQuery({
@@ -89,6 +93,45 @@ export function useAppBootstrap() {
                     bookingDate,
                   }),
                 staleTime: 2 * 60 * 1000,
+              })
+              .catch(() => {});
+
+            void qc
+              .prefetchQuery({
+                queryKey: queryKeys.availablePcs({
+                  cafeId,
+                  dateStart: bookingDate,
+                  timeStart: defaultBookingTime,
+                  mins: 60,
+                  isFindWindow: false,
+                  priceName: '',
+                }),
+                queryFn: () =>
+                  bookingFlowApi.availablePcs({
+                    cafeId,
+                    dateStart: bookingDate,
+                    timeStart: defaultBookingTime,
+                    mins: 60,
+                    isFindWindow: false,
+                    priceName: undefined,
+                  }),
+                staleTime: 15 * 1000,
+              })
+              .catch(() => {});
+
+            void qc
+              .prefetchQuery({
+                queryKey: queryKeys.cafeBookings(cafeId),
+                queryFn: () => fetchIcafeCafeBookings(cafeId),
+                staleTime: 15 * 1000,
+              })
+              .catch(() => {});
+
+            void qc
+              .prefetchQuery({
+                queryKey: queryKeys.livePcs(cafeId),
+                queryFn: () => fetchLivePcsForUi(cafeId),
+                staleTime: 8 * 1000,
               })
               .catch(() => {});
           }
