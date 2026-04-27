@@ -81,6 +81,14 @@ function intentBonus(q: string, e: KnowledgeEntry): number {
     b -= 20;
   }
 
+  if (id === 'club-hours-medvezhya' && /медвеж/u.test(q)) {
+    b += 30;
+  }
+
+  if (id === 'club-hours' && /медвеж/u.test(q)) {
+    b -= 12;
+  }
+
   if (
     id === 'equipment-pc-specs' &&
     /какие\s+(?:комп|компы|компьютеры)|что\s+в\s+пк|что\s+стоит\s+в\s+пк|что\s+за\s+пк|что\s+у\s+пк|характеристик|железо|видеокарт|процессор|rtx|гц|герцовк/u.test(
@@ -102,6 +110,21 @@ function intentBonus(q: string, e: KnowledgeEntry): number {
     /(?:сколько\s+стоит|тариф|почас|ночн|пакет|руб|₽|цена|стоимост)|\d+\s*(?:руб|₽)/u.test(q)
   ) {
     b += 12;
+  }
+  if (
+    id === 'payment-rates-timeofday' &&
+    /(?:все|всех|кажд[а-я]*)\s+зон|по\s+всем\s+зонам|по\s+каждой\s+зоне|про\s+все\s+зоны|про\s+каждую\s+зону/u.test(
+      q,
+    )
+  ) {
+    b += 14;
+  }
+
+  if (
+    id.startsWith('payment-rates-club-') &&
+    /(?:сколько\s+стоит|тариф|почас|руб|₽|цена|стоимост|прайс)/u.test(q)
+  ) {
+    b += 6;
   }
 
   return b;
@@ -150,6 +173,17 @@ export function rankKnowledge(query: string, entries: KnowledgeEntry[]): RankedK
 }
 
 /** Один лучший матч для ответа в чате (без склейки всех совпадений). */
+/** Топ N карточек для RAG (нейросеть): по убыванию релевантности. */
+export function topKnowledgeForRag(
+  query: string,
+  entries: KnowledgeEntry[],
+  limit: number = 5,
+): KnowledgeEntry[] {
+  return rankKnowledge(query, entries)
+    .slice(0, Math.max(0, limit))
+    .map((x) => x.entry);
+}
+
 export function bestKnowledgeEntry(query: string, entries: KnowledgeEntry[]): KnowledgeEntry | null {
   const ranked = rankKnowledge(query, entries);
   if (ranked.length === 0) return null;

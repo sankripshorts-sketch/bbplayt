@@ -2,14 +2,13 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   FlatList,
-  Image,
-  ImageSourcePropType,
   KeyboardAvoidingView,
   Modal,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -17,32 +16,43 @@ import { Text } from '../../components/DinText';
 import { TextInput } from '../../components/DinTextInput';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { type BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { bookingFlowApi, cafesApi } from '../../api/endpoints';
+import { cafesInCity, DEFAULT_CITY_ID } from '../../config/citiesCatalog';
 import type { CafeItem } from '../../api/types';
 import { FirstHintBanner } from '../../hints/FirstHintBanner';
 import { useLocale } from '../../i18n/LocaleContext';
 import type { ColorPalette } from '../../theme/palettes';
 import { useThemeColors } from '../../theme';
 import { loadAppPreferences, patchAppPreferences } from '../../preferences/appPreferences';
+import { resolveEffectiveCityId } from '../../preferences/effectiveCity';
 import { queryKeys } from '../../query/queryKeys';
 import { formatPublicErrorMessage } from '../../utils/publicText';
 import { HallMapPanel } from './HallMapPanel';
 import {
   dialPhone,
-  openGoogleMapsForAddress,
   openHttpUrl,
   openSystemMapsForAddress,
-  openYandexMapsForAddress,
 } from './mapLinks';
-import { SkeletonBlock } from '../ui/SkeletonBlock';
-import { TabSettingsButton } from '../../components/TabSettingsButton';
+import { ClubDataLoader } from '../ui/ClubDataLoader';
+import { TabScreenTopBar } from '../../components/TabScreenTopBar';
+import { DimmedSheetModal } from '../../components/DimmedSheetModal';
+import { DraggableWheelSheet } from '../booking/DraggableWheelSheet';
 import { TodaysBookingBanner } from '../booking/TodaysBookingBanner';
 import type { MainTabParamList } from '../../navigation/types';
 
-const HEADER_LOGO = require('../../../assets/icon.png') as ImageSourcePropType;
+function cafeMatchesSearchQuery(c: CafeItem, qy: string): boolean {
+  const name = (c.name ?? '').trim().toLowerCase();
+  const addr = c.address.toLowerCase();
+  return name.includes(qy) || addr.includes(qy);
+}
+
+function cafePickerLabel(c: CafeItem): string {
+  const n = (c.name ?? '').trim();
+  return n || c.address;
+}
 
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
@@ -76,8 +86,9 @@ function CafeInfoRow(props: {
   styles: RowStyles;
   onPress?: () => void;
   isLast?: boolean;
+  rightSlot?: React.ReactNode;
 }) {
-  const { label, value, icon, colors, styles, onPress, isLast } = props;
+  const { label, value, icon, colors, styles, onPress, isLast, rightSlot } = props;
   return (
     <Pressable
       onPress={onPress}
@@ -94,7 +105,7 @@ function CafeInfoRow(props: {
           {value}
         </Text>
       </View>
-      <MaterialCommunityIcons name={icon} size={22} color={colors.text} />
+      {rightSlot ?? <MaterialCommunityIcons name={icon} size={22} color={colors.text} />}
     </Pressable>
   );
 }
@@ -103,8 +114,11 @@ export function CafesScreen() {
   const { t } = useLocale();
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const rootPad = windowWidth < 360 ? 14 : 20;
+  const heroHeight = Math.min(132, Math.max(88, Math.round(windowHeight * 0.17)));
   const navigation = useNavigation<BottomTabNavigationProp<MainTabParamList>>();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors, windowHeight), [colors, windowHeight]);
 
   const q = useQuery({
     queryKey: queryKeys.cafes(),
@@ -119,17 +133,38 @@ export function CafesScreen() {
   });
   const [mapCafe, setMapCafe] = useState<CafeItem | null>(null);
   const [favoriteId, setFavoriteId] = useState<number | null>(null);
+  const [effectiveCityId, setEffectiveCityId] = useState(DEFAULT_CITY_ID);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortByDistance, setSortByDistance] = useState(false);
   const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null);
   const [jobReviewOpen, setJobReviewOpen] = useState(false);
+  const [clubPickerOpen, setClubPickerOpen] = useState(false);
+  const [jobReviewClubId, setJobReviewClubId] = useState<number | null>(null);
+  const [jobReviewStars, setJobReviewStars] = useState(0);
   const [jobReviewTopic, setJobReviewTopic] = useState('');
   const [jobReviewBody, setJobReviewBody] = useState('');
   const [jobReviewContact, setJobReviewContact] = useState('');
+  const [jobReviewSuccessOpen, setJobReviewSuccessOpen] = useState(false);
 
   useEffect(() => {
     void loadAppPreferences().then((p) => setFavoriteId(p.favoriteClubId));
   }, []);
+
+  const refreshCity = useCallback(() => {
+    void loadAppPreferences().then((p) => {
+      setEffectiveCityId(resolveEffectiveCityId(p, q.data));
+    });
+  }, [q.data]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshCity();
+    }, [refreshCity]),
+  );
+
+  useEffect(() => {
+    refreshCity();
+  }, [refreshCity]);
 
   const catalogHasCoords = useMemo(
     () => (q.data ?? []).some((c) => typeof c.lat === 'number' && typeof c.lng === 'number'),
@@ -138,8 +173,10 @@ export function CafesScreen() {
 
   const displayList = useMemo(() => {
     let list = q.data ?? [];
+    const inCity = cafesInCity(list, effectiveCityId);
+    if (inCity.length > 0) list = inCity;
     const qy = searchQuery.trim().toLowerCase();
-    if (qy) list = list.filter((c) => c.address.toLowerCase().includes(qy));
+    if (qy) list = list.filter((c) => cafeMatchesSearchQuery(c, qy));
     if (sortByDistance && userPos && catalogHasCoords) {
       list = [...list].sort((a, b) => {
         const da =
@@ -154,7 +191,7 @@ export function CafesScreen() {
       });
     }
     return list;
-  }, [q.data, searchQuery, sortByDistance, userPos, catalogHasCoords]);
+  }, [q.data, effectiveCityId, searchQuery, sortByDistance, userPos, catalogHasCoords]);
 
   const toggleFavorite = useCallback(
     async (item: CafeItem) => {
@@ -217,12 +254,38 @@ export function CafesScreen() {
   }, []);
 
   const closeJobReview = useCallback(() => {
+    setClubPickerOpen(false);
     setJobReviewOpen(false);
   }, []);
 
   const onJobReviewSubmit = useCallback(() => {
-    Alert.alert(t('cafes.jobReview'), t('cafes.jobReviewComingSoon'));
-  }, [t]);
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.log('[job-review-mock]', {
+        clubId: jobReviewClubId,
+        stars: jobReviewStars,
+        topic: jobReviewTopic.trim(),
+        body: jobReviewBody.trim(),
+        contact: jobReviewContact.trim(),
+      });
+    }
+    setJobReviewTopic('');
+    setJobReviewBody('');
+    setJobReviewContact('');
+    setJobReviewClubId(null);
+    setJobReviewStars(0);
+    setClubPickerOpen(false);
+    setJobReviewOpen(false);
+    // Alert не показывается на веб; полноэкранный Modal — как у успешного бронирования
+    setTimeout(() => {
+      setJobReviewSuccessOpen(true);
+    }, 0);
+  }, [jobReviewBody, jobReviewClubId, jobReviewContact, jobReviewStars, jobReviewTopic]);
+
+  const selectedJobReviewClub = useMemo(() => {
+    if (jobReviewClubId == null) return null;
+    return (q.data ?? []).find((c) => c.icafe_id === jobReviewClubId) ?? null;
+  }, [jobReviewClubId, q.data]);
 
   const renderItem = ({ item }: { item: CafeItem }) => {
     const fav = favoriteId === item.icafe_id;
@@ -237,7 +300,7 @@ export function CafesScreen() {
 
     return (
       <View style={styles.clubCard}>
-        <View style={styles.heroShell}>
+        <View style={[styles.heroShell, { height: heroHeight }]}>
           <LinearGradient colors={[heroPair[0], heroPair[1]]} style={StyleSheet.absoluteFillObject} />
           <LinearGradient
             colors={['rgba(27,34,42,0)', 'rgba(27,34,42,0.65)', colors.card]}
@@ -256,12 +319,12 @@ export function CafesScreen() {
           <Pressable
             onPress={() => toggleFavorite(item)}
             accessibilityLabel={t('cafes.favorite')}
-            style={styles.heroStar}
+            style={({ pressed }) => [styles.heroStar, pressed && styles.heroStarPressed]}
           >
             <MaterialCommunityIcons
               name={fav ? 'star' : 'star-outline'}
               size={26}
-              color={colors.text}
+              color={fav ? colors.accentSecondary : colors.text}
             />
           </Pressable>
         </View>
@@ -275,7 +338,19 @@ export function CafesScreen() {
             styles={styles}
             isLast={!item.phone && !item.vk_url && !item.site}
             onPress={() =>
-              void openMapSafe(() => openYandexMapsForAddress(item.address))
+              void openMapSafe(() => openSystemMapsForAddress(item.address))
+            }
+            rightSlot={
+              <View style={styles.addressActionsCol}>
+                <Pressable
+                  style={styles.routeBtn}
+                  onPress={() =>
+                    void openMapSafe(() => openSystemMapsForAddress(item.address))
+                  }
+                >
+                  <Text style={styles.routeBtnText}>{t('cafes.howToGet')}</Text>
+                </Pressable>
+              </View>
             }
           />
           {item.phone ? (
@@ -318,28 +393,6 @@ export function CafesScreen() {
             />
           ) : null}
 
-          <Text style={styles.routeLabel}>{t('cafes.howToGet')}</Text>
-          <View style={styles.routeRow}>
-            <Pressable
-              style={styles.routeBtn}
-              onPress={() => void openMapSafe(() => openYandexMapsForAddress(item.address))}
-            >
-              <Text style={styles.routeBtnText}>{t('cafes.routeYandex')}</Text>
-            </Pressable>
-            <Pressable
-              style={styles.routeBtn}
-              onPress={() => void openMapSafe(() => openGoogleMapsForAddress(item.address))}
-            >
-              <Text style={styles.routeBtnText}>{t('cafes.routeGoogle')}</Text>
-            </Pressable>
-            <Pressable
-              style={styles.routeBtn}
-              onPress={() => void openMapSafe(() => openSystemMapsForAddress(item.address))}
-            >
-              <Text style={styles.routeBtnText}>{t('cafes.routeSystem')}</Text>
-            </Pressable>
-          </View>
-
           <View style={styles.mapActionsRow}>
             <Pressable style={styles.mapBtn} onPress={() => setMapCafe(item)}>
               <Text style={styles.mapBtnText}>{t('cafes.floorPlan')}</Text>
@@ -360,29 +413,10 @@ export function CafesScreen() {
     );
   };
 
-  const listFooter = useMemo(
-    () => (
-      <View style={styles.listFooter}>
-        <Pressable
-          style={({ pressed }) => [styles.jobReviewBtn, pressed && styles.jobReviewBtnPressed]}
-          onPress={() => setJobReviewOpen(true)}
-        >
-          <Text style={styles.jobReviewBtnText}>{t('cafes.jobReview')}</Text>
-        </Pressable>
-      </View>
-    ),
-    [styles.jobReviewBtn, styles.jobReviewBtnPressed, styles.jobReviewBtnText, styles.listFooter, t],
-  );
-
   return (
-    <SafeAreaView style={styles.root} edges={['top']}>
+    <SafeAreaView style={[styles.root, { paddingHorizontal: rootPad }]} edges={['top']}>
       <TodaysBookingBanner />
-      <View style={styles.header}>
-        <Image source={HEADER_LOGO} style={styles.headerLogo} resizeMode="contain" />
-        <View style={styles.headerSettings}>
-          <TabSettingsButton />
-        </View>
-      </View>
+      <TabScreenTopBar title={t('tabs.cafes')} horizontalPadding={0} />
 
       {icafeQ.isLoading ? (
         <Text style={styles.hint}>{t('cafes.loadingIcafe')}</Text>
@@ -417,45 +451,79 @@ export function CafesScreen() {
         ) : null}
       </View>
 
-      <Modal
+      <DimmedSheetModal
         visible={jobReviewOpen}
-        animationType="slide"
-        transparent
         onRequestClose={closeJobReview}
+        contentAlign="stretch"
+        contentWrapperStyle={styles.jobModalHost}
       >
-        <View style={styles.jobModalRoot}>
-          <Pressable
-            style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0,0,0,0.55)' }]}
-            onPress={closeJobReview}
-            accessibilityRole="button"
-          />
+        {(onSheetDrag) => (
           <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             style={styles.jobModalKeyboard}
           >
-            <View
-              style={[
-                styles.jobModalSheet,
-                { paddingBottom: Math.max(insets.bottom, 16) },
-              ]}
+            <DraggableWheelSheet
+              open={jobReviewOpen}
+              onRequestClose={closeJobReview}
+              onDragOffsetChange={onSheetDrag}
+              colors={colors}
+              sheetStyle={styles.jobModalSheet}
+              dragExtendBelowGrabberPx={120}
+              extendToBottomEdge={false}
             >
-            <View style={styles.jobModalGrab} />
             <View style={styles.jobModalHeader}>
               <Text style={styles.jobModalTitle}>{t('cafes.jobReview')}</Text>
-              <Pressable
-                onPress={closeJobReview}
-                hitSlop={12}
-                accessibilityRole="button"
-                accessibilityLabel={t('feedback.dismiss')}
-              >
-                <MaterialCommunityIcons name="close" size={26} color={colors.text} />
-              </Pressable>
             </View>
             <ScrollView
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
               style={styles.jobModalScroll}
+              contentContainerStyle={styles.jobModalScrollContent}
             >
+              <View style={styles.jobModalSection}>
+                <Text style={styles.jobModalSectionLabel}>{t('cafes.jobReviewSectionClub')}</Text>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.jobModalSelect,
+                    pressed ? styles.jobModalSelectPressed : null,
+                  ]}
+                  onPress={() => setClubPickerOpen(true)}
+                  accessibilityRole="button"
+                >
+                  <Text
+                    style={
+                      selectedJobReviewClub
+                        ? styles.jobModalSelectText
+                        : styles.jobModalSelectPlaceholder
+                    }
+                    numberOfLines={2}
+                  >
+                    {selectedJobReviewClub
+                      ? cafePickerLabel(selectedJobReviewClub)
+                      : t('cafes.jobReviewPlaceholderClub')}
+                  </Text>
+                  <MaterialCommunityIcons name="chevron-down" size={22} color={colors.muted} />
+                </Pressable>
+              </View>
+              <View style={styles.jobModalSection}>
+                <Text style={styles.jobModalSectionLabel}>{t('cafes.jobReviewSectionRating')}</Text>
+                <View style={styles.jobModalStarsRow}>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <Pressable
+                      key={n}
+                      onPress={() => setJobReviewStars(n)}
+                      accessibilityRole="button"
+                      hitSlop={6}
+                    >
+                      <MaterialCommunityIcons
+                        name={n <= jobReviewStars ? 'star' : 'star-outline'}
+                        size={32}
+                        color={n <= jobReviewStars ? colors.accentBright : colors.muted}
+                      />
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
               <View style={styles.jobModalSection}>
                 <Text style={styles.jobModalSectionLabel}>{t('cafes.jobReviewSectionTopic')}</Text>
                 <TextInput
@@ -492,59 +560,145 @@ export function CafesScreen() {
               </View>
             </ScrollView>
             <Pressable
-              style={({ pressed }) => [styles.jobReviewBtn, pressed && styles.jobReviewBtnPressed]}
+              style={({ pressed }) => [
+                styles.jobModalSubmitBtn,
+                pressed && styles.jobModalSubmitBtnPressed,
+              ]}
               onPress={onJobReviewSubmit}
             >
-              <Text style={styles.jobReviewBtnText}>{t('cafes.jobReviewSubmit')}</Text>
+              <Text style={styles.jobModalSubmitBtnText}>{t('cafes.jobReviewSubmit')}</Text>
             </Pressable>
-            </View>
+            </DraggableWheelSheet>
           </KeyboardAvoidingView>
+        )}
+      </DimmedSheetModal>
+
+      <Modal
+        visible={clubPickerOpen}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setClubPickerOpen(false)}
+        presentationStyle={Platform.OS === 'ios' ? 'overFullScreen' : undefined}
+      >
+        <View style={styles.clubPickRoot}>
+          <Pressable
+            style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0,0,0,0.55)' }]}
+            onPress={() => setClubPickerOpen(false)}
+            accessibilityRole="button"
+          />
+          <View style={styles.clubPickSheet}>
+            <Text style={styles.clubPickTitle}>{t('cafes.jobReviewPickClubTitle')}</Text>
+            <FlatList
+              data={q.data ?? []}
+              keyExtractor={(item) => String(item.icafe_id)}
+              keyboardShouldPersistTaps="handled"
+              style={styles.clubPickList}
+              renderItem={({ item }) => (
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.clubPickRow,
+                    jobReviewClubId === item.icafe_id && styles.clubPickRowActive,
+                    pressed && styles.clubPickRowPressed,
+                  ]}
+                  onPress={() => {
+                    setJobReviewClubId(item.icafe_id);
+                    setClubPickerOpen(false);
+                  }}
+                >
+                  <Text style={styles.clubPickRowTitle} numberOfLines={2}>
+                    {cafePickerLabel(item)}
+                  </Text>
+                  {item.name?.trim() ? (
+                    <Text style={styles.clubPickRowSub} numberOfLines={2}>
+                      {item.address}
+                    </Text>
+                  ) : null}
+                </Pressable>
+              )}
+              ListEmptyComponent={
+                <Text style={styles.clubPickEmpty}>{t('cafes.empty')}</Text>
+              }
+            />
+          </View>
         </View>
       </Modal>
 
       {mapCafe ? (
         <HallMapPanel cafe={mapCafe} visible onClose={() => setMapCafe(null)} />
       ) : null}
-      {q.isLoading ? (
-        <SkeletonBlock height={200} colors={colors} />
-      ) : q.isError ? (
-        <View style={styles.errBox}>
-          <Text style={styles.err}>{formatPublicErrorMessage(q.error, t, 'cafes.loadError')}</Text>
-          <Pressable style={styles.retryBtn} onPress={() => q.refetch()}>
-            <Text style={styles.retryText}>{t('booking.retry')}</Text>
-          </Pressable>
+      <View style={styles.bodyFlex}>
+        {q.isLoading ? (
+          <ClubDataLoader message={t('common.loader.captionClub')} />
+        ) : q.isError ? (
+          <View style={styles.errBox}>
+            <Text style={styles.err}>{formatPublicErrorMessage(q.error, t, 'cafes.loadError')}</Text>
+            <Pressable style={styles.retryBtn} onPress={() => q.refetch()}>
+              <Text style={styles.retryText}>{t('booking.retry')}</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <FlatList
+            data={displayList}
+            keyExtractor={(item) => String(item.icafe_id)}
+            renderItem={renderItem}
+            ListEmptyComponent={<Text style={styles.empty}>{t('cafes.empty')}</Text>}
+            contentContainerStyle={styles.list}
+            style={styles.listFlex}
+          />
+        )}
+      </View>
+      <View
+        style={[
+          styles.screenFooter,
+          { paddingBottom: Math.max(insets.bottom, 10) },
+        ]}
+      >
+        <Pressable
+          style={({ pressed }) => [
+            styles.footerReviewBtn,
+            pressed && styles.footerReviewBtnPressed,
+          ]}
+          onPress={() => {
+            setJobReviewOpen(true);
+          }}
+        >
+          <Text style={styles.footerReviewBtnText}>{t('cafes.jobReview')}</Text>
+        </Pressable>
+      </View>
+
+      <Modal
+        visible={jobReviewSuccessOpen}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setJobReviewSuccessOpen(false)}
+        presentationStyle={Platform.OS === 'ios' ? 'overFullScreen' : undefined}
+      >
+        <View style={styles.jobReviewSuccessOverlay}>
+          <View style={styles.jobReviewSuccessCard}>
+            <Text style={styles.jobReviewSuccessTitle}>{t('cafes.jobReviewSuccessHeadline')}</Text>
+            <Text style={styles.jobReviewSuccessDescr}>{t('cafes.jobReviewSuccessSub')}</Text>
+            <Pressable
+              style={({ pressed }) => [
+                styles.jobReviewSuccessBtn,
+                pressed && styles.jobModalSubmitBtnPressed,
+              ]}
+              onPress={() => setJobReviewSuccessOpen(false)}
+              accessibilityRole="button"
+            >
+              <Text style={styles.jobReviewSuccessBtnText}>{t('booking.successOk')}</Text>
+            </Pressable>
+          </View>
         </View>
-      ) : (
-        <FlatList
-          data={displayList}
-          keyExtractor={(item) => String(item.icafe_id)}
-          renderItem={renderItem}
-          ListEmptyComponent={<Text style={styles.empty}>{t('cafes.empty')}</Text>}
-          ListFooterComponent={listFooter}
-          contentContainerStyle={styles.list}
-        />
-      )}
+      </Modal>
     </SafeAreaView>
   );
 }
 
-function createStyles(colors: ColorPalette) {
+function createStyles(colors: ColorPalette, windowHeight: number) {
+  const jobModalScrollMaxH = Math.min(640, Math.max(400, windowHeight * 0.58));
   return StyleSheet.create({
-    root: { flex: 1, backgroundColor: colors.bg, paddingHorizontal: 20 },
-    header: {
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginBottom: 12,
-      minHeight: 52,
-    },
-    headerLogo: { width: 148, height: 52 },
-    headerSettings: {
-      position: 'absolute',
-      right: 0,
-      top: 0,
-      bottom: 0,
-      justifyContent: 'center',
-    },
+    root: { flex: 1, backgroundColor: colors.bg },
+    bodyFlex: { flex: 1, minHeight: 0 },
     hint: { color: colors.accentBright, fontSize: 14, marginBottom: 12, lineHeight: 20 },
     hintMuted: { color: colors.muted, fontSize: 14, marginBottom: 12 },
     search: {
@@ -571,8 +725,20 @@ function createStyles(colors: ColorPalette) {
     },
     sortBtnActive: { borderColor: colors.accent },
     sortBtnText: { color: colors.text, fontWeight: '600', fontSize: 13 },
-    list: { paddingBottom: 32 },
-    listFooter: { paddingTop: 8, paddingBottom: 8 },
+    listFlex: { flex: 1 },
+    list: { paddingBottom: 12 },
+    screenFooter: {
+      paddingTop: 8,
+    },
+    footerReviewBtn: {
+      backgroundColor: colors.accent,
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+      borderRadius: 12,
+      alignItems: 'center',
+    },
+    footerReviewBtnPressed: { opacity: 0.92 },
+    footerReviewBtnText: { color: colors.accentTextOnButton, fontWeight: '700', fontSize: 14 },
     clubCard: {
       backgroundColor: colors.card,
       borderRadius: 16,
@@ -582,7 +748,6 @@ function createStyles(colors: ColorPalette) {
       borderColor: colors.border,
     },
     heroShell: {
-      height: 132,
       position: 'relative',
       overflow: 'hidden',
     },
@@ -607,6 +772,7 @@ function createStyles(colors: ColorPalette) {
       justifyContent: 'center',
       alignItems: 'center',
     },
+    heroStarPressed: { opacity: 0.88 },
     cardBody: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 4 },
     infoRow: {
       flexDirection: 'row',
@@ -622,15 +788,11 @@ function createStyles(colors: ColorPalette) {
     infoRowTextCol: { flex: 1, minWidth: 0 },
     infoLabel: { color: colors.muted, fontSize: 12, marginBottom: 4, fontWeight: '500' },
     infoValue: { color: colors.text, fontSize: 16, fontWeight: '700', lineHeight: 22 },
-    routeLabel: {
-      color: colors.muted,
-      fontSize: 11,
-      fontWeight: '700',
-      textTransform: 'uppercase',
-      marginTop: 14,
-      marginBottom: 8,
+    addressActionsCol: {
+      alignItems: 'flex-end',
+      gap: 8,
+      marginLeft: 8,
     },
-    routeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
     routeBtn: {
       paddingVertical: 8,
       paddingHorizontal: 12,
@@ -666,16 +828,6 @@ function createStyles(colors: ColorPalette) {
       justifyContent: 'center',
     },
     bookBtnText: { color: colors.accentTextOnButton, fontWeight: '700', fontSize: 14 },
-    jobReviewBtn: {
-      marginTop: 4,
-      backgroundColor: colors.accent,
-      paddingVertical: 16,
-      paddingHorizontal: 20,
-      borderRadius: 14,
-      alignItems: 'center',
-    },
-    jobReviewBtnPressed: { opacity: 0.92 },
-    jobReviewBtnText: { color: colors.accentTextOnButton, fontWeight: '800', fontSize: 16 },
     err: { color: colors.danger, marginBottom: 8 },
     errBox: { paddingVertical: 8 },
     retryBtn: {
@@ -687,7 +839,7 @@ function createStyles(colors: ColorPalette) {
     },
     retryText: { color: colors.text, fontWeight: '600' },
     empty: { color: colors.muted },
-    jobModalRoot: { flex: 1, justifyContent: 'flex-end' },
+    jobModalHost: { flex: 1, justifyContent: 'flex-end' },
     jobModalKeyboard: { flex: 1, width: '100%', justifyContent: 'flex-end' },
     jobModalSheet: {
       backgroundColor: colors.card,
@@ -695,18 +847,11 @@ function createStyles(colors: ColorPalette) {
       borderTopRightRadius: 18,
       paddingHorizontal: 20,
       paddingTop: 8,
-      maxHeight: '88%',
+      paddingBottom: 20,
+      maxHeight: '92%',
       borderWidth: StyleSheet.hairlineWidth,
       borderBottomWidth: 0,
       borderColor: colors.border,
-    },
-    jobModalGrab: {
-      alignSelf: 'center',
-      width: 40,
-      height: 4,
-      borderRadius: 2,
-      backgroundColor: colors.borderLight,
-      marginBottom: 12,
     },
     jobModalHeader: {
       flexDirection: 'row',
@@ -715,7 +860,8 @@ function createStyles(colors: ColorPalette) {
       marginBottom: 16,
     },
     jobModalTitle: { fontSize: 20, fontWeight: '800', color: colors.text, flex: 1, paddingRight: 12 },
-    jobModalScroll: { maxHeight: 420 },
+    jobModalScroll: { maxHeight: jobModalScrollMaxH },
+    jobModalScrollContent: { flexGrow: 1, paddingBottom: 4 },
     jobModalSection: { marginBottom: 18 },
     jobModalSectionLabel: {
       color: colors.muted,
@@ -746,5 +892,109 @@ function createStyles(colors: ColorPalette) {
       minHeight: 120,
       backgroundColor: colors.bg,
     },
+    jobModalSelect: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      backgroundColor: colors.bg,
+    },
+    jobModalSelectPressed: { opacity: 0.9 },
+    jobModalSelectText: {
+      flex: 1,
+      color: colors.text,
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    jobModalSelectPlaceholder: {
+      flex: 1,
+      color: colors.muted,
+      fontSize: 16,
+    },
+    jobModalStarsRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      maxWidth: 220,
+    },
+    jobModalSubmitBtn: {
+      marginTop: 8,
+      backgroundColor: colors.accent,
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+      borderRadius: 12,
+      alignItems: 'center',
+    },
+    jobModalSubmitBtnPressed: { opacity: 0.92 },
+    jobModalSubmitBtnText: { color: colors.accentTextOnButton, fontWeight: '700', fontSize: 15 },
+    jobReviewSuccessOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.95)',
+      justifyContent: 'center',
+      padding: 24,
+    },
+    jobReviewSuccessCard: { alignItems: 'center' },
+    jobReviewSuccessTitle: {
+      color: colors.text,
+      fontSize: 26,
+      fontWeight: '700',
+      textAlign: 'center',
+      lineHeight: 34,
+    },
+    jobReviewSuccessDescr: {
+      color: colors.muted,
+      fontSize: 18,
+      textAlign: 'center',
+      marginTop: 24,
+      lineHeight: 26,
+    },
+    jobReviewSuccessBtn: {
+      marginTop: 28,
+      backgroundColor: colors.success,
+      borderRadius: 12,
+      paddingVertical: 14,
+      paddingHorizontal: 48,
+      minWidth: 200,
+      alignItems: 'center',
+    },
+    jobReviewSuccessBtnText: { color: colors.accentTextOnButton, fontWeight: '700', fontSize: 18 },
+    clubPickRoot: { flex: 1, justifyContent: 'flex-end', elevation: 1000, zIndex: 1000 },
+    clubPickSheet: {
+      backgroundColor: colors.card,
+      borderTopLeftRadius: 18,
+      borderTopRightRadius: 18,
+      paddingHorizontal: 16,
+      paddingTop: 16,
+      paddingBottom: 16,
+      maxHeight: '72%',
+      borderWidth: StyleSheet.hairlineWidth,
+      borderBottomWidth: 0,
+      borderColor: colors.border,
+    },
+    clubPickTitle: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: colors.text,
+      marginBottom: 12,
+    },
+    clubPickList: { maxHeight: 320 },
+    clubPickRow: {
+      paddingVertical: 12,
+      paddingHorizontal: 12,
+      borderRadius: 12,
+      marginBottom: 8,
+      backgroundColor: colors.bg,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    clubPickRowActive: { borderColor: colors.accent },
+    clubPickRowPressed: { opacity: 0.9 },
+    clubPickRowTitle: { color: colors.text, fontSize: 16, fontWeight: '700' },
+    clubPickRowSub: { color: colors.muted, fontSize: 13, marginTop: 4 },
+    clubPickEmpty: { color: colors.muted, paddingVertical: 16, textAlign: 'center' },
   });
 }

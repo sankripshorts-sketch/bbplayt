@@ -5,14 +5,36 @@ import { useLocale } from '../../i18n/LocaleContext';
 import { useTheme, useThemeColors } from '../../theme';
 import { createSettingsStyles, SettingsTile } from './settingsShared';
 
-export function SettingsAppearanceScreen() {
+export function SettingsAppearancePanel({ styles }: { styles: ReturnType<typeof createSettingsStyles> }) {
   const { t, locale, setLocale } = useLocale();
   const { theme, setTheme } = useTheme();
-  const colors = useThemeColors();
-  const styles = useMemo(() => createSettingsStyles(colors), [colors]);
 
   const toggleLocale = () => setLocale(locale === 'ru' ? 'en' : 'ru');
   const cycleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
+
+  return (
+    <>
+      <SettingsTile
+        styles={styles}
+        label={t('profile.theme')}
+        value={theme === 'dark' ? t('profile.themeDark') : t('profile.themeLight')}
+        onPress={cycleTheme}
+        accessibilityHint={t('profile.theme')}
+      />
+      <SettingsTile
+        styles={styles}
+        label={t('profile.language')}
+        value={locale === 'ru' ? t('profile.langRu') : t('profile.langEn')}
+        onPress={toggleLocale}
+        accessibilityHint={t('profile.language')}
+      />
+    </>
+  );
+}
+
+export function SettingsAppearanceScreen() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createSettingsStyles(colors), [colors]);
 
   return (
     <KeyboardAvoidingView
@@ -21,20 +43,7 @@ export function SettingsAppearanceScreen() {
     >
       <SafeAreaView style={styles.root} edges={['bottom']}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <SettingsTile
-            styles={styles}
-            label={t('profile.theme')}
-            value={theme === 'dark' ? t('profile.themeDark') : t('profile.themeLight')}
-            onPress={cycleTheme}
-            accessibilityHint={t('profile.theme')}
-          />
-          <SettingsTile
-            styles={styles}
-            label={t('profile.language')}
-            value={locale === 'ru' ? t('profile.langRu') : t('profile.langEn')}
-            onPress={toggleLocale}
-            accessibilityHint={t('profile.language')}
-          />
+          <SettingsAppearancePanel styles={styles} />
         </ScrollView>
       </SafeAreaView>
     </KeyboardAvoidingView>

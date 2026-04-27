@@ -154,8 +154,13 @@ export function intervalFromMemberRow(row: MemberBookingRow): TimeInterval | nul
   const from = row.product_available_date_local_from?.trim() ?? '';
   const to = row.product_available_date_local_to?.trim() ?? '';
   const a = parseServerDateTimeString(from);
+  if (!a) return null;
   let b = parseServerDateTimeString(to);
-  if (!a || !b) return null;
+  const mins = row.product_mins;
+  if (!b && Number.isFinite(mins) && mins > 0) {
+    b = new Date(a.getTime() + mins * 60 * 1000);
+  }
+  if (!b) return null;
   // Бронь через полночь: иногда конец приходит с той же календарной датой, что и начало (00:10 < 23:40).
   if (b.getTime() <= a.getTime()) {
     b = new Date(b.getTime() + 864e5);
@@ -221,12 +226,12 @@ export function formatInstantDeviceClock(d: Date): string {
   return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
 }
 
-/** Время на карточке брони: часы в Москве; ru — 24ч, en — 12h. */
+/** Время на карточке брони: часы в Москве; 12h с am/pm для всех локалей. */
 export function formatInstantForBookingLine(d: Date, locale: 'ru' | 'en'): string {
   return formatInstantMoscowWallForLocale(d, locale);
 }
 
-/** Календарный день + слот в МСК → строка времени для UI (ru 24h / en 12h). */
+/** Календарный день + слот в МСК → строка времени для UI (12h с am/pm). */
 export function formatMoscowWallSlotForLocale(dateISO: string, timeSlot: string, locale: 'ru' | 'en'): string {
   const d = combineServerISODateAndTime(dateISO, timeSlot);
   if (!d) return timeSlot.trim();
@@ -277,7 +282,8 @@ export function pcListItemBlocksPlannedSlot(
   const iv = intervalFromPcBookingFields(p);
   if (iv) {
     // В ответе find-window границы слота часто дублируют проверяемый интервал — это метаданные, не чужая бронь.
-    if (!p.is_using && intervalsEqualWall(iv, planIv)) return false;
+    // Та же рамка приходит и у ПК с is_using (сессия «сейчас»): иначе пересечение с planIv ложно блокирует слот.
+    if (intervalsEqualWall(iv, planIv) && (!p.is_using || options?.findWindowListSemantics)) return false;
     if (options?.findWindowListSemantics && !p.is_using && intervalFullyCovers(iv, planIv)) {
       return false;
     }

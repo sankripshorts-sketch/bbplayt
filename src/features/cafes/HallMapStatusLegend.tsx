@@ -2,42 +2,43 @@ import React, { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text } from '../../components/DinText';
 import { useLocale } from '../../i18n/LocaleContext';
+import { useTheme } from '../../theme';
 import { HALL_PREVIEW } from './hallMapPreviewTokens';
 
 export type HallMapStatusLegendProps = {
-  /** `embed` — под схемой в белой рамке (с разделителем). `booking` — блок под картой на экране брони. */
+  /** `embed` — под схемой в белой рамке (с разделителем). `booking` — сразу под картой на экране брони, без верхнего зазора. */
   variant?: 'embed' | 'booking';
 };
 
 export function HallMapStatusLegend({ variant = 'embed' }: HallMapStatusLegendProps) {
   const { t } = useLocale();
-  const styles = useMemo(() => createStyles(variant), [variant]);
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(variant, colors.muted), [variant, colors.muted]);
 
-  const frame = HALL_PREVIEW.chipIdleBorder;
   const items = useMemo(
     () =>
       [
-        { key: 'busy', fill: HALL_PREVIEW.busy.fill, border: frame, label: t('hallMap.legendBusy') },
+        { key: 'busy', fill: colors.pcBusy, border: colors.pcBusy, label: t('hallMap.legendBusy') },
         {
           key: 'sel',
-          fill: HALL_PREVIEW.selected.fill,
-          border: frame,
+          fill: colors.pcSelected,
+          border: colors.pcSelected,
           label: t('hallMap.legendSelected'),
         },
         {
           key: 'idle',
           fill: 'transparent',
-          border: frame,
-          label: t('hallMap.legendIdle'),
+          border: colors.pcFree,
+          label: t('booking.legendFree'),
         },
         {
           key: 'un',
-          fill: HALL_PREVIEW.unavail.fill,
-          border: frame,
+          fill: colors.pcUnavailable,
+          border: colors.pcUnavailable,
           label: t('hallMap.legendUnavailable'),
         },
       ] as const,
-    [t],
+    [t, colors.pcBusy, colors.pcSelected, colors.pcFree, colors.pcUnavailable],
   );
 
   return (
@@ -52,7 +53,7 @@ export function HallMapStatusLegend({ variant = 'embed' }: HallMapStatusLegendPr
   );
 }
 
-function createStyles(variant: 'embed' | 'booking') {
+function createStyles(variant: 'embed' | 'booking', labelColor: string) {
   const booking = variant === 'booking';
   return StyleSheet.create({
     wrap: {
@@ -63,8 +64,9 @@ function createStyles(variant: 'embed' | 'booking') {
       gap: 10,
       rowGap: 8,
       columnGap: 14,
-      marginTop: booking ? 2 : 10,
-      paddingTop: booking ? 4 : 10,
+      marginTop: booking ? 8 : 10,
+      paddingTop: booking ? 2 : 10,
+      paddingBottom: booking ? 2 : 0,
       paddingHorizontal: booking ? 2 : 0,
       borderTopWidth: booking ? 0 : 1,
       borderTopColor: HALL_PREVIEW.legendSeparator,
@@ -78,7 +80,7 @@ function createStyles(variant: 'embed' | 'booking') {
     },
     label: {
       fontSize: 12,
-      color: '#9ca3af',
+      color: labelColor,
     },
   });
 }

@@ -29,12 +29,12 @@ https://docs.google.com/document/d/1xvn581CDZdUA7LAd4vPPizpJBPRxvJ1QtGEz5gOrlSs/
 - **workspace:** `D:\BB_Project\bbplay`
 - **источник транскриптов:** `C:\Users\pc\.cursor\projects\d-BB-Project-bbplay\agent-transcripts`
 - **экспорт JSON (относительно корня репо):** `cursor-agent-prompts-export/all-prompts.json`
-- **всего промптов:** 801
-- **сгенерировано:** 2026-04-19T18:50:12.357Z
+- **всего промптов:** 1296
+- **сгенерировано:** 2026-04-26T21:09:10.812Z
 
 ---
 
-> Чтобы обновить список: `npm run export:cursor-prompts` затем `npm run docs:prompts-md`.
+> Чтобы дописать новые промпты: `npm run docs:append-prompts` (скрипт `scripts/append-cursor-prompts.mjs`, JSON в `cursor-agent-prompts-export/all-prompts.json`).
 
 ## 1. session `0eb56b21-06d0-4d5a-ba57-d75340e177ae` — 0eb56b21-06d0-4d5a-ba57-d75340e177ae.jsonl:1
 
@@ -6419,3 +6419,4909 @@ Starting Metro Bundler
 › Press m │ toggle menu
 › Press o │ open project code in your editor › Press ? │ show all commands
 ```
+
+## 802. session `000e5bba-fad4-43a3-890b-b6d3e73bd2fb` — 000e5bba-fad4-43a3-890b-b6d3e73bd2fb.jsonl:1
+
+```
+расширь во всю ширину экрана(под экран подстраивается)
+
+Скрин2, я когда даже чуть чуть матну у меня прога должна доматывать до след. акции или пред. акции.
+
+скрин3 ПО ВЫСОТЕ ВСЕ ЭКАРНЫ С АКЦИЯМИ расширь, чтобы у меня на них не было промотки
+```
+
+## 803. session `0159a93a-245e-40dc-97c4-88865716e04c` — 0159a93a-245e-40dc-97c4-88865716e04c.jsonl:1
+
+```
+Поработай над дизайном акций. 
+
+И так же когда мы зашли в акцию то прокрутку стопаем.
+```
+
+## 804. session `0164c9f1-1b67-4feb-b759-ea7de48f5a5e` — 0164c9f1-1b67-4feb-b759-ea7de48f5a5e.jsonl:1
+
+```
+нужно уменьшить размер фильтров, сейчас они все не влезают на экран.
+И мы должны все подстраивать в зависимости от экрана
+```
+
+## 805. session `0367d709-2e62-4cf2-8a2f-5892050de455` — 0367d709-2e62-4cf2-8a2f-5892050de455.jsonl:1
+
+```
+пиши в промте чтобы он проверял стоят ли проблемы между словами и ставил если что. 
+ЧТобы он проверял слова на правильность написания, чтобы я такого больше не увидел как на скрине
+```
+
+## 806. session `041d667b-fd4c-4933-9a08-891fa1be3d3a` — 041d667b-fd4c-4933-9a08-891fa1be3d3a.jsonl:1
+
+```
+так, нужно добавить на гл. экран. функцию сканирования кур кода,
+Когда он нажимает открывается камера с рамкой куда надо поставить кьюр код, человек ставит кьюр код нашей экосистемы он его узнает, говорит типо войти в аккаунт на этом пк.......
+
+Пользователь выберает Или подтвердить или отменить.
+Пока что имулируем так, любой кьюр код видим, открывается следующее меню где либо входить либо нет
+```
+
+## 807. session `04894e86-ce93-4e31-8c1c-137463339b99` — 04894e86-ce93-4e31-8c1c-137463339b99.jsonl:1
+
+```
+нужно кнопку карты перенести туда где значек карты и надпись как добраться над картой сделать
+```
+
+## 808. session `06d72ce1-29a8-4416-9dbb-76d39027e8b8` — 06d72ce1-29a8-4416-9dbb-76d39027e8b8.jsonl:1
+
+```
+@c:\Users\pc\Videos\Captures\ProfileHome - Google Chrome 2026-04-26 19-46-36.mp4 У МЕНЯ ЛЕНТА АКЦИЙ НЕ ЗАЦИКЛИНА. Сделай чтобы она была круговой и цикличной
+```
+
+## 809. session `06d72ce1-29a8-4416-9dbb-76d39027e8b8` — 06d72ce1-29a8-4416-9dbb-76d39027e8b8.jsonl:25
+
+```
+ну после последней идет первая, но на вторую я уже матать не могу!!!
+```
+
+## 810. session `06d72ce1-29a8-4416-9dbb-76d39027e8b8` — 06d72ce1-29a8-4416-9dbb-76d39027e8b8.jsonl:33
+
+```
+все ровно я делаю один круг, дохожу до первой карточки и дальше на вторую я не могу проматать!
+```
+
+## 811. session `06d72ce1-29a8-4416-9dbb-76d39027e8b8` — 06d72ce1-29a8-4416-9dbb-76d39027e8b8.jsonl:50
+
+```
+НЕ ЛИСТАЕТСЯ. У МЕНЯ СЕЙЧАС В ЛЕНТЕ 5 ЭЛЕМЕНТОВ.
+
+А ДОЛЖНО БЫТЬ 3 И ОНИ ПОСТОЯННО ЦИКЯТЬСЯ ПОСЛЕ ПОСЛЕДНЕГО НОВЫЙ КРУГ НАЧИНАЕТСЯ
+```
+
+## 812. session `06d72ce1-29a8-4416-9dbb-76d39027e8b8` — 06d72ce1-29a8-4416-9dbb-76d39027e8b8.jsonl:57
+
+```
+Теперь у меня 4 карточки в ленте. первая вторая третья, потом сново первая и дальше я не могу проматать!
+```
+
+## 813. session `06d72ce1-29a8-4416-9dbb-76d39027e8b8` — 06d72ce1-29a8-4416-9dbb-76d39027e8b8.jsonl:81
+
+```
+точки состояния под лентой акций с задержкой работают
+```
+
+## 814. session `06d72ce1-29a8-4416-9dbb-76d39027e8b8` — 06d72ce1-29a8-4416-9dbb-76d39027e8b8.jsonl:88
+
+```
+Задержка еще сильнее стала. То есть у меня уже вторая акция а точка под акциями все еще первую показывает
+```
+
+## 815. session `06d72ce1-29a8-4416-9dbb-76d39027e8b8` — 06d72ce1-29a8-4416-9dbb-76d39027e8b8.jsonl:91
+
+```
+Задержка еще сильнее стала. То есть у меня уже вторая акция а точка под акциями все еще первую показывает
+```
+
+## 816. session `0723f697-84d2-4147-b6e4-a648394a87b8` — 0723f697-84d2-4147-b6e4-a648394a87b8.jsonl:1
+
+```
+в чате под сообщениями мы даем выбор лайк дизлай, нужно сделать меньше, и после оценки скрывать лайк или дизлайк и говорить спасибо за оценку.
+```
+
+## 817. session `073af678-68c6-4126-9edb-dd742605c581` — 073af678-68c6-4126-9edb-dd742605c581.jsonl:1
+
+```
+здесь должно быть BootCamp GameZone VIP не нужно писать зоны, сделай как я хочу в точности
+```
+
+## 818. session `07ae564c-b48e-48fa-af08-31142c2adca8` — 07ae564c-b48e-48fa-af08-31142c2adca8.jsonl:18
+
+```
+какие файлы ненужны для приложения на андроид
+```
+
+## 819. session `07ae564c-b48e-48fa-af08-31142c2adca8` — 07ae564c-b48e-48fa-af08-31142c2adca8.jsonl:22
+
+```
+.idea/ для чего нужно и .tmp_allorigins.json для чего нужно?
+```
+
+## 820. session `07ae564c-b48e-48fa-af08-31142c2adca8` — 07ae564c-b48e-48fa-af08-31142c2adca8.jsonl:29
+
+```
+❗MD-файл с описанием архитектуры и использованных инструментов (библиотеки, AI-сервисы, подходы).
+
+проверь документация
+```
+
+## 821. session `08e1192a-1d8a-44ea-ad7c-492b9a599d06` — 08e1192a-1d8a-44ea-ad7c-492b9a599d06.jsonl:1
+
+```
+так, делаем прокрут миниигры раз в сутки(если не потратили то один сгарает и новый выдается. то есть действует сутки) и при пополнение от 500 рублей даем тоже один бросок костью.
+
+За то что человек угодал число мы даем 100 бонусов.
+```
+
+## 822. session `08e1192a-1d8a-44ea-ad7c-492b9a599d06` — 08e1192a-1d8a-44ea-ad7c-492b9a599d06.jsonl:32
+
+```
+так, сейчас мы делаем пополнение только локальное(нажали кнопку пополнить, выбрали сумму подтвирдили, имулируем что пополнилось, даем все что выдается при пополнение.
+```
+
+## 823. session `0a3806f0-8403-4a94-9beb-bf4152fcc487` — 0a3806f0-8403-4a94-9beb-bf4152fcc487.jsonl:1
+
+```
+здесь переносим все вниз экрана(сверху будем пустоту убирать только если будт нехватать места).
+```
+
+## 824. session `0a3806f0-8403-4a94-9beb-bf4152fcc487` — 0a3806f0-8403-4a94-9beb-bf4152fcc487.jsonl:7
+
+```
+Зачем ты профиль и настройки перенес? Исправь
+```
+
+## 825. session `0a3806f0-8403-4a94-9beb-bf4152fcc487` — 0a3806f0-8403-4a94-9beb-bf4152fcc487.jsonl:12
+
+```
+так, значит пополнение связываем с плашкой баланса(на скрине показал как я хочу)
+
+Привет! логин нужно писать на одной строчке и таким видом - Привет, логин!
+
+и на скрине 2 показал, что ты не доконца опустил вниз элементы
+```
+
+## 826. session `0a3806f0-8403-4a94-9beb-bf4152fcc487` — 0a3806f0-8403-4a94-9beb-bf4152fcc487.jsonl:24
+
+```
+снизу осталась пустота
+```
+
+## 827. session `0ae7a35e-286a-44ab-9e29-95f8f208c6fb` — 0ae7a35e-286a-44ab-9e29-95f8f208c6fb.jsonl:1
+
+```
+собери apk локально
+```
+
+## 828. session `0c74dcdc-b10e-420c-839a-ce5551f47a6c` — 0c74dcdc-b10e-420c-839a-ce5551f47a6c.jsonl:1
+
+```
+на телефоне на слышно звуков в приложении(звук прокрутки, звук костей)
+```
+
+## 829. session `0ef02175-ade5-4ce1-920b-2bf29ef7ecbe` — 0ef02175-ade5-4ce1-920b-2bf29ef7ecbe.jsonl:1
+
+```
+убери зеленый фон, сделай лого больше и чуть выше и над лого мы должны писать текст который на 2 скрине.
+```
+
+## 830. session `0ef94ed7-6003-4860-a897-ccb9292afc78` — 0ef94ed7-6003-4860-a897-ccb9292afc78.jsonl:1
+
+```
+во вкладке Еда сам найди названия самых популярных продуктов и их названия там пиши. и так же фото поставь соответствующего продукта! Сделать будто это магазин из пк клуба
+```
+
+## 831. session `0ef94ed7-6003-4860-a897-ccb9292afc78` — 0ef94ed7-6003-4860-a897-ccb9292afc78.jsonl:18
+
+```
+мне нужно чтобы ты постаивл фото еды а не кубика. И вообще с чего ты решил кубик поставить?
+
+Найди про каждый товар фото и поставь его
+```
+
+## 832. session `0ef94ed7-6003-4860-a897-ccb9292afc78` — 0ef94ed7-6003-4860-a897-ccb9292afc78.jsonl:86
+
+```
+Briefly inform the user about the task result and perform any follow-up actions (if needed).
+```
+
+## 833. session `0ef94ed7-6003-4860-a897-ccb9292afc78` — 0ef94ed7-6003-4860-a897-ccb9292afc78.jsonl:87
+
+```
+Briefly inform the user about the task result and perform any follow-up actions (if needed).
+```
+
+## 834. session `0ef94ed7-6003-4860-a897-ccb9292afc78` — 0ef94ed7-6003-4860-a897-ccb9292afc78.jsonl:88
+
+```
+Briefly inform the user about the task result and perform any follow-up actions (if needed).
+```
+
+## 835. session `0ef94ed7-6003-4860-a897-ccb9292afc78` — 0ef94ed7-6003-4860-a897-ccb9292afc78.jsonl:89
+
+```
+Briefly inform the user about the task result and perform any follow-up actions (if needed).
+```
+
+## 836. session `0ef94ed7-6003-4860-a897-ccb9292afc78` — 0ef94ed7-6003-4860-a897-ccb9292afc78.jsonl:91
+
+```
+ты абсолютно не те фото посдатвил.
+
+Убери хот дог и сендвич, арахис, вафли.
+
+И найди фото имено для опр. товаров имено фото тех товаров и подставь их
+```
+
+## 837. session `0ef94ed7-6003-4860-a897-ccb9292afc78` — 0ef94ed7-6003-4860-a897-ccb9292afc78.jsonl:102
+
+```
+ты абсолютно не те фото посдатвил.
+
+Убери хот дог и сендвич, арахис, вафли.
+
+И найди фото имено для опр. товаров имено фото тех товаров и подставь их
+```
+
+## 838. session `0ef94ed7-6003-4860-a897-ccb9292afc78` — 0ef94ed7-6003-4860-a897-ccb9292afc78.jsonl:130
+
+```
+Briefly inform the user about the task result and perform any follow-up actions (if needed).
+```
+
+## 839. session `10d6abcb-0db8-4cb5-97c0-dcc594ba85ef` — 10d6abcb-0db8-4cb5-97c0-dcc594ba85ef.jsonl:1
+
+```
+давай сделаем чат бота в виде нейронки когда в онлайне человек и в виде базы знаний когда оффлайн?
+
+Какую нейронку посоветуешь которая подойдет для обращения по api
+```
+
+## 840. session `10d6abcb-0db8-4cb5-97c0-dcc594ba85ef` — 10d6abcb-0db8-4cb5-97c0-dcc594ba85ef.jsonl:3
+
+```
+так, во первых мне нужно бесплатно и нужно подумайть, через что использовать api чтобы можно было с приложения тянуть в нейронку и с нейронки в приложение.
+```
+
+## 841. session `10d6abcb-0db8-4cb5-97c0-dcc594ba85ef` — 10d6abcb-0db8-4cb5-97c0-dcc594ba85ef.jsonl:5
+
+```
+так, во первых мне нужно бесплатно и нужно подумайть, через что использовать api чтобы можно было с приложения тянуть в нейронку и с нейронки в приложение.
+
+И так же нам нужна будет база знаний для нейронки, чтобы мы могли туда забить работу клубов, пк и остальное и она отвечала правильно или как еще сделать?
+```
+
+## 842. session `10d6abcb-0db8-4cb5-97c0-dcc594ba85ef` — 10d6abcb-0db8-4cb5-97c0-dcc594ba85ef.jsonl:7
+
+```
+так мне нужно полностью без моего пк. дай мне лучший бесплатный вариант
+```
+
+## 843. session `10d6abcb-0db8-4cb5-97c0-dcc594ba85ef` — 10d6abcb-0db8-4cb5-97c0-dcc594ba85ef.jsonl:9
+
+```
+а может использовать chatgpt или gemeni? 
+
+Как это реализовать
+```
+
+## 844. session `114fe3b7-3cb8-4018-982d-ccc84dd1a3f9` — 114fe3b7-3cb8-4018-982d-ccc84dd1a3f9.jsonl:1
+
+```
+давай затемнять схему и список пк, пока не выбрали фильтры
+```
+
+## 845. session `114fe3b7-3cb8-4018-982d-ccc84dd1a3f9` — 114fe3b7-3cb8-4018-982d-ccc84dd1a3f9.jsonl:20
+
+```
+так же, нужно в списке разделить на зоны пк(прям сделать 3 раздела VIP, BootCamp, GameZone)
+```
+
+## 846. session `11fb9725-7535-4d90-a706-0664bed9fe48` — 11fb9725-7535-4d90-a706-0664bed9fe48.jsonl:1
+
+```
+по ширине акции должны быть как остальные элементы(отспуа нету по бокам)
+```
+
+## 847. session `12634cf4-09f6-4aeb-891b-50bf064f4f82` — 12634cf4-09f6-4aeb-891b-50bf064f4f82.jsonl:1
+
+```
+Собирать данные про полезность ответов в чате(лай или дизлайк) - в последствии будем отправлять на сервер мой
+```
+
+## 848. session `157d340b-87fd-4c78-a9e2-9e5735b222b2` — 157d340b-87fd-4c78-a9e2-9e5735b222b2.jsonl:1
+
+```
+собери локальную apk
+```
+
+## 849. session `157d340b-87fd-4c78-a9e2-9e5735b222b2` — 157d340b-87fd-4c78-a9e2-9e5735b222b2.jsonl:10
+
+```
+Briefly inform the user about the task result and perform any follow-up actions (if needed).
+```
+
+## 850. session `1760660e-5952-4e3d-8807-17a16f245f9f` — 1760660e-5952-4e3d-8807-17a16f245f9f.jsonl:1
+
+```
+когда пишут забронь мне пк завтра на 15 на 1 час то он не понимает этого, понимает только когда на 15 00
+```
+
+## 851. session `18a68fd6-7168-4f7e-8959-b645bd52314e` — 18a68fd6-7168-4f7e-8959-b645bd52314e.jsonl:1
+
+```
+Смотри, он не совсем меня понимает. 
+
+Мы даем не правильную инфу значит
+```
+
+## 852. session `1a2a18de-b979-441e-88f2-36d898a9590f` — 1a2a18de-b979-441e-88f2-36d898a9590f.jsonl:1
+
+```
+убери эту надпись на гл. экране
+```
+
+## 853. session `1a2a18de-b979-441e-88f2-36d898a9590f` — 1a2a18de-b979-441e-88f2-36d898a9590f.jsonl:23
+
+```
+убери везде полоску над выбором страницы
+```
+
+## 854. session `1af66e86-c837-4c8a-9cab-b56d6fec4325` — 1af66e86-c837-4c8a-9cab-b56d6fec4325.jsonl:1
+
+```
+Уведомление приходит даже если бронь отменили
+```
+
+## 855. session `1b13ac8e-88d0-4f43-904a-bbfead294090` — 1b13ac8e-88d0-4f43-904a-bbfead294090.jsonl:1
+
+```
+так, нужно дать возможность выбора нескольких пк в разных зонах(не ограничиваем в одной)
+```
+
+## 856. session `1b734ba5-a15c-4d0f-bb6e-71c2f6ec5912` — 1b734ba5-a15c-4d0f-bb6e-71c2f6ec5912.jsonl:1
+
+```
+смотри, должно быть так, у нас 100 рублей по длинее самая маленькая, потом 200 больше, 500 больше, 1000 еще больше и 1500 больше всех по длине.
+
+так же бонус делаем такой, 10 бонусов со 100 руб и дальше сам считай.
+```
+
+## 857. session `1be0d9ca-aaf5-4e5a-83b1-437eeb9c0cb3` — 1be0d9ca-aaf5-4e5a-83b1-437eeb9c0cb3.jsonl:1
+
+```
+Я НАЖИМАЮ НА ДЛИТЕЛЬНОСТЬ ЭЛЕМЕНТ НО У МЕНЯ НЕ ПРИМЕНЯЮТСЯ ПАРАМЕТРА КОТОРЫЕ СТОЯТ!!!! 
+
+А ДОЛЖНО БЫТЬ ЧТО КОГДА Я НАЖИМАЮ НА ЭЛЕМЕНТ ТО ПРОИСХОДИТ ТОЖЕ САМОЕ ЧТО ПРИ НАЖИТИИ НА КНОПКУ ГОТОВО
+```
+
+## 858. session `1be0d9ca-aaf5-4e5a-83b1-437eeb9c0cb3` — 1be0d9ca-aaf5-4e5a-83b1-437eeb9c0cb3.jsonl:11
+
+```
+НУ ПОЧЕМУ НЕ РАБОТАЕТ?!!!!!
+```
+
+## 859. session `1be0d9ca-aaf5-4e5a-83b1-437eeb9c0cb3` — 1be0d9ca-aaf5-4e5a-83b1-437eeb9c0cb3.jsonl:16
+
+```
+теперь я не могу проматывать у меня сразу применяется!
+```
+
+## 860. session `1c414afd-67a8-4407-8ac0-2681d778fa43` — 1c414afd-67a8-4407-8ac0-2681d778fa43.jsonl:1
+
+```
+@c:\Users\pc\Downloads\Telegram Desktop\video_2026-04-24_11-19-34.mp4 Не возможно закрыть потянув вниз(не работает функция) почини, чтобы потянув вниз тоже закрывалось
+```
+
+## 861. session `1cdddf2a-c118-4b3f-b141-2a11f66c672a` — 1cdddf2a-c118-4b3f-b141-2a11f66c672a.jsonl:1
+
+```
+сделай все кнопки одинаковые по размеру и с одинаковым отступом
+```
+
+## 862. session `1cdddf2a-c118-4b3f-b141-2a11f66c672a` — 1cdddf2a-c118-4b3f-b141-2a11f66c672a.jsonl:11
+
+```
+убери вот эти надписи
+```
+
+## 863. session `1d3782bb-850e-4b82-bb8f-859878633233` — 1d3782bb-850e-4b82-bb8f-859878633233.jsonl:1
+
+```
+https://docs.ollama.com/ 
+Изучи документацию и найди способ использовать по api gpt-oss:120b
+```
+
+## 864. session `1d3782bb-850e-4b82-bb8f-859878633233` — 1d3782bb-850e-4b82-bb8f-859878633233.jsonl:8
+
+```
+стоп, нужно использовать сервисы ламы а не мои. То есть я просто должен api посылать куда надо
+```
+
+## 865. session `1d3782bb-850e-4b82-bb8f-859878633233` — 1d3782bb-850e-4b82-bb8f-859878633233.jsonl:15
+
+```
+что выбрать?
+```
+
+## 866. session `1d3782bb-850e-4b82-bb8f-859878633233` — 1d3782bb-850e-4b82-bb8f-859878633233.jsonl:17
+
+```
+fc1390b163b64e9ebf4dfb2c76936a5a.bL_w4JT-SJRIRHxMQdtwCZeg
+
+вот ключ для аунтефикации.
+
+У меня вопрос, какую ты бесплатную лучшую модель посоветуешь использовать в ollama
+```
+
+## 867. session `1d3782bb-850e-4b82-bb8f-859878633233` — 1d3782bb-850e-4b82-bb8f-859878633233.jsonl:19
+
+```
+а для моего чата в приложении?
+```
+
+## 868. session `1e7f7816-406a-4420-8411-0c9624af5a70` — 1e7f7816-406a-4420-8411-0c9624af5a70.jsonl:1
+
+```
+увеличь шрифт и увеличь расстояние между фильтрами.(САМИ ПРЯМОУГОЛЬНИКИ НЕ УВИЛИЧИВАЙ)
+```
+
+## 869. session `1ebab482-c115-44d6-9617-0d2688d490a7` — 1ebab482-c115-44d6-9617-0d2688d490a7.jsonl:1
+
+```
+убери рамку вокруг схемы+убери фон у схемы, пусть он будет прозрачным, фон тот же что и на всем этом экране.
+```
+
+## 870. session `1ebab482-c115-44d6-9617-0d2688d490a7` — 1ebab482-c115-44d6-9617-0d2688d490a7.jsonl:13
+
+```
+где настройки темноты затемнения на которой показана схеа клуба?
+```
+
+## 871. session `1ebab482-c115-44d6-9617-0d2688d490a7` — 1ebab482-c115-44d6-9617-0d2688d490a7.jsonl:18
+
+```
+сделай в 2 раза прозрачнее
+```
+
+## 872. session `1ebab482-c115-44d6-9617-0d2688d490a7` — 1ebab482-c115-44d6-9617-0d2688d490a7.jsonl:22
+
+```
+сделай чтобы еще понижалась яркость у самиъ элементов на схеме
+```
+
+## 873. session `1ebab482-c115-44d6-9617-0d2688d490a7` — 1ebab482-c115-44d6-9617-0d2688d490a7.jsonl:27
+
+```
+убери само затемнение поверх схемы.
+```
+
+## 874. session `1ebab482-c115-44d6-9617-0d2688d490a7` — 1ebab482-c115-44d6-9617-0d2688d490a7.jsonl:40
+
+```
+убери само затемнение поверх схемы.
+```
+
+## 875. session `1ebab482-c115-44d6-9617-0d2688d490a7` — 1ebab482-c115-44d6-9617-0d2688d490a7.jsonl:44
+
+```
+как повысыть прозрачность и изменить цвет затемнения поверх схемы
+```
+
+## 876. session `1ebab482-c115-44d6-9617-0d2688d490a7` — 1ebab482-c115-44d6-9617-0d2688d490a7.jsonl:52
+
+```
+Сделай чтобы цвета были такими же как на скрине. Позади схемы цвет немного другой, убираем поверх схемы затемнение и тд. Сделай чтобы экран был точно такой же как на скрине.
+```
+
+## 877. session `1f63f4ad-60a7-4915-8886-0580cbacc666` — 1f63f4ad-60a7-4915-8886-0580cbacc666.jsonl:1
+
+```
+проблема с новостями фото и аватар не показывается
+```
+
+## 878. session `1fb031eb-4585-4cd9-b0c4-0168711e58c2` — 1fb031eb-4585-4cd9-b0c4-0168711e58c2.jsonl:1
+
+```
+кнопку занятость надо переименовать Свободное время
+```
+
+## 879. session `1fc8f08d-4b95-4fe9-b416-7a5719d6294e` — 1fc8f08d-4b95-4fe9-b416-7a5719d6294e.jsonl:1
+
+```
+сократи промежутки чтобы влезло все на один экран(сейчас кнопка выход не влезает
+```
+
+## 880. session `1fc8f08d-4b95-4fe9-b416-7a5719d6294e` — 1fc8f08d-4b95-4fe9-b416-7a5719d6294e.jsonl:13
+
+```
+можно не так сильно
+```
+
+## 881. session `1fc8f08d-4b95-4fe9-b416-7a5719d6294e` — 1fc8f08d-4b95-4fe9-b416-7a5719d6294e.jsonl:15
+
+```
+можно не так сильно, сделай чуть чуть больше растояние между ними
+```
+
+## 882. session `20eba086-3bd9-450e-a5db-e98c2db7f0f8` — 20eba086-3bd9-450e-a5db-e98c2db7f0f8.jsonl:1
+
+```
+грани кривые и другого цвета. точки слишком жирные. Некрасивый кубик, испарвь
+```
+
+## 883. session `20eba086-3bd9-450e-a5db-e98c2db7f0f8` — 20eba086-3bd9-450e-a5db-e98c2db7f0f8.jsonl:11
+
+```
+Теперь кубик вообще какой то страшные стал. сделай красивую текстуру 3d кубика
+```
+
+## 884. session `20eba086-3bd9-450e-a5db-e98c2db7f0f8` — 20eba086-3bd9-450e-a5db-e98c2db7f0f8.jsonl:22
+
+```
+точки маленькие, кубик не белый везде. Грани слишком странные.@c:\Users\pc\Downloads\playing-dice-3d-realistic-vector-white-cube.zip @c:\Users\pc\Downloads\white-3d-isolated-realistic-dice-casino-game-vector-icon-backgammon-lucky-cube-roll-with-1-6-two-dot.zip 
+Вот есть красивые кубики 3d
+```
+
+## 885. session `20eba086-3bd9-450e-a5db-e98c2db7f0f8` — 20eba086-3bd9-450e-a5db-e98c2db7f0f8.jsonl:49
+
+```
+Briefly inform the user about the task result and perform any follow-up actions (if needed).
+```
+
+## 886. session `21b37e88-0275-4839-a0e2-85cd4ddce295` — 21b37e88-0275-4839-a0e2-85cd4ddce295.jsonl:1
+
+```
+Нужно убрать движение у схемы клуба и убрать кнопку возврата в стандартное положение
+```
+
+## 887. session `221e2731-49c1-494c-9b5e-9cd34b6fcd87` — 221e2731-49c1-494c-9b5e-9cd34b6fcd87.jsonl:1
+
+```
+у меня при загрузки страницы брони какой то серый квадрат снизу и на схмене пишеться не правильная причина и потом она меняется
+```
+
+## 888. session `228d0a98-1b12-439f-9883-63944ef88f38` — 228d0a98-1b12-439f-9883-63944ef88f38.jsonl:1
+
+```
+Акции сделать в виде ленты на главной странице.
+
+Получается у нас на гл. странице есть сверху пространство, туда мы ставим ленту, которая прокручивается в право сама раз в 15 сек с акциями(такие плашки будут) и человек сам может прокрутить.
+
+Акции локально добавь такие
+
+Скидка на день рождение.
+
+100 бонусов за отзыв на картах
+
+И третья плашка - миниигра 
+
+МИниигра - человек выбирает число от одного до 6 и нажимает кнопку бросить кубик, если выпало число такое же какое ввел человек, то он выграл мы ему зачисляем бонусы(локально) если не выграл, но ничего не зачисляем.
+
+В будующем у нас бонусы будут зачисляться и на сервер.
+
+Нужно сделать красивое оповещение о победе, о проигрыше, красивые акции.
+
+Когда человек нажимает на акции, то там открывается экран(он не на весь экран будет, а будет открываться по середине и отступ от карев экарна(чтобы он полнстью не перекрывал, задний фон затемняем) и на этом экране мы пишем все инфу про условия акции.
+
+При нажатии на миниигру мы ее открываем.
+```
+
+## 889. session `24269be2-55d1-4057-ab1d-71716a6d4e85` — 24269be2-55d1-4057-ab1d-71716a6d4e85.jsonl:1
+
+```
+текст плохо вырезан
+
+иСПРАВЬ
+```
+
+## 890. session `24269be2-55d1-4057-ab1d-71716a6d4e85` — 24269be2-55d1-4057-ab1d-71716a6d4e85.jsonl:20
+
+```
+Так просто сам напиши нормальным текстом тоже самое
+
+НАпиши шрифтом как на скрине 2
+```
+
+## 891. session `24269be2-55d1-4057-ab1d-71716a6d4e85` — 24269be2-55d1-4057-ab1d-71716a6d4e85.jsonl:39
+
+```
+ЭТО АБСОЛЮТНО НЕ ТОТ ШРИФТ.
+
+Сделай как на 2-м скрине
+```
+
+## 892. session `2461020a-b693-4cbd-b414-e30bd7da1371` — 2461020a-b693-4cbd-b414-e30bd7da1371.jsonl:1
+
+```
+Текст при загрузке сделай прям как на скрине(без фона). Ты сделал по другому
+```
+
+## 893. session `24867d8c-75b3-438c-81fe-6b3d684f22e7` — 24867d8c-75b3-438c-81fe-6b3d684f22e7.jsonl:1
+
+```
+в настройках у меня сразу должно открываться редактирования профиля, настройки других функций.
+
+то есть развернули и там сразу все можно поменять
+```
+
+## 894. session `24867d8c-75b3-438c-81fe-6b3d684f22e7` — 24867d8c-75b3-438c-81fe-6b3d684f22e7.jsonl:9
+
+```
+Смотри, у меня внутри ничего нету(скрин1) а снаружи есть, хотя не должно быть! ИСправь и так со всеми статистиками
+```
+
+## 895. session `24867d8c-75b3-438c-81fe-6b3d684f22e7` — 24867d8c-75b3-438c-81fe-6b3d684f22e7.jsonl:25
+
+```
+НЕТУ ЛОЛЬНО ЗАПИСЕЙ!!!!
+```
+
+## 896. session `24867d8c-75b3-438c-81fe-6b3d684f22e7` — 24867d8c-75b3-438c-81fe-6b3d684f22e7.jsonl:27
+
+```
+НЕТУ ЛОЛЬНО ЗАПИСЕЙ!!!!
+
+api нам пока что не возвращает этих данные, если данных нет то мы локально делаем как это будет выглядеть во всех статах
+```
+
+## 897. session `24867d8c-75b3-438c-81fe-6b3d684f22e7` — 24867d8c-75b3-438c-81fe-6b3d684f22e7.jsonl:50
+
+```
+Очень долго грузит, и сам сделай локально записи сам, будто там уже есть что-то
+```
+
+## 898. session `27abbe35-62ad-41d0-a2df-ff1f3395bdb9` — 27abbe35-62ad-41d0-a2df-ff1f3395bdb9.jsonl:1
+
+```
+Мои брони, подписывать их кол-во и нужно показывать старые брони.
+```
+
+## 899. session `27d35547-e7bb-456f-9bdf-49c1daf4b7f5` — 27d35547-e7bb-456f-9bdf-49c1daf4b7f5.jsonl:1
+
+```
+D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\NativeAnimatedHelper.js:410 Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation. To resolve this, add `RCTAnimation` module to this app, or remove `useNativeDriver`. Make sure to run `bundle exec pod install` first. Read more about autolinking: https://github.com/react-native-community/cli/blob/master/docs/autolinking.md
+shouldUseNativeDriver @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\NativeAnimatedHelper.js:410
+constructor @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\animations\TimingAnimation.js:36
+start @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\AnimatedImplementation.js:152
+start @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\AnimatedImplementation.js:157
+start @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\AnimatedImplementation.js:226
+restart @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\AnimatedImplementation.js:343
+start @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\AnimatedImplementation.js:354
+(anonymous) @ D:\BB_Project\bbplay\src\features\ui\ClubDataLoader.tsx:79
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+dispatchSetState @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17527
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo-font\build\FontHooks.js:19
+Promise.then
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo-font\build\FontHooks.js:19
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+updateContainer @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:28858
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:29314
+render @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\render\index.js:23
+renderApplication @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\renderApplication.js:24
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\index.js:36
+runApplication @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\index.js:74
+registerRootComponent @ D:\BB_Project\bbplay\node_modules\expo\build\launch\registerRootComponent.js:18
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo\AppEntry.js:5
+loadModuleImplementation @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:277
+guardedLoadModule @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:177
+metroRequire @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:92
+(anonymous) @ D:\BB_Project\bbplay\assets\club-loading-bear.png:1
+D:\BB_Project\bbplay\node_modules\react-native-web\dist\modules\warnOnce\index.js:24 props.pointerEvents is deprecated. Use style.pointerEvents
+warnOnce @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\modules\warnOnce\index.js:24
+createDOMProps @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\modules\createDOMProps\index.js:805
+createElement @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\createElement\index.js:23
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\View\index.js:111
+renderWithHooks @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:16305
+updateForwardRef @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:19226
+beginWork @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:21636
+beginWork$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27426
+performUnitOfWork @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26560
+workLoopSync @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26466
+renderRootSync @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26434
+performConcurrentWorkOnRoot @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25738
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+dispatchSetState @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17527
+(anonymous) @ D:\BB_Project\bbplay\src\query\useAppBootstrap.ts:125
+await in (anonymous)
+(anonymous) @ D:\BB_Project\bbplay\src\query\useAppBootstrap.ts:127
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+dispatchSetState @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17527
+(anonymous) @ D:\BB_Project\bbplay\src\knowledge\KnowledgeContext.tsx:211
+Promise.then
+(anonymous) @ D:\BB_Project\bbplay\src\knowledge\KnowledgeContext.tsx:208
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+dispatchSetState @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17527
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo-font\build\FontHooks.js:19
+Promise.then
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo-font\build\FontHooks.js:19
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+updateContainer @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:28858
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:29314
+render @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\render\index.js:23
+renderApplication @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\renderApplication.js:24
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\index.js:36
+runApplication @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\index.js:74
+registerRootComponent @ D:\BB_Project\bbplay\node_modules\expo\build\launch\registerRootComponent.js:18
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo\AppEntry.js:5
+loadModuleImplementation @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:277
+guardedLoadModule @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:177
+metroRequire @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:92
+(anonymous) @ D:\BB_Project\bbplay\assets\club-loading-bear.png:1
+D:\BB_Project\bbplay\node_modules\fbjs\lib\invariant.js:40 Uncaught Invariant Violation: inputRange (9) and outputRange (8) must have the same length
+    at invariant (D:\BB_Project\bbplay\node_modules\fbjs\lib\invariant.js:40:15)
+    at createInterpolation (D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedInterpolation.js:37:14)
+    at new AnimatedInterpolation (D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedInterpolation.js:227:27)
+    at AnimatedValue.interpolate (D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedValue.js:203:12)
+    at D:\BB_Project\bbplay\src\features\promos\DiceMinigameModal.tsx:706:20
+    at mountMemo (D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17225:19)
+    at Object.useMemo (D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17670:16)
+    at useMemo (D:\BB_Project\bbplay\node_modules\react\cjs\react.development.js:1650:21)
+    at DiceMinigameModal (D:\BB_Project\bbplay\src\features\promos\DiceMinigameModal.tsx:704:25)
+    at renderWithHooks (D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:16305:18)
+invariant @ D:\BB_Project\bbplay\node_modules\fbjs\lib\invariant.js:40
+createInterpolation @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedInterpolation.js:37
+constructor @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedInterpolation.js:227
+interpolate @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedValue.js:203
+(anonymous) @ D:\BB_Project\bbplay\src\features\promos\DiceMinigameModal.tsx:706
+mountMemo @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17225
+useMemo @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17670
+useMemo @ D:\BB_Project\bbplay\node_modules\react\cjs\react.development.js:1650
+DiceMinigameModal @ D:\BB_Project\bbplay\src\features\promos\DiceMinigameModal.tsx:704
+renderWithHooks @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:16305
+mountIndeterminateComponent @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:20074
+beginWork @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:21587
+callCallback @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:4164
+invokeGuardedCallbackDev @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:4213
+invokeGuardedCallback @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:4277
+beginWork$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27451
+performUnitOfWork @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26560
+workLoopSync @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26466
+renderRootSync @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26434
+performConcurrentWorkOnRoot @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25738
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+dispatchSetState @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17527
+(anonymous) @ D:\BB_Project\bbplay\src\query\useAppBootstrap.ts:125
+await in (anonymous)
+(anonymous) @ D:\BB_Project\bbplay\src\query\useAppBootstrap.ts:127
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+dispatchSetState @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17527
+(anonymous) @ D:\BB_Project\bbplay\src\knowledge\KnowledgeContext.tsx:211
+Promise.then
+(anonymous) @ D:\BB_Project\bbplay\src\knowledge\KnowledgeContext.tsx:208
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+dispatchSetState @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17527
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo-font\build\FontHooks.js:19
+Promise.then
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo-font\build\FontHooks.js:19
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+updateContainer @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:28858
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:29314
+render @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\render\index.js:23
+renderApplication @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\renderApplication.js:24
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\index.js:36
+runApplication @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\index.js:74
+registerRootComponent @ D:\BB_Project\bbplay\node_modules\expo\build\launch\registerRootComponent.js:18
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo\AppEntry.js:5
+loadModuleImplementation @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:277
+guardedLoadModule @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:177
+metroRequire @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:92
+(anonymous) @ D:\BB_Project\bbplay\assets\club-loading-bear.png:1
+D:\BB_Project\bbplay\node_modules\fbjs\lib\invariant.js:40 Uncaught Invariant Violation: inputRange (9) and outputRange (8) must have the same length
+    at invariant (D:\BB_Project\bbplay\node_modules\fbjs\lib\invariant.js:40:15)
+    at createInterpolation (D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedInterpolation.js:37:14)
+    at new AnimatedInterpolation (D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedInterpolation.js:227:27)
+    at AnimatedValue.interpolate (D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedValue.js:203:12)
+    at D:\BB_Project\bbplay\src\features\promos\DiceMinigameModal.tsx:706:20
+    at mountMemo (D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17225:19)
+    at Object.useMemo (D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17670:16)
+    at useMemo (D:\BB_Project\bbplay\node_modules\react\cjs\react.development.js:1650:21)
+    at DiceMinigameModal (D:\BB_Project\bbplay\src\features\promos\DiceMinigameModal.tsx:704:25)
+    at renderWithHooks (D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:16305:18)
+invariant @ D:\BB_Project\bbplay\node_modules\fbjs\lib\invariant.js:40
+createInterpolation @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedInterpolation.js:37
+constructor @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedInterpolation.js:227
+interpolate @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedValue.js:203
+(anonymous) @ D:\BB_Project\bbplay\src\features\promos\DiceMinigameModal.tsx:706
+mountMemo @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17225
+useMemo @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17670
+useMemo @ D:\BB_Project\bbplay\node_modules\react\cjs\react.development.js:1650
+DiceMinigameModal @ D:\BB_Project\bbplay\src\features\promos\DiceMinigameModal.tsx:704
+renderWithHooks @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:16305
+mountIndeterminateComponent @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:20074
+beginWork @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:21587
+callCallback @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:4164
+invokeGuardedCallbackDev @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:4213
+invokeGuardedCallback @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:4277
+beginWork$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27451
+performUnitOfWork @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26560
+workLoopSync @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26466
+renderRootSync @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26434
+recoverFromConcurrentError @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25850
+performConcurrentWorkOnRoot @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25750
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+dispatchSetState @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17527
+(anonymous) @ D:\BB_Project\bbplay\src\query\useAppBootstrap.ts:125
+await in (anonymous)
+(anonymous) @ D:\BB_Project\bbplay\src\query\useAppBootstrap.ts:127
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+dispatchSetState @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17527
+(anonymous) @ D:\BB_Project\bbplay\src\knowledge\KnowledgeContext.tsx:211
+Promise.then
+(anonymous) @ D:\BB_Project\bbplay\src\knowledge\KnowledgeContext.tsx:208
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+dispatchSetState @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17527
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo-font\build\FontHooks.js:19
+Promise.then
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo-font\build\FontHooks.js:19
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+updateContainer @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:28858
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:29314
+render @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\render\index.js:23
+renderApplication @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\renderApplication.js:24
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\index.js:36
+runApplication @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\index.js:74
+registerRootComponent @ D:\BB_Project\bbplay\node_modules\expo\build\launch\registerRootComponent.js:18
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo\AppEntry.js:5
+loadModuleImplementation @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:277
+guardedLoadModule @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:177
+metroRequire @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:92
+(anonymous) @ D:\BB_Project\bbplay\assets\club-loading-bear.png:1
+D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:18687 The above error occurred in the <DiceMinigameModal> component:
+
+    at DiceMinigameModal (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:135354:7)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:74593:7
+    at ProfileScreen (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:121031:50)
+    at StaticContainer (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88289:18)
+    at EnsureSingleNavigator (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:85301:7)
+    at SceneView (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88205:7)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at Background (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:90669:7)
+    at Screen (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:91748:73)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at SafeAreaProviderCompat (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:91641:7)
+    at NativeStackView (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:117600:7)
+    at PreventRemoveProvider (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:87264:7)
+    at NavigationContent (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88001:7)
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88018:9
+    at NativeStackNavigator (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:117536:7)
+    at ProfileStack (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:120796:38)
+    at StaticContainer (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88289:18)
+    at EnsureSingleNavigator (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:85301:7)
+    at SceneView (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88205:7)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at Background (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:90669:7)
+    at Screen (http://localhost:8081/node_mo
+logCapturedError @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:18687
+callback @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:18755
+callCallback @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:13923
+commitUpdateQueue @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:13944
+commitLayoutEffectOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23364
+commitLayoutMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24688
+commitLayoutEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24674
+commitLayoutEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24612
+commitRootImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26823
+commitRoot @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26682
+finishConcurrentRender @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25892
+performConcurrentWorkOnRoot @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25809
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+dispatchSetState @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17527
+(anonymous) @ D:\BB_Project\bbplay\src\query\useAppBootstrap.ts:125
+await in (anonymous)
+(anonymous) @ D:\BB_Project\bbplay\src\query\useAppBootstrap.ts:127
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+dispatchSetState @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17527
+(anonymous) @ D:\BB_Project\bbplay\src\knowledge\KnowledgeContext.tsx:211
+Promise.then
+(anonymous) @ D:\BB_Project\bbplay\src\knowledge\KnowledgeContext.tsx:208
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+dispatchSetState @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17527
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo-font\build\FontHooks.js:19
+Promise.then
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo-font\build\FontHooks.js:19
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+updateContainer @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:28858
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:29314
+render @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\render\index.js:23
+renderApplication @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\renderApplication.js:24
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\index.js:36
+runApplication @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\index.js:74
+registerRootComponent @ D:\BB_Project\bbplay\node_modules\expo\build\launch\registerRootComponent.js:18
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo\AppEntry.js:5
+loadModuleImplementation @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:277
+guardedLoadModule @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:177
+metroRequire @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:92
+(anonymous) @ D:\BB_Project\bbplay\assets\club-loading-bear.png:1
+D:\BB_Project\bbplay\src\components\AppErrorBoundary.tsx:21 AppErrorBoundary Invariant Violation: inputRange (9) and outputRange (8) must have the same length
+    at invariant (D:\BB_Project\bbplay\node_modules\fbjs\lib\invariant.js:40:15)
+    at createInterpolation (D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedInterpolation.js:37:14)
+    at new AnimatedInterpolation (D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedInterpolation.js:227:27)
+    at AnimatedValue.interpolate (D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedValue.js:203:12)
+    at D:\BB_Project\bbplay\src\features\promos\DiceMinigameModal.tsx:706:20
+    at mountMemo (D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17225:19)
+    at Object.useMemo (D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17670:16)
+    at useMemo (D:\BB_Project\bbplay\node_modules\react\cjs\react.development.js:1650:21)
+    at DiceMinigameModal (D:\BB_Project\bbplay\src\features\promos\DiceMinigameModal.tsx:704:25)
+    at renderWithHooks (D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:16305:18) 
+    at DiceMinigameModal (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:135354:7)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:74593:7
+    at ProfileScreen (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:121031:50)
+    at StaticContainer (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88289:18)
+    at EnsureSingleNavigator (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:85301:7)
+    at SceneView (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88205:7)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at Background (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:90669:7)
+    at Screen (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:91748:73)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at SafeAreaProviderCompat (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:91641:7)
+    at NativeStackView (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:117600:7)
+    at PreventRemoveProvider (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:87264:7)
+    at NavigationContent (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88001:7)
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88018:9
+    at NativeStackNavigator (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:117536:7)
+    at ProfileStack (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:120796:38)
+    at StaticContainer (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88289:18)
+    at EnsureSingleNavigator (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:85301:7)
+    at SceneView (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88205:7)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at Background (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:90669:7)
+    at Screen (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&
+componentDidCatch @ D:\BB_Project\bbplay\src\components\AppErrorBoundary.tsx:21
+callback @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:18768
+callCallback @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:13923
+commitUpdateQueue @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:13944
+commitLayoutEffectOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23364
+commitLayoutMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24688
+commitLayoutEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24674
+commitLayoutEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24612
+commitRootImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26823
+commitRoot @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26682
+finishConcurrentRender @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25892
+performConcurrentWorkOnRoot @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25809
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+dispatchSetState @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17527
+(anonymous) @ D:\BB_Project\bbplay\src\query\useAppBootstrap.ts:125
+await in (anonymous)
+(anonymous) @ D:\BB_Project\bbplay\src\query\useAppBootstrap.ts:127
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+dispatchSetState @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17527
+(anonymous) @ D:\BB_Project\bbplay\src\knowledge\KnowledgeContext.tsx:211
+Promise.then
+(anonymous) @ D:\BB_Project\bbplay\src\knowledge\KnowledgeContext.tsx:208
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+dispatchSetState @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17527
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo-font\build\FontHooks.js:19
+Promise.then
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo-font\build\FontHooks.js:19
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+updateContainer @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:28858
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:29314
+render @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\render\index.js:23
+renderApplication @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\renderApplication.js:24
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\index.js:36
+runApplication @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\index.js:74
+registerRootComponent @ D:\BB_Project\bbplay\node_modules\expo\build\launch\registerRootComponent.js:18
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo\AppEntry.js:5
+loadModuleImplementation @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:277
+guardedLoadModule @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:177
+metroRequire @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:92
+(anonymous) @ D:\BB_Project\bbplay\assets\club-loading-bear.png:1
+D:\BB_Project\bbplay\node_modules\fbjs\lib\invariant.js:40 Uncaught Invariant Violation: inputRange (9) and outputRange (8) must have the same length
+    at invariant (D:\BB_Project\bbplay\node_modules\fbjs\lib\invariant.js:40:15)
+    at createInterpolation (D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedInterpolation.js:37:14)
+    at new AnimatedInterpolation (D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedInterpolation.js:227:27)
+    at AnimatedValue.interpolate (D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedValue.js:203:12)
+    at D:\BB_Project\bbplay\src\features\promos\DiceMinigameModal.tsx:706:20
+    at mountMemo (D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17225:19)
+    at Object.useMemo (D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17670:16)
+    at useMemo (D:\BB_Project\bbplay\node_modules\react\cjs\react.development.js:1650:21)
+    at DiceMinigameModal (D:\BB_Project\bbplay\src\features\promos\DiceMinigameModal.tsx:704:25)
+    at renderWithHooks (D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:16305:18)
+invariant @ D:\BB_Project\bbplay\node_modules\fbjs\lib\invariant.js:40
+createInterpolation @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedInterpolation.js:37
+constructor @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedInterpolation.js:227
+interpolate @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedValue.js:203
+(anonymous) @ D:\BB_Project\bbplay\src\features\promos\DiceMinigameModal.tsx:706
+mountMemo @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17225
+useMemo @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17670
+useMemo @ D:\BB_Project\bbplay\node_modules\react\cjs\react.development.js:1650
+DiceMinigameModal @ D:\BB_Project\bbplay\src\features\promos\DiceMinigameModal.tsx:704
+renderWithHooks @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:16305
+mountIndeterminateComponent @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:20074
+beginWork @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:21587
+callCallback @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:4164
+invokeGuardedCallbackDev @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:4213
+invokeGuardedCallback @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:4277
+beginWork$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27451
+performUnitOfWork @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26560
+workLoopSync @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26466
+renderRootSync @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26434
+performSyncWorkOnRoot @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26085
+flushSyncCallbacks @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:12042
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25651
+D:\BB_Project\bbplay\node_modules\fbjs\lib\invariant.js:40 Uncaught Invariant Violation: inputRange (9) and outputRange (8) must have the same length
+    at invariant (D:\BB_Project\bbplay\node_modules\fbjs\lib\invariant.js:40:15)
+    at createInterpolation (D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedInterpolation.js:37:14)
+    at new AnimatedInterpolation (D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedInterpolation.js:227:27)
+    at AnimatedValue.interpolate (D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedValue.js:203:12)
+    at D:\BB_Project\bbplay\src\features\promos\DiceMinigameModal.tsx:706:20
+    at mountMemo (D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17225:19)
+    at Object.useMemo (D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17670:16)
+    at useMemo (D:\BB_Project\bbplay\node_modules\react\cjs\react.development.js:1650:21)
+    at DiceMinigameModal (D:\BB_Project\bbplay\src\features\promos\DiceMinigameModal.tsx:704:25)
+    at renderWithHooks (D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:16305:18)
+invariant @ D:\BB_Project\bbplay\node_modules\fbjs\lib\invariant.js:40
+createInterpolation @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedInterpolation.js:37
+constructor @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedInterpolation.js:227
+interpolate @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedValue.js:203
+(anonymous) @ D:\BB_Project\bbplay\src\features\promos\DiceMinigameModal.tsx:706
+mountMemo @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17225
+useMemo @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17670
+useMemo @ D:\BB_Project\bbplay\node_modules\react\cjs\react.development.js:1650
+DiceMinigameModal @ D:\BB_Project\bbplay\src\features\promos\DiceMinigameModal.tsx:704
+renderWithHooks @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:16305
+mountIndeterminateComponent @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:20074
+beginWork @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:21587
+callCallback @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:4164
+invokeGuardedCallbackDev @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:4213
+invokeGuardedCallback @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:4277
+beginWork$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27451
+performUnitOfWork @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26560
+workLoopSync @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26466
+renderRootSync @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26434
+recoverFromConcurrentError @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25850
+performSyncWorkOnRoot @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26096
+flushSyncCallbacks @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:12042
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25651
+D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:18687 The above error occurred in the <DiceMinigameModal> component:
+
+    at DiceMinigameModal (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:135354:7)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:74593:7
+    at ProfileScreen (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:121031:50)
+    at StaticContainer (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88289:18)
+    at EnsureSingleNavigator (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:85301:7)
+    at SceneView (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88205:7)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at Background (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:90669:7)
+    at Screen (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:91748:73)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at SafeAreaProviderCompat (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:91641:7)
+    at NativeStackView (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:117600:7)
+    at PreventRemoveProvider (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:87264:7)
+    at NavigationContent (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88001:7)
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88018:9
+    at NativeStackNavigator (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:117536:7)
+    at ProfileStack (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:120796:38)
+    at StaticContainer (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88289:18)
+    at EnsureSingleNavigator (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:85301:7)
+    at SceneView (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88205:7)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at Background (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:90669:7)
+    at Screen (http://localhost:8081/node_mo
+logCapturedError @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:18687
+callback @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:18755
+callCallback @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:13923
+commitUpdateQueue @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:13944
+commitLayoutEffectOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23364
+commitLayoutMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24688
+commitLayoutEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24674
+commitLayoutEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24612
+commitRootImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26823
+commitRoot @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26682
+performSyncWorkOnRoot @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26117
+flushSyncCallbacks @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:12042
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25651
+D:\BB_Project\bbplay\src\components\AppErrorBoundary.tsx:21 AppErrorBoundary Invariant Violation: inputRange (9) and outputRange (8) must have the same length
+    at invariant (D:\BB_Project\bbplay\node_modules\fbjs\lib\invariant.js:40:15)
+    at createInterpolation (D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedInterpolation.js:37:14)
+    at new AnimatedInterpolation (D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedInterpolation.js:227:27)
+    at AnimatedValue.interpolate (D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\nodes\AnimatedValue.js:203:12)
+    at D:\BB_Project\bbplay\src\features\promos\DiceMinigameModal.tsx:706:20
+    at mountMemo (D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17225:19)
+    at Object.useMemo (D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17670:16)
+    at useMemo (D:\BB_Project\bbplay\node_modules\react\cjs\react.development.js:1650:21)
+    at DiceMinigameModal (D:\BB_Project\bbplay\src\features\promos\DiceMinigameModal.tsx:704:25)
+    at renderWithHooks (D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:16305:18) 
+    at DiceMinigameModal (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:135354:7)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:74593:7
+    at ProfileScreen (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:121031:50)
+    at StaticContainer (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88289:18)
+    at EnsureSingleNavigator (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:85301:7)
+    at SceneView (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88205:7)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at Background (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:90669:7)
+    at Screen (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:91748:73)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at SafeAreaProviderCompat (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:91641:7)
+    at NativeStackView (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:117600:7)
+    at PreventRemoveProvider (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:87264:7)
+    at NavigationContent (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88001:7)
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88018:9
+    at NativeStackNavigator (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:117536:7)
+    at ProfileStack (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:120796:38)
+    at StaticContainer (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88289:18)
+    at EnsureSingleNavigator (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:85301:7)
+    at SceneView (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88205:7)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at Background (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:90669:7)
+    at Screen (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&
+```
+
+## 900. session `27ff5731-f5d1-4284-bb88-0549adb6bb2f` — 27ff5731-f5d1-4284-bb88-0549adb6bb2f.jsonl:1
+
+```
+у меня обрезается игра(кнопка бросить кубик) подними саму игру повыше чтобы не реазлось.
+
+И лента акций должна и в обратную сторону крутиться
+```
+
+## 901. session `27ff5731-f5d1-4284-bb88-0549adb6bb2f` — 27ff5731-f5d1-4284-bb88-0549adb6bb2f.jsonl:11
+
+```
+в обратную сторону когда я кручу ленту то у меня оно не переключается на последний эелемнт, я хочу чтобы она была зацикленно и я мог во все стороны крутить
+```
+
+## 902. session `291cc607-ced4-422a-9af0-4c9194023d5c` — 291cc607-ced4-422a-9af0-4c9194023d5c.jsonl:1
+
+```
+смотри, у меня кубик должен останавливаться всегда ровно на числе. сейчас он может учтуь чуть не докрутить до 2 и резко перескачить на другое число. Не реалистично очень.
+Еще поработай, мне это нужно будет сегодня показывать начальнику. сделай красивую рабочую и понятную анимацию, качествено.
+```
+
+## 903. session `291cc607-ced4-422a-9af0-4c9194023d5c` — 291cc607-ced4-422a-9af0-4c9194023d5c.jsonl:37
+
+```
+сейчас выпало на 3 но давелось на 1. То есть не совпадает то что должно выпасть и что выпало(анимация отличается)
+```
+
+## 904. session `298f557c-5445-4bc0-a8b2-5cf9ca841f86` — 298f557c-5445-4bc0-a8b2-5cf9ca841f86.jsonl:1
+
+```
+сделай мне в приложении такие же цвета
+```
+
+## 905. session `29e2728f-dd6d-4eb5-af05-1024c03e9d7a` — 29e2728f-dd6d-4eb5-af05-1024c03e9d7a.jsonl:1
+
+```
+убирай
+```
+
+## 906. session `2aed8730-4fdf-4cc2-9b2d-2c18de2004ea` — 2aed8730-4fdf-4cc2-9b2d-2c18de2004ea.jsonl:1
+
+```
+так, давай сделаем бронь через чат. То есть человек пишет забронь как обычно
+
+Мы анализируем его прошлые брони и человеку остается выбрать только дату и время в чате(и поменять пк, на выбор) и все, у него бронируется.
+
+так же нужно сделать отмену брони через чат.
+```
+
+## 907. session `2aed8730-4fdf-4cc2-9b2d-2c18de2004ea` — 2aed8730-4fdf-4cc2-9b2d-2c18de2004ea.jsonl:18
+
+```
+если нет данных, и нету выбраного клуба то мы спрашиваем у человека просто куда он хочет забронить когда длительность какой пк.
+
+Если есть выбраный клуб то сразу его подставляем. И нужно кнопку прикреплять, чтобы человек мог продолжить бронирование или в чате или по кнопке перейдет во вкладку брони и там сразу подставятся нужные параметры.
+
+так же нужно над строкой ввода показывать несколько самых популярных сообщений(Бронирование, График работы, Стоимость)
+и поиск ближ. брони тоже нужно сделать чтобы через чат работало.
+```
+
+## 908. session `2aed8730-4fdf-4cc2-9b2d-2c18de2004ea` — 2aed8730-4fdf-4cc2-9b2d-2c18de2004ea.jsonl:45
+
+```
+быстрые 3 подсказки нужно расположить прямо над стройкой ввода. а показать больше подскзок выше. И убери быструю подсказку Ближаешая бронь
+```
+
+## 909. session `2aed8730-4fdf-4cc2-9b2d-2c18de2004ea` — 2aed8730-4fdf-4cc2-9b2d-2c18de2004ea.jsonl:49
+
+```
+и не работает бронирование через чат, мне просто пишет заготовку но не как не бранирует(не предлагает выбрать что-то и тд)
+```
+
+## 910. session `2aed8730-4fdf-4cc2-9b2d-2c18de2004ea` — 2aed8730-4fdf-4cc2-9b2d-2c18de2004ea.jsonl:55
+
+```
+смотри нужно под сообщением какие то кнопки или список открывать когда пытаюсь забронить.
+
+Так же нужно добавить кнопку Перейти в бронирование, чтобы можно было или в чате или в бронировании.
+```
+
+## 911. session `2aed8730-4fdf-4cc2-9b2d-2c18de2004ea` — 2aed8730-4fdf-4cc2-9b2d-2c18de2004ea.jsonl:61
+
+```
+нам нужно кнопки соответствующие ставить а не просто случайные. и их нужно под сообщением писать в не в нем.
+```
+
+## 912. session `2aed8730-4fdf-4cc2-9b2d-2c18de2004ea` — 2aed8730-4fdf-4cc2-9b2d-2c18de2004ea.jsonl:70
+
+```
+чат сбрасывается когда я перехожу в другой раздел. Чат нужно сбрасывать только когда закрываем приложение
+```
+
+## 913. session `2aed8730-4fdf-4cc2-9b2d-2c18de2004ea` — 2aed8730-4fdf-4cc2-9b2d-2c18de2004ea.jsonl:74
+
+```
+во втором случае мне больше нравиться кнопка открыть во вкладке бронь. и не работает выбор даты, потом еще должен быть выбор времени и выбор длитлельности.
+
+Если есть данные то мы сами все выставляем и просто спрашиваем хочет ли человек что-то поменять. если да, то он меняет и там дальше уже бронирует.
+```
+
+## 914. session `2aed8730-4fdf-4cc2-9b2d-2c18de2004ea` — 2aed8730-4fdf-4cc2-9b2d-2c18de2004ea.jsonl:84
+
+```
+нужно под сообщением убрать кнопку открыть во вкладке бронь и везде писать зеленой в сообщенияих(как на 3 сообщение).
+
+И нужно делать список под сообщениями для выбора параметров.
+```
+
+## 915. session `2aed8730-4fdf-4cc2-9b2d-2c18de2004ea` — 2aed8730-4fdf-4cc2-9b2d-2c18de2004ea.jsonl:89
+
+```
+должен быть закрытый список и кнопка его открытия, для соответствующего фильтра.
+И там уже и происходит выбор
+```
+
+## 916. session `2aed8730-4fdf-4cc2-9b2d-2c18de2004ea` — 2aed8730-4fdf-4cc2-9b2d-2c18de2004ea.jsonl:104
+
+```
+смотри, давай сделаем так, у нас будет под сообщениями кнопки, выбрать клуб, выбрать время, дату, длительность и тд.
+
+И вот это будет открывать те же самые менюшки выбора как и в разделе брони при выборе фильтров. То есть нажали один раз открыли нажали еще раз на кнопку закрыли или просто потянули вниз закрыли или на крестик нажали - закрыли. Клаву заменяем вот этой менюшкой выбора соот. фильтра, потом когда закрывается то клаву возвращаем(закрывается так же после выбора) и выбор нужно как то давать менять
+```
+
+## 917. session `2aed8730-4fdf-4cc2-9b2d-2c18de2004ea` — 2aed8730-4fdf-4cc2-9b2d-2c18de2004ea.jsonl:117
+
+```
+открывается меню как на первом скрине, а должна как на втором.
+```
+
+## 918. session `2aed8730-4fdf-4cc2-9b2d-2c18de2004ea` — 2aed8730-4fdf-4cc2-9b2d-2c18de2004ea.jsonl:124
+
+```
+у меня пропал выбор города
+```
+
+## 919. session `2aed8730-4fdf-4cc2-9b2d-2c18de2004ea` — 2aed8730-4fdf-4cc2-9b2d-2c18de2004ea.jsonl:133
+
+```
+я нажимаю готово и у меня не выбирается.
+```
+
+## 920. session `2aed8730-4fdf-4cc2-9b2d-2c18de2004ea` — 2aed8730-4fdf-4cc2-9b2d-2c18de2004ea.jsonl:137
+
+```
+так, мы делаем следующее, когда человек выбрал, то мы пишем в чат, то что выбрано.
+
+И так же в след. сообщение мы пишем что например Клуб: 
+Выбирете дату:
+
+И тд.
+
+И так же когда открываем меню выбора фильтра, нужно затемнять экран а не поднимать полупрозрачный черный прямоугольник(выглядет плохо)
+```
+
+## 921. session `2aed8730-4fdf-4cc2-9b2d-2c18de2004ea` — 2aed8730-4fdf-4cc2-9b2d-2c18de2004ea.jsonl:141
+
+```
+смотри когда я тяну выбор фильтра вниз(закрываю) нужно постепенно вессь остальной экран делать более светлым до нормального состояния(сейчас дергано)
+```
+
+## 922. session `2aed8730-4fdf-4cc2-9b2d-2c18de2004ea` — 2aed8730-4fdf-4cc2-9b2d-2c18de2004ea.jsonl:149
+
+```
+сильнее затемнять надо и выбор клуба не умещяется в табличку(расширь ее)
+```
+
+## 923. session `2aed8730-4fdf-4cc2-9b2d-2c18de2004ea` — 2aed8730-4fdf-4cc2-9b2d-2c18de2004ea.jsonl:161
+
+```
+еще сильнее надо затемнять.
+
+нужно прямоугольник выбора города расширить по ширине.
+
+И кнопку готово нужно сделать по всю ширину меню
+```
+
+## 924. session `2b57c783-8940-4f29-9c48-ef167941e252` — 2b57c783-8940-4f29-9c48-ef167941e252.jsonl:1
+
+```
+я нажимаю на элемент(должно делать тоже самое что кнопка готово) а оно не выбирается.
+```
+
+## 925. session `2b57c783-8940-4f29-9c48-ef167941e252` — 2b57c783-8940-4f29-9c48-ef167941e252.jsonl:9
+
+```
+я нажимаю на элемент, то не приминяется ничего, исправь
+```
+
+## 926. session `2c08debd-82fe-49f4-8cf1-71e76f9343c9` — 2c08debd-82fe-49f4-8cf1-71e76f9343c9.jsonl:1
+
+```
+В чате я начал бронить, потом спросил цену, бот ничего не принимает, кроме брони
+Исправь
+```
+
+## 927. session `2d69cbcf-448e-4c21-8dbe-35ef3769be9d` — 2d69cbcf-448e-4c21-8dbe-35ef3769be9d.jsonl:1
+
+```
+Прямоугольник проигрыша и победы должны быть одинаковые по размеру.
+И пока не бросили кубик, мы там пишем в прямоугольнкии состояния бросьте кубик или что-то такое.
+
+Кубик должен бытть белый и постепенно замедляться к выпадению.
+
+И название - Мини игра Кубик!
+```
+
+## 928. session `2f31da80-d5da-4590-97cd-bea18465cfde` — 2f31da80-d5da-4590-97cd-bea18465cfde.jsonl:1
+
+```
+с чате при новос сообщении не докручивается вниз
+```
+
+## 929. session `2ff4a37d-3c7e-4f18-a4af-b87b5b25e85c` — 2ff4a37d-3c7e-4f18-a4af-b87b5b25e85c.jsonl:1
+
+```
+после того как поставили лайк или дизлайк то спасибо за оценку нужно сделать вровень с левой гранью сообщений и удалять через 5 сек.
+```
+
+## 930. session `30f8d62b-e659-4bc1-af8d-6b829298c55c` — 30f8d62b-e659-4bc1-af8d-6b829298c55c.jsonl:1
+
+```
+нужно убрать гоогл яндекс и оставить карты - открывает карту на телефоне(телефон по сути будет сам предлагать выбрать через какое приложение открывать если не выбрано у человека)
+```
+
+## 931. session `336fee2b-0c71-4758-b4a3-9adb8e2c11d9` — 336fee2b-0c71-4758-b4a3-9adb8e2c11d9.jsonl:1
+
+```
+как у меня нашлось окно в 00 00 если уже 14 37??? ТЫ НЕ ПРАВИЛЬНО ИЩЕШЬ. Сдела йнормальный поиск ближ. брони.
+```
+
+## 932. session `336fee2b-0c71-4758-b4a3-9adb8e2c11d9` — 336fee2b-0c71-4758-b4a3-9adb8e2c11d9.jsonl:10
+
+```
+дату нужно писать не в таком виде, а 25 апреля например
+```
+
+## 933. session `35037a4e-5db0-4779-a4c0-b41c656383ee` — 35037a4e-5db0-4779-a4c0-b41c656383ee.jsonl:1
+
+```
+Мы должны по api смотреть и отвечать. И в нейронку тоже посылать сразу с данными есть места или нет.
+```
+
+## 934. session `38eeaca1-90db-491c-8a6a-a27c9a06edc2` — 38eeaca1-90db-491c-8a6a-a27c9a06edc2.jsonl:1
+
+```
+расширь чуть чуть по высоте меню акций, чтобы влезло правила игры.
+
+И отступ сверху и снизу(от грани меню акции до первого элемента) должен быть равный
+```
+
+## 935. session `3af6e967-bec9-4fa0-b939-f452fe1a5e05` — 3af6e967-bec9-4fa0-b939-f452fe1a5e05.jsonl:1
+
+```
+надо переименовать в искать ближайшие окна
+```
+
+## 936. session `3b13014a-6bb9-4249-aa2e-6c567730d775` — 3b13014a-6bb9-4249-aa2e-6c567730d775.jsonl:1
+
+```
+смотри, мы какие то не те данные заливаем, поскольку я как ожидаю должно ответь мне, что типо привет, я чат-бот клубов BlackBears Play
+
+И там уже чем он полезен, что он может подсказать или еще что-то. и так же вопросик короткий
+```
+
+## 937. session `3b93b223-eb55-4172-b017-9e8723fd98a5` — 3b93b223-eb55-4172-b017-9e8723fd98a5.jsonl:1
+
+```
+поработай над описанием пакетов. Нужно убрать тех инфу и писать толькоо понятную дял пользователей.
+```
+
+## 938. session `3d46c8f3-7415-47d0-9b96-25f7e16ba837` — 3d46c8f3-7415-47d0-9b96-25f7e16ba837.jsonl:1
+
+```
+@c:\Users\pc\Videos\Captures\Клубы - Google Chrome 2026-04-26 17-07-23.mp4 так во первых везде где меню так открывается как на видео, нужно не поднимать черный прямоугольник вместе с меню(плохо выглядет) а имено затемнять экран.
+
+И просто чтобы везде работало закрытия потянув вниз за полосочку и затемнение должно постепенно уходить в таком случае закрытия. И закрытие так же по кнопки крестика
+```
+
+## 939. session `3edfd668-5cbe-493c-a872-1bb60587c2f5` — 3edfd668-5cbe-493c-a872-1bb60587c2f5.jsonl:1
+
+```
+убери это
+```
+
+## 940. session `3efaa82c-7a66-44c5-ae11-12a34e99e245` — 3efaa82c-7a66-44c5-ae11-12a34e99e245.jsonl:1
+
+```
+нужно чтобы кнопка доставить до пк была при покупке в корзине и при покупке в один клик.
+
+ТАк же мы должны уведомлять об успешной покупке, когда в корзине мы нажимаем оплатить, после успеха или неуспеха выскивает окно на весь экран с сообщением что успешно или нет. 
+
+так же нужно убрать миллиард полосок в корзине бесполезных, оставить крестик и выбор кол-во товаров(крестик, - кол-во +) количество можно менять минусом или плюсом но так же и ввести нажав на цифру.
+
+При покупке в один клик, нажали купить, снизу поднялась менюшка где тоже самое что и в корзине, потом человек нажимает оплатить и тоже сообщяем об успехе или не успехе на весь экран как при брони
+```
+
+## 941. session `43138c1f-bbb6-4339-a35b-cd0a3b33bc59` — 43138c1f-bbb6-4339-a35b-cd0a3b33bc59.jsonl:1
+
+```
+смотри, описание делаем под миниигрой.
+
+Мини игру располагаем по середине, и нужна на результат сразу место оставить(сейчас экран увеличивается когда результат выводим. это плохо)
+
+И так же нужно более хорошую анимацию проска кубика сделать
+```
+
+## 942. session `43138c1f-bbb6-4339-a35b-cd0a3b33bc59` — 43138c1f-bbb6-4339-a35b-cd0a3b33bc59.jsonl:20
+
+```
+все нужно поднять на вверх(кроме надписи кубик - миниигра.)
+
+И кубик - миниигра заменяем на Миниигра кубик.
+
+И еще поработай над анимацией кубика. И он сначало белый и потом зеленый становиться
+```
+
+## 943. session `4536d19b-759f-4881-a123-6dd9200a87ad` — 4536d19b-759f-4881-a123-6dd9200a87ad.jsonl:1
+
+```
+правила игры в миниигре кубик надо поднять, а то он не умещается и обиразется.
+```
+
+## 944. session `461cfb93-6647-4e56-8575-82421dd7092d` — 461cfb93-6647-4e56-8575-82421dd7092d.jsonl:1
+
+```
+можно ли списывать баланс в icafe api
+```
+
+## 945. session `462aa8cd-5344-47b3-91c7-8985843c34e9` — 462aa8cd-5344-47b3-91c7-8985843c34e9.jsonl:1
+
+```
+фото обрезаются в новостях.
+
+Так же нужно сохранять в кеш. новости и обновлять только если есть что-то новое.
+
+И еще проблема очень долго грузиться, нужно сделать, чтобы у нас загружались данные с сервера(как сейчас) и потом во время пользования приложения дозагружались нвоости(даже если вкладка новости закрыта)(это при первом запуске).
+
+А потом уже кешируем данные, чтобы было меньше загрузок
+```
+
+## 946. session `4740734e-be80-4450-a333-7f4be6fea240` — 4740734e-be80-4450-a333-7f4be6fea240.jsonl:1
+
+```
+Logs for your project will appear below. Press Ctrl+C to exit.
+Web Bundling failed 10607ms D:\BB_Project\bbplay\node_modules\expo\AppEntry.js (1087 modules)
+Unable to resolve "../promos/DiceMinigameModal" from "src\features\profile\ProfileScreen.tsx"
+Web Bundling failed 346ms D:\BB_Project\bbplay\node_modules\expo\AppEntry.js (898 modules)
+Unable to resolve "../promos/DiceMinigameModal" from "src\features\profile\ProfileScreen.tsx"
+```
+
+## 947. session `49be6865-10af-42df-abf5-a609be00c029` — 49be6865-10af-42df-abf5-a609be00c029.jsonl:1
+
+```
+◇ injected env (0) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+Web Bundling failed 924ms D:\BB_Project\bbplay\node_modules\expo\AppEntry.js (1 module)
+Unable to resolve "expo-file-system" from "src\features\profile\faceEnrollmentStorage.ts"
+◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+```
+
+## 948. session `49be6865-10af-42df-abf5-a609be00c029` — 49be6865-10af-42df-abf5-a609be00c029.jsonl:17
+
+```
+Briefly inform the user about the task result and perform any follow-up actions (if needed).
+```
+
+## 949. session `4a3252f7-42d3-4fd2-a462-6239399bf100` — 4a3252f7-42d3-4fd2-a462-6239399bf100.jsonl:1
+
+```
+Нужно писать дату не в виде 2026-04-27 а в виде - 27 апреля
+```
+
+## 950. session `4dd84119-2e0c-4445-b03e-3b95071475c1` — 4dd84119-2e0c-4445-b03e-3b95071475c1.jsonl:1
+
+```
+СТОП. У МЕНЯ АНИМАЦИЯ ЗАКАНЧИВАЕТСЯ НА 4 точках и потом после остановки они в 6 превращаются!
+```
+
+## 951. session `4e9a0ba5-f80d-42a9-aa56-d6e17d1b13da` — 4e9a0ba5-f80d-42a9-aa56-d6e17d1b13da.jsonl:1
+
+```
+изучи в моем проекте мини игру про кубик через субагенты.
+
+сделай мне красивую анимацию и реалистичную бросания кубика.
+
+И сделай чтобы у меня число которое выпадало такое и использовалось, сейчас у меня моежт выпасть 4 а потом резко на 6 перескакивает
+```
+
+## 952. session `4e9a0ba5-f80d-42a9-aa56-d6e17d1b13da` — 4e9a0ba5-f80d-42a9-aa56-d6e17d1b13da.jsonl:23
+
+```
+Смотри, мы должны кубик раскручивать в случайную сторону, постепенно замедлять и потом на ближаешую сторону ставить( то есть он должен останавливаться ровно на стороне какой либо). И сейчас он может остановиться между 1 и 2 и потом резко заного крутануться на 5.
+
+Крутим мы его не очень быстро и постепенно замедляем пока он не остановиться на опр грани. Время прокрутки 3 сек.
+```
+
+## 953. session `4e9a0ba5-f80d-42a9-aa56-d6e17d1b13da` — 4e9a0ba5-f80d-42a9-aa56-d6e17d1b13da.jsonl:25
+
+```
+Смотри, мы должны кубик раскручивать в случайную сторону, постепенно замедлять и потом на ближаешую сторону ставить( то есть он должен останавливаться ровно на стороне какой либо). И сейчас он может остановиться между 1 и 2 и потом резко заного крутануться на 5.
+
+Крутим мы его не очень быстро и постепенно замедляем пока он не остановиться на опр грани. Время прокрутки 3 сек.
+
+И так же кубик при прокрутки выскакивает за свою зону где может крутиться
+```
+
+## 954. session `4e9a0ba5-f80d-42a9-aa56-d6e17d1b13da` — 4e9a0ba5-f80d-42a9-aa56-d6e17d1b13da.jsonl:39
+
+```
+надо его чуть чуть медленее в начале крутить.
+И стараться крутить его в разные стороны а не ровно в право влево вверх или вниз.
+```
+
+## 955. session `subagents` — c677b61f-e331-4fe4-81ba-ebd2f2549500.jsonl:1
+
+```
+In workspace D:/BB_Project/bbplay, find and document the dice minigame implementation: all files (DiceMinigameModal, promo catalog, types), how roll result is computed vs displayed, any animation (react-native reanimated, etc.), and why UI might show one number then jump to another. Return file paths, key function names, and a short flow diagram.
+```
+
+## 956. session `4f89c85a-6a6b-40e6-bf46-f52947974e31` — 4f89c85a-6a6b-40e6-bf46-f52947974e31.jsonl:1
+
+```
+У меня по ширине обризаются значики клуба, даты и других филтров. исправь
+```
+
+## 957. session `5182338f-b749-452d-9cc0-1ba8fa638c23` — 5182338f-b749-452d-9cc0-1ba8fa638c23.jsonl:1
+
+```
+точки под акциями слишком поздно обновляются.
+
+так же автопрокрутка работает только в право, но человек может сам в лево матать например.
+```
+
+## 958. session `525fd8ef-4658-4b7a-9db5-b4c29e2d2988` — 525fd8ef-4658-4b7a-9db5-b4c29e2d2988.jsonl:1
+
+```
+смотри, когда кубик крутиться у него грани становятся не сглажиными и острыми а когда остановился уже то они становятся гладкими
+```
+
+## 959. session `54413445-353b-4913-b392-0dbd7da12f73` — 54413445-353b-4913-b392-0dbd7da12f73.jsonl:1
+
+```
+МНЕ НУЖНО ПО ВЫСОТЕ ЧТЛОБЫ ЭКРАН БЫЛ ТАКОЕ, ЧТОБЫ ТУДА ВСЕ УМЕСТИЛОСЬ БЕЗ ОБРЕЗАНИЙ И ОН БЫЛ СТАТИЧНЫЙ(НЕ УВЕЛИЧИВАЛСЯ) СРАЗУ СДЕЛАЙ БОЛЬШОЙ ПО ВЫСОТЕ ЭКРНА. И ВСЕ ЭКРАНЫ АКЦИЙ ДЕЛАЙ ОДИНАКОВЫЕ ПО РАЗМЕРУ!!
+
+И СДЕЛАЙ КАКУЮ НИБУДЬ КРАСИВУЮ АНИМАЦИБ КУБИКА В МИНИИГРЕ
+```
+
+## 960. session `544b1873-59ef-49aa-b665-6165603174c1` — 544b1873-59ef-49aa-b665-6165603174c1.jsonl:1
+
+```
+Искать надо написать с большой буквы. И сделать это не как поднимающееся меню, а как отдельный экран полноценный.
+
+И снизу надо под фильтрами схему или список показывать, где можно выбрать пк и найти свободные места чисто для него
+```
+
+## 961. session `55d7a5c2-7bdc-44b5-9314-4e312a5b5fe0` — 55d7a5c2-7bdc-44b5-9314-4e312a5b5fe0.jsonl:1
+
+```
+правила игры надо поднять. Кубик стал ужасный, не белый и крутиться ужастно. Сделай мне хорошую красивую анимацию!
+```
+
+## 962. session `57bb17a2-ace5-40f3-913b-7342bfe6e195` — 57bb17a2-ace5-40f3-913b-7342bfe6e195.jsonl:1
+
+```
+нужно сообщения перенести вниз(сделать как в тг чтобы сообщения шли)
+```
+
+## 963. session `57f8e050-3b0f-43d6-b986-c91e5ad47d7c` — 57f8e050-3b0f-43d6-b986-c91e5ad47d7c.jsonl:1
+
+```
+В новостях не отображается аватарка сообщества и фото кривые(фото нужно расширять по высоте и ширине чтобы они занимали все место для фото(сейчас по бокам фото серые полосы(слишком высокое и узкое)
+```
+
+## 964. session `58f0d915-7428-4685-82d1-eed01766f69a` — 58f0d915-7428-4685-82d1-eed01766f69a.jsonl:1
+
+```
+Смотри, у меня модель очень часто не ставит пробелы там где надо, найди способ как ей сказать чтобы ставила, или чтобы мы сами как-то расставляли.
+```
+
+## 965. session `5a2021c7-e0e1-4648-a38c-8a1bb5792601` — 5a2021c7-e0e1-4648-a38c-8a1bb5792601.jsonl:1
+
+```
+Опустить кнопку занятости ПК под обозначения схемы
+```
+
+## 966. session `5a3ecb53-475c-4732-8380-6851e9752cf3` — 5a3ecb53-475c-4732-8380-6851e9752cf3.jsonl:1
+
+```
+так, мы в чат интегрируем нейросеть по api через ollama.
+
+Вот токен аунтефикации - fc1390b163b64e9ebf4dfb2c76936a5a.bL_w4JT-SJRIRHxMQdtwCZeg
+Используй его.
+
+Вот модель - gpt-oss:120b
+
+https://docs.ollama.com/  - документация.
+
+Наша цель сделать следующее, во первых в чате дается выбор использовать Базу знаний или Нейросеть.
+
+когда оффлайн автоматом ставиться база знаний, когда онлайн то выбор.
+
+задают вопрос, мы в базе знаний ищем ближ. подходящие, сообщяем это нейросети, она строит ответ и мы в чат возвращаем.
+
+Сделай это
+```
+
+## 967. session `5a3ecb53-475c-4732-8380-6851e9752cf3` — 5a3ecb53-475c-4732-8380-6851e9752cf3.jsonl:32
+
+```
+мы точно нейронку используем?
+```
+
+## 968. session `5a3ecb53-475c-4732-8380-6851e9752cf3` — 5a3ecb53-475c-4732-8380-6851e9752cf3.jsonl:41
+
+```
+НЕйросеть на то и нейросеть, что она сможет ответь сама как надо.
+
+И она не должна постоянно одинакого отвечать, как вышло со словом привет.
+```
+
+## 969. session `5a3ecb53-475c-4732-8380-6851e9752cf3` — 5a3ecb53-475c-4732-8380-6851e9752cf3.jsonl:49
+
+```
+Синтаксис надо проверь, чтобы правильно было.
+
+Для нейросети и базы знаний разные чаты надо делать.
+
+2) Почему у меня бронирование происходит без участия нейронки когда включен ее режим. И так же я пишу 9 пк а мне говорит что на 11 пк.
+
+Нам нужно в нейронку послать данные, написать чтобы она нам разложила как понятно для восприятия(данные для брони) чтобы у меня база знаний не путалась и уже на основе этого строить бронь.
+```
+
+## 970. session `5b19dcc7-bd38-4ea0-bc97-b85e1ecf7004` — 5b19dcc7-bd38-4ea0-bc97-b85e1ecf7004.jsonl:1
+
+```
+Убери вот это на всех экранах загрузки
+```
+
+## 971. session `5b19dcc7-bd38-4ea0-bc97-b85e1ecf7004` — 5b19dcc7-bd38-4ea0-bc97-b85e1ecf7004.jsonl:17
+
+```
+Лого анимирование расширь сильнее
+```
+
+## 972. session `5ba7af24-0ca0-4db8-b382-74661d8d2f82` — 5ba7af24-0ca0-4db8-b382-74661d8d2f82.jsonl:1
+
+```
+Так почему у меня технически пишется?
+
+Нужно просто VIP-зона в клубе Тамбов, Медвежья, д.1 стоит 200 рублей за час.
+
+Пакет на 3 и 5 часов тоже нужно писать сколько стоит, если пользователь не указал что имено он хочет услышать.
+
+Исправь и проверь чтобы везде правильно писало.
+
+И нужно писать так Подробнее условия ночных пакетов можно узнать...
+
+А не подробные условия узнать.
+Исправь проверь все и исправь
+```
+
+## 973. session `5bb259f2-2396-4c82-bd95-bb443d144c98` — 5bb259f2-2396-4c82-bd95-bb443d144c98.jsonl:1
+
+```
+схема зала убери обводки белые, по высоте сделай по меньше.
+Убери текст над схемой.
+вобщем сделай схему такую же как и в брони.
+
+И когда я смотрю схему клуба в клубах, там должна быть кнопка забронировать
+```
+
+## 974. session `5cff82ec-e067-4b1e-a327-a0e340f01275` — 5cff82ec-e067-4b1e-a327-a0e340f01275.jsonl:1
+
+```
+так, нам нужно добавить выбор города в настройках и выбор города в брони(когда выбериют клуб в одной колонке выбор города, во второй выбор улицы)
+
+Изначально пытаемся установить позицию по геопозиции(город определить) ну и в настройках ставим город, который указали при первой брони или если в настройках поставят
+
+И новости нужно будет показывать для разных городов разные.
+
+Вот новости для г. Тамбов - https://vk.com/bbplay__tmb 
+
+Вот для г. Липецк - https://vk.com/blackbearsplaylipetsk 
+
+(клубы пока что в 2х городах, но потом их может быть хоть 100)
+```
+
+## 975. session `5d8693f6-d29c-4141-b7c0-bf056c372cb3` — 5d8693f6-d29c-4141-b7c0-bf056c372cb3.jsonl:1
+
+```
+GET http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app net::ERR_ABORTED 500 (Internal Server Error)
+profile:1 Refused to execute script from 'http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app' because its MIME type ('application/json') is not executable, and strict MIME type checking is enabled.
+
+Web Bundling failed 422ms D:\BB_Project\bbplay\node_modules\expo\AppEntry.js (1 module)
+Unable to resolve "@react-native-community/netinfo" from "src\features\chat\KnowledgeChatScreen.tsx"
+◇ injected env (0) from .env // tip: ⌘ enable debugging { debug: true }
+```
+
+## 976. session `61cc673a-8055-495f-a74f-1fb842d6c29b` — 61cc673a-8055-495f-a74f-1fb842d6c29b.jsonl:1
+
+```
+в кубике точки нужно сделать будто они вдавленны(более реалистичными)
+```
+
+## 977. session `61cc673a-8055-495f-a74f-1fb842d6c29b` — 61cc673a-8055-495f-a74f-1fb842d6c29b.jsonl:14
+
+```
+как то не очень красиво вышло. Еще поработай
+```
+
+## 978. session `61d6fe28-0a0b-4816-9218-6c0ca98b008d` — 61d6fe28-0a0b-4816-9218-6c0ca98b008d.jsonl:1
+
+```
+так, кнопку настроек оставляем только на главном экране (профиль)
+
+И на каждом экрае какой это экрань(подпись сверху) теперь пишем сверху по центру
+```
+
+## 979. session `61d6fe28-0a0b-4816-9218-6c0ca98b008d` — 61d6fe28-0a0b-4816-9218-6c0ca98b008d.jsonl:35
+
+```
+давай по меньше сделаем места сверху(Слишком много пустого занимает )
+```
+
+## 980. session `61d6fe28-0a0b-4816-9218-6c0ca98b008d` — 61d6fe28-0a0b-4816-9218-6c0ca98b008d.jsonl:42
+
+```
+нужно просто писать, выберите время и длительность
+```
+
+## 981. session `63575f82-8a4d-44a4-80ab-48b2b4793301` — 63575f82-8a4d-44a4-80ab-48b2b4793301.jsonl:1
+
+```
+Исправить уведомление об уже существующей брони и заменять кнопку бронирования когда забронирован уже пк на это время.
+
+Получается, когда мы не можем забронить мы кнопку Забронировать заменяем на сообщение с причиной, почему нельзя.
+
+И нужно уведомления почему нельзя забронить сделать более простыми.
+
+НАпример:
+У вас уже есть бронь на это время.
+```
+
+## 982. session `636ce73c-a605-4efb-b08b-ede1d99d09ce` — 636ce73c-a605-4efb-b08b-ede1d99d09ce.jsonl:1
+
+```
+10минут написано слитно а должно раздельно.
+
+И схема кривая цен.
+Проверь все сообщения и исправь все
+```
+
+## 983. session `63ea3c40-d112-41c4-b5b5-f0bed6069888` — 63ea3c40-d112-41c4-b5b5-f0bed6069888.jsonl:1
+
+```
+в чате нужно сделать, чтобы были сообщен ия с кнопкой перехода.
+
+То есть если человек спрашивает, как пополнить баланс, мы ему рассказываем и даем кнопку на пополнение и так делаем со всеми ответами и функциями, где нужна кнопка(где мы говорим что можно перейти и сразу это сделать)
+```
+
+## 984. session `65a25df7-871c-4259-b550-d11c444d1dce` — 65a25df7-871c-4259-b550-d11c444d1dce.jsonl:1
+
+```
+надо лого еще больше сделать и поднять повыше, а надпись чуть чуть по ниже и чуть чуть по больше размера
+```
+
+## 985. session `664828be-0aac-49be-b6ca-b4299d0e2f47` — 664828be-0aac-49be-b6ca-b4299d0e2f47.jsonl:1
+
+```
+Правила игры и настройки игры надо перенести под КНОПКУ БРОСКА(ПОД САМУ ИГРУ!)
+```
+
+## 986. session `664828be-0aac-49be-b6ca-b4299d0e2f47` — 664828be-0aac-49be-b6ca-b4299d0e2f47.jsonl:10
+
+```
+отступ снизу сделай побольше, такой же как и сверху
+```
+
+## 987. session `675d019e-4ccb-4123-8386-40249f786fdb` — 675d019e-4ccb-4123-8386-40249f786fdb.jsonl:1
+
+```
+расположи разделы в таком порядке.
+
+Профиль Клубы Бронь Еда Помощь
+```
+
+## 988. session `67fb6304-9114-4fd3-81ae-13c64c3748ba` — 67fb6304-9114-4fd3-81ae-13c64c3748ba.jsonl:1
+
+```
+Мне нужно, чтобы у меня убрались все тех фразы. И весь проект проверь на наличие тех фраз и убери их или замени если они нужны.
+```
+
+## 989. session `68fc879f-94f1-48a4-842a-24860aa6f02a` — 68fc879f-94f1-48a4-842a-24860aa6f02a.jsonl:1
+
+```
+чуть чуть вправо подвинь надпись
+```
+
+## 990. session `6926ecd2-d647-4a29-bc66-09f43a68da46` — 6926ecd2-d647-4a29-bc66-09f43a68da46.jsonl:1
+
+```
+давай выбор списка или схемы перенесем под схему
+```
+
+## 991. session `6926ecd2-d647-4a29-bc66-09f43a68da46` — 6926ecd2-d647-4a29-bc66-09f43a68da46.jsonl:12
+
+```
+у меня схема режиться
+```
+
+## 992. session `6926ecd2-d647-4a29-bc66-09f43a68da46` — 6926ecd2-d647-4a29-bc66-09f43a68da46.jsonl:20
+
+```
+слишком слиплось, сделай расстояние как от схемы до обозначений
+```
+
+## 993. session `6926ecd2-d647-4a29-bc66-09f43a68da46` — 6926ecd2-d647-4a29-bc66-09f43a68da46.jsonl:27
+
+```
+давай еще чуть чуть вниз, чтобы ее видно не было(расстояниче между обозначениями и кнопкой должно быть одинаковое)
+```
+
+## 994. session `6926ecd2-d647-4a29-bc66-09f43a68da46` — 6926ecd2-d647-4a29-bc66-09f43a68da46.jsonl:37
+
+```
+чуть чуть по меньше
+```
+
+## 995. session `6926ecd2-d647-4a29-bc66-09f43a68da46` — 6926ecd2-d647-4a29-bc66-09f43a68da46.jsonl:43
+
+```
+смотри сделай одинаковое расстояние между схемой и обозначениями и между обозначениями и выбором сземы или списка
+```
+
+## 996. session `6926ecd2-d647-4a29-bc66-09f43a68da46` — 6926ecd2-d647-4a29-bc66-09f43a68da46.jsonl:48
+
+```
+мне нужно чтобы у меня список был такого же размера как и схема по высоте(то есть располагай по 2 на одной строчке или как то еще)
+```
+
+## 997. session `6926ecd2-d647-4a29-bc66-09f43a68da46` — 6926ecd2-d647-4a29-bc66-09f43a68da46.jsonl:50
+
+```
+мне нужно чтобы у меня список был такого же размера как и схема по высоте(то есть располагай по 2 на одной строчке или как то еще) самое главное чтобы кнопка выбора схема или список не двигалась из за высоты списка
+```
+
+## 998. session `6926ecd2-d647-4a29-bc66-09f43a68da46` — 6926ecd2-d647-4a29-bc66-09f43a68da46.jsonl:64
+
+```
+мне нужно чтобы у меня список был такого же размера как и схема + обозначения по высоте(то есть располагай по 2 на одной строчке или как то еще) самое главное чтобы кнопка выбора схема или список не двигалась из за высоты списка
+```
+
+## 999. session `6926ecd2-d647-4a29-bc66-09f43a68da46` — 6926ecd2-d647-4a29-bc66-09f43a68da46.jsonl:86
+
+```
+смоти, теперь у меня когда я открываю список кнопка выше чем когда схема(кнопка выбора схема или список)
+```
+
+## 1000. session `6a37b0e8-d9bc-4105-ab48-3f093a703c87` — 6a37b0e8-d9bc-4105-ab48-3f093a703c87.jsonl:1
+
+```
+давай кол-во человек уберем, и сделаем так, просто человек нажимает на пк, и выбирает, выбора 1 - один человек выбрал 2 - 2 человека 3 - 3 и тд.
+Чтобы убрать с компа выбор нужно на него еще раз нажать(как в кино делаем)
+```
+
+## 1001. session `6a9d5cc7-b809-4b06-ab46-e71707b8c8b4` — 6a9d5cc7-b809-4b06-ab46-e71707b8c8b4.jsonl:1
+
+```
+запусти в браузере приложение
+
+И дай мне код чтобы запустить браузер без cors
+```
+
+## 1002. session `6af8e316-6bab-4e85-b054-eba9471e95d8` — 6af8e316-6bab-4e85-b054-eba9471e95d8.jsonl:1
+
+```
+В разделах со статистикой гл. экран эмулировать данные с сервера.
+
+Просто сам локально сделай как это будет выглядеть примерно.
+```
+
+## 1003. session `6b00ebae-649e-41ca-85fd-64d27faf153d` — 6b00ebae-649e-41ca-85fd-64d27faf153d.jsonl:66
+
+```
+@c:\Users\pc\.cursor\projects\d-BB-Project-bbplay\terminals\5.txt:7-18
+```
+
+## 1004. session `6b6b7c14-ec26-4d45-89a1-fbf194ebfa6f` — 6b6b7c14-ec26-4d45-89a1-fbf194ebfa6f.jsonl:1
+
+```
+анимацию кубика надо замедлить.
+
+В постепенно замедлять, сейчас он криво крутиться очень быстро, потом останавливается и потом опять начиет крутиться.
+
+Исправь и сделай хорошую красивую анимацию будто кубик бросают
+```
+
+## 1005. session `6b6b7c14-ec26-4d45-89a1-fbf194ebfa6f` — 6b6b7c14-ec26-4d45-89a1-fbf194ebfa6f.jsonl:10
+
+```
+грани кубика выглядят ужасно. Сделай красивый кубик с ровными точками
+```
+
+## 1006. session `6ba1df32-97dd-434f-93cd-b39072102095` — 6ba1df32-97dd-434f-93cd-b39072102095.jsonl:1
+
+```
+Не находит ближ. окно для брони(на телефонах) на пк в браузере работает
+```
+
+## 1007. session `6e3899b7-8807-4b39-a233-c9d289c07e2d` — 6e3899b7-8807-4b39-a233-c9d289c07e2d.jsonl:1
+
+```
+проверь по api с аккаунта test3 test3 могу ли я сделать одну бронь на 13 00 и вторуб бронь на 13 00 на разные пк?
+
+После того как сделаешь не забудь отменить брони
+```
+
+## 1008. session `6eaa8917-11ca-4c2b-9f7d-28fa67064370` — 6eaa8917-11ca-4c2b-9f7d-28fa67064370.jsonl:1
+
+```
+когда еще не выбрали все фильтры для бррни надо сильнее затемнять схему
+```
+
+## 1009. session `6fccdb93-987b-4a54-8055-dfdc778bc681` — 6fccdb93-987b-4a54-8055-dfdc778bc681.jsonl:1
+
+```
+снизу точки не перематываются.
+
+Во вторых у меня акции должны пролситываться(то естьони сами долистываются на след акцию, чтобы только она была по центру)  и их надо расположить по центру а не левее
+
+Скрин2 мне нужно чтобы я не проматывал экран с игрой(делай по высоте больше) и так со всеми экранами акций
+```
+
+## 1010. session `7163d92b-2493-4909-81a0-d19815f58549` — 7163d92b-2493-4909-81a0-d19815f58549.jsonl:1
+
+```
+вот это надо вниз перенести
+```
+
+## 1011. session `721d442b-5f74-4e3a-b3df-90e3db8c2a24` — 721d442b-5f74-4e3a-b3df-90e3db8c2a24.jsonl:1
+
+```
+смотри, выгодность мы должны писать в зависимости от зоны в которой выбраный пк. Исправь
+```
+
+## 1012. session `77ede8c8-e830-4d81-bd0b-7abbe3c35ceb` — 77ede8c8-e830-4d81-bd0b-7abbe3c35ceb.jsonl:1
+
+```
+когда я в чат пишу чтобы забронировать и у меня не указано день или ночь(например - в три) то мы преоритет отдает дню(забронь в три = забронь в 15, забронь в 3 утра\ночи = забронь в 03) и по такой логике
+```
+
+## 1013. session `7a918f93-47c7-4b10-8b2a-9e976690dc8a` — 7a918f93-47c7-4b10-8b2a-9e976690dc8a.jsonl:1
+
+```
+очень некрасиво сделаны настройки. Они какие то обрезаные
+```
+
+## 1014. session `7abeabc3-8d3c-4716-8a9f-7705f0f2c4c5` — 7abeabc3-8d3c-4716-8a9f-7705f0f2c4c5.jsonl:1
+
+```
+так, сейчас нужно при первом входе в приложении показывать на весь экран(когда уже вошли в акк) что сейчас акция что можно сыграть в мини игру и выграть бонусы.
+
+ТЕкст такйо - "Заходи каждый день в приложение, кидай кубики, получай халявный бонус."
+
+И еще картинку с игрой, сделать красивый дизайн. И снизу кнопка сыграть и кнопка Понятно
+```
+
+## 1015. session `7abeabc3-8d3c-4716-8a9f-7705f0f2c4c5` — 7abeabc3-8d3c-4716-8a9f-7705f0f2c4c5.jsonl:24
+
+```
+уведомление делаем не на весь экран, а по размеру как экран акции, такой же. 
+
+И поработай над цветами и дизайном
+```
+
+## 1016. session `7abeabc3-8d3c-4716-8a9f-7705f0f2c4c5` — 7abeabc3-8d3c-4716-8a9f-7705f0f2c4c5.jsonl:30
+
+```
+уведомление делаем не на весь экран, а по размеру как экран акции, такой же. 
+
+И поработай над цветами и дизайном. И нужно в центре по высоте писать, где смотрят глаза человека чаще всего
+```
+
+## 1017. session `7b2a2470-7e3c-4a65-a8cf-be5c52e1a129` — 7b2a2470-7e3c-4a65-a8cf-be5c52e1a129.jsonl:1
+
+```
+Плашка кривая и некрасивая
+```
+
+## 1018. session `7ef1d6f9-2f21-407f-8000-cd10d8b1e954` — 7ef1d6f9-2f21-407f-8000-cd10d8b1e954.jsonl:1
+
+```
+выйти кнопку убираем, настройки опускаем чуть вниз(только настройки) и какие есть предложения как расположить все на этом экране(надо разгрузить) собери html страницу с разными типами расположения чтобы я выбрал
+```
+
+## 1019. session `809be4a8-ee6d-4af9-a32a-264ff09ac5e2` — 809be4a8-ee6d-4af9-a32a-264ff09ac5e2.jsonl:1
+
+```
+просто нужно писать выбор пк
+```
+
+## 1020. session `82acedf6-d01d-4aa4-9d6f-773fc8f427fd` — 82acedf6-d01d-4aa4-9d6f-773fc8f427fd.jsonl:1
+
+```
+Используй вот эту анимацию для показа загрузки данных. 
+
+И пиши какие нибудь прикольные надписи связаные с комп клубами.
+
+Там протираем девайсы.
+
+Настраиваем ПК.
+
+Ищем подходящий клуб. и тд
+```
+
+## 1021. session `837735fd-43e2-4324-8d33-ff63da09f72f` — 837735fd-43e2-4324-8d33-ff63da09f72f.jsonl:1
+
+```
+так лента акций.
+
+Во первых, когда человек сам проматал ленту акций или конснулся, то мы таймер сбрасываем. То есть он чуть чуть тронул ленту акций и был таймер до прокрутки 1 сек, то мы его обратно сбрасываем на 10.
+
+Во вторых у мен ялента не цикличная.
+то есть я докручиваю до последнего и если еще в право делаю то мы ленту заного начинаем(с первого элемента) если с первого элемента влево то мы должны начинать ленту заного с обратной стороны.
+```
+
+## 1022. session `837735fd-43e2-4324-8d33-ff63da09f72f` — 837735fd-43e2-4324-8d33-ff63da09f72f.jsonl:22
+
+```
+лента все ровно не цикличная.
+
+То есть я промотал до последнего, еще раз дернул вправо переключилась на первое,но дальше я мотать не могу(она не зациклилась) и в обратную сторону тоже
+```
+
+## 1023. session `83f3dcd6-8b54-4a0e-b128-0c9d91e3a0dc` — 83f3dcd6-8b54-4a0e-b128-0c9d91e3a0dc.jsonl:1
+
+```
+убери везде тех надписи, результат нужно писать сверху или прям по центру поверх игры показывать.
+Скрин 2 и скрин3 НУЖНО СДЕЛАТЬ АКЦИИ ВЕЗДЕ ОДИНАКОВЫЕ ПО ВЫСОТЕ. То есть как мини игра везде пускай открываются окна
+```
+
+## 1024. session `83f3dcd6-8b54-4a0e-b128-0c9d91e3a0dc` — 83f3dcd6-8b54-4a0e-b128-0c9d91e3a0dc.jsonl:19
+
+```
+Очень криво, саму игру размести пониже(в самый низ окна, а описание сверху) и еще очень плохо показ результата работает. Мне нужно красивый дизай который подойдет для реального приложения
+```
+
+## 1025. session `83f537fc-fe6f-437b-9b14-6a1b5a89f067` — 83f537fc-fe6f-437b-9b14-6a1b5a89f067.jsonl:1
+
+```
+баг в большинстве меню, они снизу прозрачные. Исправляй и проверь так все меню
+```
+
+## 1026. session `84b1855f-d4a1-40bd-a7bd-2bca8ca7ec9e` — 84b1855f-d4a1-40bd-a7bd-2bca8ca7ec9e.jsonl:1
+
+```
+D:\BB_Project\bbplay\src\api\vibeClient.ts:95  GET https://vibe.blackbearsplay.ru/cafes net::ERR_TIMED_OUT
+vibeGet @ D:\BB_Project\bbplay\src\api\vibeClient.ts:95
+await in vibeGet
+list @ D:\BB_Project\bbplay\src\api\endpoints.ts:45
+(anonymous) @ D:\BB_Project\bbplay\src\knowledge\KnowledgeContext.tsx:208
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+dispatchSetState @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17527
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo-font\build\FontHooks.js:19
+Promise.then
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo-font\build\FontHooks.js:19
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+updateContainer @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:28858
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:29314
+render @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\render\index.js:23
+renderApplication @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\renderApplication.js:24
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\index.js:36
+runApplication @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\index.js:74
+registerRootComponent @ D:\BB_Project\bbplay\node_modules\expo\build\launch\registerRootComponent.js:18
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo\AppEntry.js:5
+loadModuleImplementation @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:277
+guardedLoadModule @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:177
+metroRequire @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:92
+(anonymous) @ D:\BB_Project\bbplay\assets\promos\dice\dice-5.png:1
+D:\BB_Project\bbplay\src\knowledge\KnowledgeContext.tsx:209 [knowledge] cafes API unavailable, keeping base entries
+
+Если мы не можем подкачать данные при запуске то макс время экрана загрузки 5 сек, потом запускаем в приложение, но все еще пытаемся загрузить данные. Если не загрузили то надо уведомлять в виде алерта
+```
+
+## 1027. session `84b397b2-f8af-408e-b54f-e343dd6bab91` — 84b397b2-f8af-408e-b54f-e343dd6bab91.jsonl:1
+
+```
+так, во время то, как бронируем через чат, то мы подставляем сами все кроме времени и даты.
+
+Тип пк мы сначало ставим сами но даем возможность выбрать другой
+```
+
+## 1028. session `84b397b2-f8af-408e-b54f-e343dd6bab91` — 84b397b2-f8af-408e-b54f-e343dd6bab91.jsonl:9
+
+```
+я выбрать не могу на схеме пк
+```
+
+## 1029. session `84b397b2-f8af-408e-b54f-e343dd6bab91` — 84b397b2-f8af-408e-b54f-e343dd6bab91.jsonl:12
+
+```
+я выбрать не могу на схеме пк.
+
+И в списке нужно писать занят или свободен пк и по тарифам разделять
+```
+
+## 1030. session `865a2c3e-34e7-4e83-88a3-969e8c981949` — 865a2c3e-34e7-4e83-88a3-969e8c981949.jsonl:1
+
+```
+во первых, правила игры сокращяем и пишем только понятное для пользователя все. кратко.
+
+Кнопки игры(настройки) переносим под кнопку Бросить кубик.
+
+И сам кубик ужасно выглядет. Переделай на нормальный кубик и сделай нормальную анимацию проска кубика
+```
+
+## 1031. session `865a2c3e-34e7-4e83-88a3-969e8c981949` — 865a2c3e-34e7-4e83-88a3-969e8c981949.jsonl:17
+
+```
+сама текстура кубика ужасная. Она размытая кривая и точки ужасные. ТАк еще и анимация вращения тоже очень плохая. Мне нужно чтобы все было реально красиво
+```
+
+## 1032. session `865a2c3e-34e7-4e83-88a3-969e8c981949` — 865a2c3e-34e7-4e83-88a3-969e8c981949.jsonl:31
+
+```
+СДЕЛАЙ МН ЕНОРМАЛЬНЫЙ кубик и сделай нормальную анимацию. это очень важно для меня
+```
+
+## 1033. session `865a2c3e-34e7-4e83-88a3-969e8c981949` — 865a2c3e-34e7-4e83-88a3-969e8c981949.jsonl:46
+
+```
+точки кривые.
+
+Кубик просто крутиться по кругу, а не будто его кинули(он не переворачивается и тд. 
+
+И так же точки багаются, нужно чтобы анимация постепенно замедлялась до полной остановки.
+```
+
+## 1034. session `865a2c3e-34e7-4e83-88a3-969e8c981949` — 865a2c3e-34e7-4e83-88a3-969e8c981949.jsonl:53
+
+```
+Точки очень кривые.
+
+Анимация тоже ужсна!
+Он не кидается, а просто крутиться и то точки просто меняются  случ. порядке.
+
+Мне нужно чтобы его будто кинули и он переворачивлся крутился(был 3d) и точки стояли как в настоящем кубике
+```
+
+## 1035. session `865a2c3e-34e7-4e83-88a3-969e8c981949` — 865a2c3e-34e7-4e83-88a3-969e8c981949.jsonl:65
+
+```
+точки все еще не ровные. и анимация не 3d кубика а 2d он просто крутиться(видна только одна сторона, на которой меняется кол-во точке)
+```
+
+## 1036. session `86e3831f-e53a-4771-beda-aeab4ac66486` — 86e3831f-e53a-4771-beda-aeab4ac66486.jsonl:1
+
+```
+Мне нужно чтобы ты во всех экранах со статистикой писал локально как это будет выглядеть А НЕ ПОД НАЗВАНИЕМ!
+```
+
+## 1037. session `898a94fd-a579-4c1e-987e-92391ee72142` — 898a94fd-a579-4c1e-987e-92391ee72142.jsonl:1
+
+```
+в мини игру добавь настройки вращения. быстрое не быстрое(значек молнии) авто или не авто.
+```
+
+## 1038. session `89f620bb-394a-4acd-bcdd-10da507d73f1` — 89f620bb-394a-4acd-bcdd-10da507d73f1.jsonl:1
+
+```
+сначало баланс, потом войти по qr.
+так же текст убери - для входа на клубном пк....
+```
+
+## 1039. session `89fad491-3492-4715-91c5-b7e60776362f` — 89fad491-3492-4715-91c5-b7e60776362f.jsonl:1
+
+```
+какая средняя высота экрана телефона? Под какую высоту стоит приложение делать изначально и потом уже подстраивать?
+```
+
+## 1040. session `8a2525f6-b33b-414b-b4a3-e53085124449` — 8a2525f6-b33b-414b-b4a3-e53085124449.jsonl:1
+
+```
+у меня все такие надписи(какой это экран) должны быть одинакового размера и на одинаковой высоте
+```
+
+## 1041. session `8a2b149f-7ce6-4b45-8548-3a49d6a5a8e3` — 8a2b149f-7ce6-4b45-8548-3a49d6a5a8e3.jsonl:1
+
+```
+так, давай выбор пк при брони в чате сделаем так,
+
+У нас открывается снизу меню где схема и над схемой есть выбор показа схемой или списком(как в разделе брони)
+```
+
+## 1042. session `8a64d535-0e9e-48a6-92ed-5a582509e1a2` — 8a64d535-0e9e-48a6-92ed-5a582509e1a2.jsonl:1
+
+```
+бар в Еда Переименуй
+```
+
+## 1043. session `8d7162f1-72bb-4db8-af28-e6185b9b0fc8` — 8d7162f1-72bb-4db8-af28-e6185b9b0fc8.jsonl:1
+
+```
+@c:\Users\pc\Videos\Captures\ProfileHome - Google Chrome 2026-04-26 14-15-42.mp4 Изучи видео.
+
+Исправь анимацию чтобы она крутилась в разные стороны.
+Чтобы текстура кубика не ломалась и чтобы анимация выглядела действительно качествено и красиво
+```
+
+## 1044. session `8d7162f1-72bb-4db8-af28-e6185b9b0fc8` — 8d7162f1-72bb-4db8-af28-e6185b9b0fc8.jsonl:13
+
+```
+скачал ffmpeg еще раз сделай и исправь все баги на видео
+```
+
+## 1045. session `8d7162f1-72bb-4db8-af28-e6185b9b0fc8` — 8d7162f1-72bb-4db8-af28-e6185b9b0fc8.jsonl:29
+
+```
+Так найди и сделай мне красивое вращение кубика.
+```
+
+## 1046. session `8d7162f1-72bb-4db8-af28-e6185b9b0fc8` — 8d7162f1-72bb-4db8-af28-e6185b9b0fc8.jsonl:44
+
+```
+АФИГЕННО!!!!!
+
+Теперь надо поработать над тектурой кубика потому что он аломается
+```
+
+## 1047. session `8d7162f1-72bb-4db8-af28-e6185b9b0fc8` — 8d7162f1-72bb-4db8-af28-e6185b9b0fc8.jsonl:58
+
+```
+с одной точкой проблемы
+```
+
+## 1048. session `8d7162f1-72bb-4db8-af28-e6185b9b0fc8` — 8d7162f1-72bb-4db8-af28-e6185b9b0fc8.jsonl:63
+
+```
+и кубик весь дырявый и еще там внутри еще какая то сторона которая режет по центру все(выпирает)
+```
+
+## 1049. session `subagents` — 4daa37d7-3098-4335-a495-2a5ff72a40d6.jsonl:1
+
+```
+Нужно посмотреть вложенное видео и перечислить баги анимации кубика с actionable фиксом. Фокус: направления вращения, ломание/мигание текстуры граней, плавность и качество. Верни список наблюдений и точные рекомендации по коду.
+```
+
+## 1050. session `subagents` — b0ebe3de-e189-4e7d-ad02-a7b8bac72e4f.jsonl:1
+
+```
+Проанализируй приложенное видео записи экрана. Нужно кратко описать: 1) какие визуальные проблемы у анимации кубика заметны; 2) где кажется, что куб крутится однообразно/в одну сторону; 3) где видны артефакты текстуры/граней. Ответ дай списком с конкретными наблюдениями.
+```
+
+## 1051. session `subagents` — bb909766-0c56-4a08-9a91-4d96236ee2b5.jsonl:1
+
+```
+Проанализируй видео `D:/BB_Project/bbplay/.tmp/profilehome.mp4` как вложение. Нужен краткий, но конкретный отчёт по багам анимации кубика: 1) в какие моменты заметны артефакты текстуры/граней; 2) как именно проявляется проблема направлений вращения (однообразие, рывки, смена направления, если есть); 3) что визуально можно улучшить (тени, траектория, easing, масштаб, jitter). Дай actionable список правок в коде React Native.
+```
+
+## 1052. session `8dc51e1b-391c-4ed3-97f6-57eba8a937a0` — 8dc51e1b-391c-4ed3-97f6-57eba8a937a0.jsonl:1
+
+```
+подними кнопки.
+
+оставь один кубик и без рамки и фона.
+```
+
+## 1053. session `8deea86f-76ae-4922-9739-6df591df56f4` — 8deea86f-76ae-4922-9739-6df591df56f4.jsonl:1
+
+```
+нужно полоску промотки перенести на край экрана(отступ действует только на элементы, а не на полоску)
+```
+
+## 1054. session `8e2d32a0-da6b-4df9-b0cb-3e1d9c409e03` — 8e2d32a0-da6b-4df9-b0cb-3e1d9c409e03.jsonl:1
+
+```
+нужно кнопки перейти сделать в самом сообщение а не под сообщением, зелеными.
+
+И текст перейти убрать.
+```
+
+## 1055. session `8e4ce31e-fb6d-4558-8256-4fd298930b17` — 8e4ce31e-fb6d-4558-8256-4fd298930b17.jsonl:1
+
+```
+D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\NativeAnimatedHelper.js:410 Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation. To resolve this, add `RCTAnimation` module to this app, or remove `useNativeDriver`. Make sure to run `bundle exec pod install` first. Read more about autolinking: https://github.com/react-native-community/cli/blob/master/docs/autolinking.md
+shouldUseNativeDriver @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\NativeAnimatedHelper.js:410
+constructor @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\animations\TimingAnimation.js:36
+start @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\AnimatedImplementation.js:152
+start @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\AnimatedImplementation.js:157
+start @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\AnimatedImplementation.js:226
+restart @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\AnimatedImplementation.js:343
+start @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\AnimatedImplementation.js:354
+(anonymous) @ D:\BB_Project\bbplay\src\features\ui\ClubDataLoader.tsx:79
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+dispatchSetState @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17527
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo-font\build\FontHooks.js:19
+Promise.then
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo-font\build\FontHooks.js:19
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+updateContainer @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:28858
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:29314
+render @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\render\index.js:23
+renderApplication @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\renderApplication.js:24
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\index.js:36
+runApplication @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\index.js:74
+registerRootComponent @ D:\BB_Project\bbplay\node_modules\expo\build\launch\registerRootComponent.js:18
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo\AppEntry.js:5
+loadModuleImplementation @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:277
+guardedLoadModule @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:177
+metroRequire @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:92
+(anonymous) @ D:\BB_Project\bbplay\assets\club-loading-bear.png:1
+D:\BB_Project\bbplay\node_modules\react-native-web\dist\modules\warnOnce\index.js:24 props.pointerEvents is deprecated. Use style.pointerEvents
+```
+
+## 1056. session `8f10d858-860b-4574-b42f-41581e7cb800` — 8f10d858-860b-4574-b42f-41581e7cb800.jsonl:16
+
+```
+@c:\Users\pc\.cursor\projects\d-BB-Project-bbplay\terminals\5.txt:16-24
+```
+
+## 1057. session `8f10d858-860b-4574-b42f-41581e7cb800` — 8f10d858-860b-4574-b42f-41581e7cb800.jsonl:24
+
+```
+@c:\Users\pc\.cursor\projects\d-BB-Project-bbplay\terminals\5.txt:46-55
+```
+
+## 1058. session `8f569fb2-df61-4cf1-8d88-7867c3552a6c` — 8f569fb2-df61-4cf1-8d88-7867c3552a6c.jsonl:1
+
+```
+так нужно сделать чтобы можно было включать быструю прокрутку и автопрокрутку когда уже крутиться кубик. Просто это применяется к след. прокруту
+```
+
+## 1059. session `8fb41790-8d12-4970-86b0-8b510a9c92f0` — 8fb41790-8d12-4970-86b0-8b510a9c92f0.jsonl:1
+
+```
+так, осталось сделать чтобы анимация вращения кубика не меняла резко направление(замедляется и из за этого криво выглядет) то есть можно чуть чуть менять направление, но не в другую сторону это делать
+```
+
+## 1060. session `91e3e740-65da-45a9-87e3-8e59049048eb` — 91e3e740-65da-45a9-87e3-8e59049048eb.jsonl:1
+
+```
+очень дерганая анимация кубика при его вращении. Исправь он должен немного крутануться и потом постепенно замедляться. анимацияю должно идти 3 сек.
+так же при анмицаии тектура кубика очень сильно багается появляются випирающие штуки и еще много всего
+```
+
+## 1061. session `922ad480-1733-4509-9904-711a749b6c91` — 922ad480-1733-4509-9904-711a749b6c91.jsonl:1
+
+```
+текст кнопки готово нужно расположитль по середине кнопки.
+
+И в названии клуба до сих пор пишется город.
+```
+
+## 1062. session `922ad480-1733-4509-9904-711a749b6c91` — 922ad480-1733-4509-9904-711a749b6c91.jsonl:11
+
+```
+НЕ ИСПРАВИЛОСЬ!
+```
+
+## 1063. session `92f00e9c-d7f4-43a3-9554-70bf5938e1ac` — 92f00e9c-d7f4-43a3-9554-70bf5938e1ac.jsonl:1
+
+```
+изучи алгоритм поиск ближ. окна для брони через суб агенты, найди ошибки и исправь, чтобы он наэходил окна.
+```
+
+## 1064. session `subagents` — 15b4bc2c-4fd2-465f-89c3-1b5c8772cb93.jsonl:1
+
+```
+В проекте D:/BB_Project/bbplay нужно исследовать алгоритм поиска ближайшего окна/слота для бронирования. Найди файлы и функции, связанные с поиском ближайшего окна, доступных слотов, booking availability, nearest window. Особое внимание src/features/booking/BookingScreen.tsx и связанным утилитам/API. Верни: 1) ключевые функции/переменные, 2) как должен работать алгоритм, 3) потенциальные баги, из-за которых окна не находятся, 4) файлы/участки для исправления. Работай read-only, thoroughness medium.
+```
+
+## 1065. session `subagents` — d67c4036-bbe9-4958-89c1-51ec7c586cb4.jsonl:1
+
+```
+В проекте D:/BB_Project/bbplay независимо проследи поток данных для доступности брони: от UI выбора даты/клуба/стола до расчета/поиска ближайших окон. Ищи причины, почему алгоритм может не находить окна: фильтры времени, сравнение дат, timezone, duration, capacity, step size, open/close hours, booked intervals. Верни конкретные подозрения с путями файлов и именами функций. Read-only, thoroughness medium.
+```
+
+## 1066. session `9311bfa6-e430-4f26-88a9-6d073cbf52ac` — 9311bfa6-e430-4f26-88a9-6d073cbf52ac.jsonl:1
+
+```
+нужно сделать чтобы все по левой стороне прижималось(полоски с суммами).
+
+И нужно сделать чтобы 1500 бола больше и все остальные тоже перерасчитались по длине
+```
+
+## 1067. session `9311bfa6-e430-4f26-88a9-6d073cbf52ac` — 9311bfa6-e430-4f26-88a9-6d073cbf52ac.jsonl:14
+
+```
+у меня 200 руб должны быть в 2 раза длинее 100 и тд.
+
+И зеленый полоску с левой стороны перенеси на праваю на полосках с суммами
+```
+
+## 1068. session `9311bfa6-e430-4f26-88a9-6d073cbf52ac` — 9311bfa6-e430-4f26-88a9-6d073cbf52ac.jsonl:18
+
+```
+увеличь минимальную длину чтобы текст не обрезался(длина подстраивается под экран)
+```
+
+## 1069. session `9311bfa6-e430-4f26-88a9-6d073cbf52ac` — 9311bfa6-e430-4f26-88a9-6d073cbf52ac.jsonl:22
+
+```
+не ломая логики делаем, чтобы у меня шло в порядки возрастания длинны. От 100 до 1500 где 100 коротка и 1500 самая длиная
+```
+
+## 1070. session `9311bfa6-e430-4f26-88a9-6d073cbf52ac` — 9311bfa6-e430-4f26-88a9-6d073cbf52ac.jsonl:26
+
+```
+найди коэф. чтобы у меня 200 была больше чем 100, 500 больше чем 200, 1000 больше чем 500, 1500 больше чем 1000
+```
+
+## 1071. session `9311bfa6-e430-4f26-88a9-6d073cbf52ac` — 9311bfa6-e430-4f26-88a9-6d073cbf52ac.jsonl:30
+
+```
+сделай еще больше разницу по длине между суммами.
+```
+
+## 1072. session `9311bfa6-e430-4f26-88a9-6d073cbf52ac` — 9311bfa6-e430-4f26-88a9-6d073cbf52ac.jsonl:34
+
+```
+У МЕНЯ 100 БОЛЬШЕ ЧЕМ 200.
+
+НАЙДИ НОРМАЛЬНЫЕ ЗНАЧЕНИЯ!
+```
+
+## 1073. session `9311bfa6-e430-4f26-88a9-6d073cbf52ac` — 9311bfa6-e430-4f26-88a9-6d073cbf52ac.jsonl:38
+
+```
+у меня 200 еще больше 100 должны быть 500 еще больше 200 1000 еще больше 500 1500 еще больше 1000
+```
+
+## 1074. session `933c14fb-cf1e-441b-8f65-43ce20a79404` — 933c14fb-cf1e-441b-8f65-43ce20a79404.jsonl:1
+
+```
+Обводка зон можно сделать поуже, сейчас особенно правая и левые зоны слишком широкие и это режет глаза
+
+исправь схему
+```
+
+## 1075. session `93ae06b5-90b9-4a0e-8455-de2a08c5b78b` — 93ae06b5-90b9-4a0e-8455-de2a08c5b78b.jsonl:1
+
+```
+когда я в чате нажимаю на элемент при выборе фильтров для брони, то он не выбирается.
+```
+
+## 1076. session `94b779b3-d433-4057-84df-b969de6efa38` — 94b779b3-d433-4057-84df-b969de6efa38.jsonl:1
+
+```
+проблема с меню.
+
+Снизу прозрачное, надо исправить и проверь все меню и там тоже исправь
+```
+
+## 1077. session `9568dc95-11e6-49d9-a43b-c1e4d7a96dee` — 9568dc95-11e6-49d9-a43b-c1e4d7a96dee.jsonl:1
+
+```
+@docs вот пример как должна выглядеть документация, создай документацию по проекту в таком же формате.
+```
+
+## 1078. session `9568dc95-11e6-49d9-a43b-c1e4d7a96dee` — 9568dc95-11e6-49d9-a43b-c1e4d7a96dee.jsonl:27
+
+```
+добей чтобы инструкция была еще более подробнойю
+```
+
+## 1079. session `95728092-4efc-48c9-b83d-2f77bb164a50` — 95728092-4efc-48c9-b83d-2f77bb164a50.jsonl:1
+
+```
+нету изменения параметров
+```
+
+## 1080. session `95728092-4efc-48c9-b83d-2f77bb164a50` — 95728092-4efc-48c9-b83d-2f77bb164a50.jsonl:13
+
+```
+так, если мы выбрали только клуб и нажали кнопки изменить параметры то там должен быть только клуб. Если выбрали кулб и дату то там должно быть изменения клуба и даты и по такой логике делай
+```
+
+## 1081. session `95728092-4efc-48c9-b83d-2f77bb164a50` — 95728092-4efc-48c9-b83d-2f77bb164a50.jsonl:22
+
+```
+время еще не выбрали а оно есть
+```
+
+## 1082. session `95728092-4efc-48c9-b83d-2f77bb164a50` — 95728092-4efc-48c9-b83d-2f77bb164a50.jsonl:28
+
+```
+когда в выборе фильтров я нажимаю на элемент, например на 25 число, то у меня оно не выбирается а только появялется звук прокрутки
+```
+
+## 1083. session `95c294f6-369f-49aa-b60d-f6a84b7b8800` — 95c294f6-369f-49aa-b60d-f6a84b7b8800.jsonl:1
+
+```
+когда открыта страница акции или мини игра то мы прокрутку акций стопаем
+```
+
+## 1084. session `985af13e-a5bd-48b4-b038-e859bfd1dd13` — 985af13e-a5bd-48b4-b038-e859bfd1dd13.jsonl:1
+
+```
+когда один клуб, то зачем спрашивать?
+И когда вопрос то нужно давать из чего выбираеть как бы
+```
+
+## 1085. session `990f09f4-1fca-40be-9aee-b0a41e4909dd` — 990f09f4-1fca-40be-9aee-b0a41e4909dd.jsonl:1
+
+```
+GET http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app net::ERR_ABORTED 500 (Internal Server Error)
+ProfileHome:1 Refused to execute script from 'http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app' because its MIME type ('application/json') is not executable, and strict MIME type checking is enabled.
+```
+
+## 1086. session `99c2260d-3e72-4292-b694-c7e4198633ed` — 99c2260d-3e72-4292-b694-c7e4198633ed.jsonl:1
+
+```
+Так, текст искать ближ. окна расположить по центру. 
+
+убрать текст связаный со схемой на скрине 2.
+
+Кнопку поиск сделать зеленой(как забронировать) и расположить вниз и сделать чтобы при прокрутке она всегда была снизу
+```
+
+## 1087. session `99c2260d-3e72-4292-b694-c7e4198633ed` — 99c2260d-3e72-4292-b694-c7e4198633ed.jsonl:14
+
+```
+убери разделительные полоски
+```
+
+## 1088. session `9bf6cc4b-e3ba-432d-9f11-8c3139a524ad` — 9bf6cc4b-e3ba-432d-9f11-8c3139a524ad.jsonl:1
+
+```
+А что с кубиком случилось? Почему он стал такой острый, грани не мягкие которые были и когда крутиться на некоторых сторонях артифакты, где то что-то выпирает.
+
+Исправь, сделай его более мягким и чтобы нигде ничего не выпирало
+```
+
+## 1089. session `9bf6cc4b-e3ba-432d-9f11-8c3139a524ad` — 9bf6cc4b-e3ba-432d-9f11-8c3139a524ad.jsonl:15
+
+```
+пустоты заполни белым
+```
+
+## 1090. session `9bf6cc4b-e3ba-432d-9f11-8c3139a524ad` — 9bf6cc4b-e3ba-432d-9f11-8c3139a524ad.jsonl:20
+
+```
+Смотри, сейчас у нас есть срезы и закругления.
+
+Мне нужно, чтобы ты срезы и закругления заполнил правильно, то есть чтобы у меня эти формы остались только они были заполнены белым
+```
+
+## 1091. session `9bf6cc4b-e3ba-432d-9f11-8c3139a524ad` — 9bf6cc4b-e3ba-432d-9f11-8c3139a524ad.jsonl:25
+
+```
+Ты убрал те закругления и срезы о которых я просил
+```
+
+## 1092. session `9bf6cc4b-e3ba-432d-9f11-8c3139a524ad` — 9bf6cc4b-e3ba-432d-9f11-8c3139a524ad.jsonl:29
+
+```
+Смотри, сейчас у нас есть срезы и закругления.
+
+Мне нужно, чтобы ты срезы и закругления заполнил правильно, то есть чтобы у меня эти формы остались только они были заполнены цветом чуть чут ьдругим(чтобы было видно эти срезы)
+```
+
+## 1093. session `9bf6cc4b-e3ba-432d-9f11-8c3139a524ad` — 9bf6cc4b-e3ba-432d-9f11-8c3139a524ad.jsonl:34
+
+```
+ты убрал все скругления и срезы!
+```
+
+## 1094. session `9bf6cc4b-e3ba-432d-9f11-8c3139a524ad` — 9bf6cc4b-e3ba-432d-9f11-8c3139a524ad.jsonl:39
+
+```
+углы тоже заполни таким же чуть чуть другим цветом(чтобы они выделялилсь)
+```
+
+## 1095. session `9bf6cc4b-e3ba-432d-9f11-8c3139a524ad` — 9bf6cc4b-e3ba-432d-9f11-8c3139a524ad.jsonl:43
+
+```
+ТЫ полностью убрал теперь углы которые так нужны были!
+```
+
+## 1096. session `9bf6cc4b-e3ba-432d-9f11-8c3139a524ad` — 9bf6cc4b-e3ba-432d-9f11-8c3139a524ad.jsonl:48
+
+```
+заполни их третьим цветом, чтобы они были не прозрачными и их было видно нормально как надо со срезами
+```
+
+## 1097. session `9bf6cc4b-e3ba-432d-9f11-8c3139a524ad` — 9bf6cc4b-e3ba-432d-9f11-8c3139a524ad.jsonl:54
+
+```
+Углы ничем не заполнены.
+Мне нужно чтобы у меня 3d текстура стала со срезами на углах( как сейчас выглядет), но и еще заполнилось цветом который будет виден на остальных цветах
+```
+
+## 1098. session `9bf6cc4b-e3ba-432d-9f11-8c3139a524ad` — 9bf6cc4b-e3ba-432d-9f11-8c3139a524ad.jsonl:58
+
+```
+Углы ничем не заполнены.
+Мне нужно чтобы у меня 3d текстура стала со срезами на углах( как сейчас выглядет), но и еще заполнилось цветом который будет виден на остальных цветах.
+
+То есть срежь мне углы просто!
+```
+
+## 1099. session `9bf6cc4b-e3ba-432d-9f11-8c3139a524ad` — 9bf6cc4b-e3ba-432d-9f11-8c3139a524ad.jsonl:62
+
+```
+что-то нчиего не поменялось
+```
+
+## 1100. session `9bf6cc4b-e3ba-432d-9f11-8c3139a524ad` — 9bf6cc4b-e3ba-432d-9f11-8c3139a524ad.jsonl:67
+
+```
+ты не то заполнил.
+
+Слушай, а собери 3d модель просто не в приложении, а в файлах и потом ее просто будешь использовать при вращении
+```
+
+## 1101. session `9bf6cc4b-e3ba-432d-9f11-8c3139a524ad` — 9bf6cc4b-e3ba-432d-9f11-8c3139a524ad.jsonl:72
+
+```
+План: Настоящая 3D-Модель Кубика
+
+Implement the plan as specified, it is attached for your reference. Do NOT edit the plan file itself.
+
+To-do's from the plan have already been created. Do not create them again. Mark them as in_progress as you work, starting with the first one. Don't stop until you have completed all the to-dos.
+```
+
+## 1102. session `9bf6cc4b-e3ba-432d-9f11-8c3139a524ad` — 9bf6cc4b-e3ba-432d-9f11-8c3139a524ad.jsonl:107
+
+```
+Implement the plan as specified, it is attached for your reference. Do NOT edit the plan file itself.
+
+To-do's from the plan have already been created. Do not create them again. Mark them as in_progress as you work, starting with the first one. Don't stop until you have completed all the to-dos.
+```
+
+## 1103. session `9bf6cc4b-e3ba-432d-9f11-8c3139a524ad` — 9bf6cc4b-e3ba-432d-9f11-8c3139a524ad.jsonl:108
+
+```
+Очень криво, точки маленькие исправь
+```
+
+## 1104. session `9bf6cc4b-e3ba-432d-9f11-8c3139a524ad` — 9bf6cc4b-e3ba-432d-9f11-8c3139a524ad.jsonl:114
+
+```
+обрезается когда кубик крутиться. исправь
+```
+
+## 1105. session `9bf6cc4b-e3ba-432d-9f11-8c3139a524ad` — 9bf6cc4b-e3ba-432d-9f11-8c3139a524ad.jsonl:121
+
+```
+еще расширь зону иногда оно еще обрезается
+```
+
+## 1106. session `9bf6cc4b-e3ba-432d-9f11-8c3139a524ad` — 9bf6cc4b-e3ba-432d-9f11-8c3139a524ad.jsonl:126
+
+```
+еще расширь зону иногда оно еще обрезается.
+
+То есть кубик такой же по размеру, а зона когда крутиться больше, потому что при вращении он чуть чуть вылезает за зону и режетсяя
+```
+
+## 1107. session `9c2c7591-81d3-4e5d-8f8b-6e65066b1c29` — 9c2c7591-81d3-4e5d-8f8b-6e65066b1c29.jsonl:1
+
+```
+условия и цены у меня должны укладоваться все цены и на 30 минут и на час и на полтара часа и на 2 часа и на пакеты, и еще не делай всплывающие окна на весь экран по высоте, тогда от них теряется смысл.
+
+так же кнопку закрыть перенеси вниз, она там должна быть
+```
+
+## 1108. session `9e8dd83f-eda7-4c42-9c70-46e685bbb490` — 9e8dd83f-eda7-4c42-9c70-46e685bbb490.jsonl:1
+
+```
+собери локальный apk
+```
+
+## 1109. session `a0696a7e-d85b-499f-8405-4be2fecb50bd` — a0696a7e-d85b-499f-8405-4be2fecb50bd.jsonl:1
+
+```
+все отлично. только есть промежутки не заполненые белым цветом, нужно исправить
+```
+
+## 1110. session `a095e2a4-106a-43eb-87c5-82d1dc04f2f5` — a095e2a4-106a-43eb-87c5-82d1dc04f2f5.jsonl:1
+
+```
+снизу меню не доходит до конца экрана. Оно обрезается.
+
+И проверь весь дизайн
+```
+
+## 1111. session `a095e2a4-106a-43eb-87c5-82d1dc04f2f5` — a095e2a4-106a-43eb-87c5-82d1dc04f2f5.jsonl:11
+
+```
+Снизу у меня меню должно начинаться с низу экрана, а не от разделов в приложении!
+```
+
+## 1112. session `a095e2a4-106a-43eb-87c5-82d1dc04f2f5` — a095e2a4-106a-43eb-87c5-82d1dc04f2f5.jsonl:16
+
+```
+теперь просто скрываются разделы, а меню не доходит до низа экрана!!!! ИСПРАВЬ
+```
+
+## 1113. session `a095e2a4-106a-43eb-87c5-82d1dc04f2f5` — a095e2a4-106a-43eb-87c5-82d1dc04f2f5.jsonl:21
+
+```
+теперь вылезает за экран
+```
+
+## 1114. session `a095e2a4-106a-43eb-87c5-82d1dc04f2f5` — a095e2a4-106a-43eb-87c5-82d1dc04f2f5.jsonl:27
+
+```
+Зачем мы скриваем разделы когда открыто меню? Они потом слишком поздно появляются
+```
+
+## 1115. session `a095e2a4-106a-43eb-87c5-82d1dc04f2f5` — a095e2a4-106a-43eb-87c5-82d1dc04f2f5.jsonl:33
+
+```
+теперь остальные меню тоже сделай нормальными
+```
+
+## 1116. session `a137ac7e-3725-4754-b235-2481a51d9b02` — a137ac7e-3725-4754-b235-2481a51d9b02.jsonl:1
+
+```
+нажимаю на эти кнопки у нас под ними разварачиваются параметры которые сейчас находятся если нажать на них(на эти кнопки)
+```
+
+## 1117. session `a1ba1a3b-02f2-4f79-8ac4-cfb2fec45359` — a1ba1a3b-02f2-4f79-8ac4-cfb2fec45359.jsonl:1
+
+```
+условия и цены не показываются(прозрачные просто)
+```
+
+## 1118. session `a1ba1a3b-02f2-4f79-8ac4-cfb2fec45359` — a1ba1a3b-02f2-4f79-8ac4-cfb2fec45359.jsonl:38
+
+```
+когда я нажимаю на условия и цены, то у меня просто экран затемняется и ничего не открывается
+```
+
+## 1119. session `a3cd4454-1c79-45fe-afc4-6a0b29c8edd4` — a3cd4454-1c79-45fe-afc4-6a0b29c8edd4.jsonl:1
+
+```
+Баг, меню не красивое исправь.
+```
+
+## 1120. session `a4dd9326-3318-405d-9d1c-04f496931f35` — a4dd9326-3318-405d-9d1c-04f496931f35.jsonl:1
+
+```
+Так, почему ты пишешь рядом с названием локальные примеры?
+
+Ты должен писать внутри этих функций локально как это будет выглядеть
+```
+
+## 1121. session `a6f38085-6cf3-4107-9a43-43b2e07b1fac` — a6f38085-6cf3-4107-9a43-43b2e07b1fac.jsonl:1
+
+```
+Уменьши чуть чуть размер плашек фильтров
+```
+
+## 1122. session `a6f38085-6cf3-4107-9a43-43b2e07b1fac` — a6f38085-6cf3-4107-9a43-43b2e07b1fac.jsonl:9
+
+```
+расположи выбор схемы или списка над схемой. и так же убери пропуск между схемой и обозначений.
+```
+
+## 1123. session `a6f38085-6cf3-4107-9a43-43b2e07b1fac` — a6f38085-6cf3-4107-9a43-43b2e07b1fac.jsonl:22
+
+```
+все ровно. у меня размер хитбокса больше чем схема(надо исправить)
+```
+
+## 1124. session `a6f38085-6cf3-4107-9a43-43b2e07b1fac` — a6f38085-6cf3-4107-9a43-43b2e07b1fac.jsonl:30
+
+```
+Исправь
+```
+
+## 1125. session `a6f38085-6cf3-4107-9a43-43b2e07b1fac` — a6f38085-6cf3-4107-9a43-43b2e07b1fac.jsonl:40
+
+```
+обозначения прилипли(надо чуть чуть опустить) и нужно имено схему затемнять а не прямоугольник(он выходит за рамки схемы) и в списке тоже имено элименты затемнять а не все пространство
+```
+
+## 1126. session `a6f38085-6cf3-4107-9a43-43b2e07b1fac` — a6f38085-6cf3-4107-9a43-43b2e07b1fac.jsonl:57
+
+```
+все ровно, надо затемнение скруглить!
+
+И в списке нужно расположить в таком порядке, сначало GameZone потом BootCamp и потом VIP
+```
+
+## 1127. session `a6f38085-6cf3-4107-9a43-43b2e07b1fac` — a6f38085-6cf3-4107-9a43-43b2e07b1fac.jsonl:63
+
+```
+и какие есть предложения, потому что потом будет 30пк и нам их надо будет как то уместить списком на одном экране
+```
+
+## 1128. session `a6f38085-6cf3-4107-9a43-43b2e07b1fac` — a6f38085-6cf3-4107-9a43-43b2e07b1fac.jsonl:65
+
+```
+почему у меня в ботткемп и геймзоне О большая? нужно исправить
+```
+
+## 1129. session `a861cea5-ea8b-44ea-b661-3604343894e7` — a861cea5-ea8b-44ea-b661-3604343894e7.jsonl:1
+
+```
+по высоте расширяем само меню, чтобы  у меня правила игры влезли на меню.
+
+Все страницы акций увеличивай чтобы там все влехло и не вылизало за экран.
+скрин2
+```
+
+## 1130. session `a861cea5-ea8b-44ea-b661-3604343894e7` — a861cea5-ea8b-44ea-b661-3604343894e7.jsonl:15
+
+```
+кнопку понятно в 2х акциях надо поднять выше, сейчас она вылезает. 
+
+И так же когда у меня стоит лента акций на первой акции, я не могу проматать в обратную сторону ленту(она должна быть цикличной и в право и влево)
+```
+
+## 1131. session `a861cea5-ea8b-44ea-b661-3604343894e7` — a861cea5-ea8b-44ea-b661-3604343894e7.jsonl:28
+
+```
+лишнее место убери у акций двух, а у мини игры оставь такой же размер
+```
+
+## 1132. session `a987314c-0c73-4f20-aa11-3a3bafc245eb` — a987314c-0c73-4f20-aa11-3a3bafc245eb.jsonl:1
+
+```
+в промт нейронки пиши по мимо роли, чтобы она проверяла пробелы
+```
+
+## 1133. session `a9fa1025-b1ec-404c-b003-b32c066c6827` — a9fa1025-b1ec-404c-b003-b32c066c6827.jsonl:1
+
+```
+так же проверь поиск ближ. свободного места. Во первых не ищется.
+
+Во вторых очень долго!
+```
+
+## 1134. session `a9fa1025-b1ec-404c-b003-b32c066c6827` — a9fa1025-b1ec-404c-b003-b32c066c6827.jsonl:14
+
+```
+ищется 12 сек. это слишком долго. хочется чтобы прям сразу ответ выдавался
+```
+
+## 1135. session `aa3c3724-40e5-4150-8034-065de1ff1cdc` — aa3c3724-40e5-4150-8034-065de1ff1cdc.jsonl:1
+
+```
+@c:\Users\pc\.cursor\projects\d-BB-Project-bbplay\terminals\15.txt:32-77
+```
+
+## 1136. session `aa6d6eab-6697-4310-bed5-1fd39f4e590b` — aa6d6eab-6697-4310-bed5-1fd39f4e590b.jsonl:1
+
+```
+нужно сделать сохранение текста в чате, когда я переключаюсь между разделами. сбарсываем только когда закрыли и открыли приложение
+```
+
+## 1137. session `aa6d6eab-6697-4310-bed5-1fd39f4e590b` — aa6d6eab-6697-4310-bed5-1fd39f4e590b.jsonl:6
+
+```
+полоска прокрутки слишком близко. Сообщения не все повседневные добавились и мне не отвечает со стикерами в чате(в приложении).
+```
+
+## 1138. session `aa6d6eab-6697-4310-bed5-1fd39f4e590b` — aa6d6eab-6697-4310-bed5-1fd39f4e590b.jsonl:10
+
+```
+НЕТУ СТИКЕРОВ ИЛИ ЭМОДЗИ.
+
+нужно показывать эмодзи, они помогают лучше воспринять инфу!
+```
+
+## 1139. session `ab115014-7ae6-49ea-818b-08e8aaccf6d1` — ab115014-7ae6-49ea-818b-08e8aaccf6d1.jsonl:1
+
+```
+обрезалось и где прочерк(число) нужно сделать квадратным а не прямоугольным
+
+ВЫше подними игру
+
+И по бокам сделай отступ как все элементы на гл экране
+```
+
+## 1140. session `abf9b3a8-6f96-424d-a732-6a6546b82c8c` — abf9b3a8-6f96-424d-a732-6a6546b82c8c.jsonl:1
+
+```
+проверь базу знаний, чтобы у меня везде конкретно отвечалось, а не говорило где можно это узнать, чтобы у меня в нейронку шел правильный промт, чтобы она возвращала нормальный текст, без ошибок в написании и пунктуации и правильно отвечала.
+```
+
+## 1141. session `abf9b3a8-6f96-424d-a732-6a6546b82c8c` — abf9b3a8-6f96-424d-a732-6a6546b82c8c.jsonl:17
+
+```
+Handle the above notification. The subagent result is visible to the user, so DO NOT reiterate or summarize its contents unless asked, or if multi-task result synthesis is required.
+```
+
+## 1142. session `abf9b3a8-6f96-424d-a732-6a6546b82c8c` — abf9b3a8-6f96-424d-a732-6a6546b82c8c.jsonl:19
+
+```
+https://vk.com/bbplay__tmb вот отсюда можешь взять данные для базы знаний.
+
+Возьми клуб на Астраханской и бери от туда данные(он такой же как и клуб на Медвежьей).
+И бери с ВК только то, что не получил в api
+```
+
+## 1143. session `abf9b3a8-6f96-424d-a732-6a6546b82c8c` — abf9b3a8-6f96-424d-a732-6a6546b82c8c.jsonl:33
+
+```
+https://vk.com/bbplay__tmb вот отсюда можешь взять данные для базы знаний.
+
+Возьми клуб на Астраханской и бери от туда данные.
+Смотри. у меня в приложении не должно быть клуба на астраханской, мы берем просто данные. В приложении один клуб - на медвежьей(его нет в вк).
+И бери с ВК только то, что не получил в api
+```
+
+## 1144. session `subagents` — 18dcc78f-20c2-4686-b68b-10fe6548eceb.jsonl:1
+
+```
+Thoroughness: medium. Explore the repository to find where the app stores or builds the knowledge base, FAQ content, AI prompts, chatbot instructions, or assistant response-generation logic. Return the most relevant files, symbols, and a brief description of how they fit together. Do not modify files.
+```
+
+## 1145. session `ac1a1928-af1c-4577-a739-62b9bfb00205` — ac1a1928-af1c-4577-a739-62b9bfb00205.jsonl:1
+
+```
+увеличь по высоте(все не влизает) и после кнопки отправить мы закрываем меню и показываем алерт об успехе и благодарности за отзыв.
+```
+
+## 1146. session `ac1a1928-af1c-4577-a739-62b9bfb00205` — ac1a1928-af1c-4577-a739-62b9bfb00205.jsonl:27
+
+```
+[job-review-mock] {clubId: 87375, stars: 5, topic: 'крутяк', body: 'круто', contact: '99999999'}
+
+Но не выскачело окно как при успешной брони что типо спасибо за отзыв и тд
+```
+
+## 1147. session `ac454a6d-2065-425b-aae2-d611efa8ffdf` — ac454a6d-2065-425b-aae2-d611efa8ffdf.jsonl:1
+
+```
+Когда заходим в раздел, то сбрасываем его в деф. состояние.
+
+Нужно сделать, чтобы услвно на главной странице открыли настройки, потом открыли раздел новости и чтобы когда обратно открыли главную то там открылась главная страница а не настройки. и так везде
+```
+
+## 1148. session `adc3c67a-568f-4e9c-943b-0e0cf297c772` — adc3c67a-568f-4e9c-943b-0e0cf297c772.jsonl:1
+
+```
+При прокрутке фильтров вибрацию выключаем.
+```
+
+## 1149. session `adcd84a4-cc5b-4d29-ab92-5ee3bea87c7e` — adcd84a4-cc5b-4d29-ab92-5ee3bea87c7e.jsonl:1
+
+```
+Не находит окно для ближ. брони. при том что ничего не занято
+```
+
+## 1150. session `afe00e3d-ed81-44cc-82bd-c9e64c3b8d2d` — afe00e3d-ed81-44cc-82bd-c9e64c3b8d2d.jsonl:1
+
+```
+на экране загрузки убери текст Black bears play и увеличь логотип
+```
+
+## 1151. session `afe00e3d-ed81-44cc-82bd-c9e64c3b8d2d` — afe00e3d-ed81-44cc-82bd-c9e64c3b8d2d.jsonl:15
+
+```
+увеличь еще сильнее лого
+```
+
+## 1152. session `b036c3f8-845f-4c53-a7b5-0ca0c25f8752` — b036c3f8-845f-4c53-a7b5-0ca0c25f8752.jsonl:1
+
+```
+просто делаем выбор пк и открываем схему в бронировании.
+И так же нету кнопки изменение выбраного параметра(список должен быть)
+```
+
+## 1153. session `b06fbe77-2fba-4c9e-8983-2b2dc40e2c99` — b06fbe77-2fba-4c9e-8983-2b2dc40e2c99.jsonl:1
+
+```
+сделай цвета более подходящие для стоимости пополнения.
+
+И нужно сделать чтобы у меня 100 было кротким(например) 200 длинее и так длинее длинее и до 15\00 (она длинее всего)
+```
+
+## 1154. session `b1287a1e-280a-4765-8fca-d563676d7298` — b1287a1e-280a-4765-8fca-d563676d7298.jsonl:1
+
+```
+Очень плохая анимация вращения кубика(очень криво и быстро и плохо) и так еж нужно показывать просто кубик с последней отметкой в квадрате где он крутиться а не -.
+
+И так же результат показываем кубиком(не выводим число)
+```
+
+## 1155. session `b1c0313a-17e9-4387-931c-355d75fd2853` — b1c0313a-17e9-4387-931c-355d75fd2853.jsonl:1
+
+```
+давай будем под сообщением при бронировании писать по иммо выбора параметра изменить параметр(список) он открывается и человек выбирает какой параметр брони поменять, потом открывается меню в котором можно поменять.
+```
+
+## 1156. session `b33e80c4-d0c3-44a8-a13d-6bec0bfa2b31` — b33e80c4-d0c3-44a8-a13d-6bec0bfa2b31.jsonl:1
+
+```
+экран режется по бокам. Мы делаем отступ для эелементов от экрана. Но например перемотку мы не должны отступ делать.
+
+так же в моих бронях надо сначало самую новую бронь показывать и потом старее старее... смотрим по дате брони а не когда совершилась эта бронь.
+```
+
+## 1157. session `b3b6aa5c-9980-4e48-a437-0f6d61d2db02` — b3b6aa5c-9980-4e48-a437-0f6d61d2db02.jsonl:1
+
+```
+анимация стала лучше, но все ровно плохая. Кубик крутитьс яв разные стороны очень дергано и не понятно.
+
+Не будто его бросили
+```
+
+## 1158. session `b46dc295-ec59-4b3f-907f-2a53a0dfbd41` — b46dc295-ec59-4b3f-907f-2a53a0dfbd41.jsonl:1
+
+```
+проверь, чтобы у меня не было тех. фраз в приложении и ошибок.
+```
+
+## 1159. session `b7be6c8d-9f97-4586-b489-41602dd02b5e` — b7be6c8d-9f97-4586-b489-41602dd02b5e.jsonl:1
+
+```
+справку переименовываем в Базу знаний, а помощник в Нейросеть
+```
+
+## 1160. session `b86f6aef-ef0c-4f44-a965-91c206600a09` — b86f6aef-ef0c-4f44-a965-91c206600a09.jsonl:1
+
+```
+добавляем одну кнопку статистика, когда нажали то открывается экран, где сверху выбор раздела с нужной статой.
+```
+
+## 1161. session `b86f6aef-ef0c-4f44-a965-91c206600a09` — b86f6aef-ef0c-4f44-a965-91c206600a09.jsonl:14
+
+```
+нужно чтобы все уместилось на одном экране без прокрутки в бок.
+И чтобы были значик соот. статы
+```
+
+## 1162. session `b86f6aef-ef0c-4f44-a965-91c206600a09` — b86f6aef-ef0c-4f44-a965-91c206600a09.jsonl:18
+
+```
+кнопки назад и далее(по страницам) переносим вниз и закрепляем снизу меню.
+
+Пиши вместо pc-07 ПК 7
+
+Рейтинг мы должны делать по играм (CS2, Dota 2, Valorant, PUBG)
+```
+
+## 1163. session `b86f6aef-ef0c-4f44-a965-91c206600a09` — b86f6aef-ef0c-4f44-a965-91c206600a09.jsonl:26
+
+```
+при нажатии на игру открывается новый экран, где рейтинг пользователей в этой игре.
+
+Идет от самого большого кол-ва очков до самого низкого
+```
+
+## 1164. session `b86f6aef-ef0c-4f44-a965-91c206600a09` — b86f6aef-ef0c-4f44-a965-91c206600a09.jsonl:38
+
+```
+добавь легенду таблицы(Очки, Имя, Место)
+```
+
+## 1165. session `b8fcb345-5e49-40a0-995a-835984e612f9` — b8fcb345-5e49-40a0-995a-835984e612f9.jsonl:1
+
+```
+так, добавляем в настройки профиля добавление лица.
+
+То есть мы локально пока храним, человек нажимает кнопку добавить фото, открывается камера с овалом под лицо, куда челвек сначало должен подняв голову сфоткать, потом держа камер уровно по центру лица и потом опустив голову.
+
+Везде чтобы было видно лицо.
+```
+
+## 1166. session `b9aef4f4-a03b-4c86-8e6c-d122ba43aaf4` — b9aef4f4-a03b-4c86-8e6c-d122ba43aaf4.jsonl:1
+
+```
+когда загружается то во первых под схемой какой то прямоугольник лишний. и во вторых состояние схемы меняется постоянно
+```
+
+## 1167. session `bb9a7043-0933-493a-ac58-9762a4ef0fc8` — bb9a7043-0933-493a-ac58-9762a4ef0fc8.jsonl:1
+
+```
+Когда я руками перематываю акции, то мы таймер сбрасываем, то есть раз в 15 сек матаем, если руками матнули то таймер сбрасывается и заного отсчет начинает
+```
+
+## 1168. session `bbc8cb7d-67a2-4b53-9bb4-010ab31c5330` — bbc8cb7d-67a2-4b53-9bb4-010ab31c5330.jsonl:1
+
+```
+изучи, найди причину почему у меня снизу меню не доходит до края экрана и исправь это во всех таких меню
+```
+
+## 1169. session `bbc8cb7d-67a2-4b53-9bb4-010ab31c5330` — bbc8cb7d-67a2-4b53-9bb4-010ab31c5330.jsonl:25
+
+```
+снизу обводка пропала как во всем меню. и проверь другие менюшки тоже.
+```
+
+## 1170. session `bbc8cb7d-67a2-4b53-9bb4-010ab31c5330` — bbc8cb7d-67a2-4b53-9bb4-010ab31c5330.jsonl:30
+
+```
+ПОЧЕМУ У МЕНЯ СНИЗУ ЭТО ОТДЕЛЬНАЯ ПЛАШКА?
+У меня должна быть одна сполшная меню до низу экрана. В одном стиле, с одной обводкой
+```
+
+## 1171. session `bbc8cb7d-67a2-4b53-9bb4-010ab31c5330` — bbc8cb7d-67a2-4b53-9bb4-010ab31c5330.jsonl:34
+
+```
+исправь все такие меню
+```
+
+## 1172. session `bc20ed2b-ddbe-46f8-9409-397c2efa76c9` — bc20ed2b-ddbe-46f8-9409-397c2efa76c9.jsonl:1
+
+```
+сделай условия и цены красивые по разделами не дублируещиеся и понятные для воспринятия.
+
+И там должны быть только пакеты 3 часа и 5 часов и по высоте это меню не должно быть такое высокое(все должно уместиться без промотки)
+```
+
+## 1173. session `bded9c5e-980e-492a-99a0-1be8119ee8fb` — bded9c5e-980e-492a-99a0-1be8119ee8fb.jsonl:1
+
+```
+он попросил уточнить, и забыл то что он это просил. То есть мы еще память должны использовать
+```
+
+## 1174. session `bef71dd0-d5c4-44bb-993d-e53d09cc24ca` — bef71dd0-d5c4-44bb-993d-e53d09cc24ca.jsonl:1
+
+```
+так поработай над анимацией броска кубика еще сильнее и сделай кубик не плоский с 3d с гранями
+```
+
+## 1175. session `c08937ae-be0b-47a2-a4bf-56a615f91fa4` — c08937ae-be0b-47a2-a4bf-56a615f91fa4.jsonl:1
+
+```
+смотри я задаю вопрос, а мне дает имено бронь уже. Фигово.
+```
+
+## 1176. session `c12be46f-cc95-44c9-81a7-e86ae0942b9a` — c12be46f-cc95-44c9-81a7-e86ae0942b9a.jsonl:1
+
+```
+чат плохо работает. надо расширять базу знаний
+```
+
+## 1177. session `c373a302-144e-4549-87d2-6bc2ecddd8bc` — c373a302-144e-4549-87d2-6bc2ecddd8bc.jsonl:1
+
+```
+так, давай так же как на схеме писать что нужно выбрать а не отдельным прямоугольником.
+
+То есть, мы схему затемняем(только схему) и пишем что сначало выберите то то, а в списке мы затемняем прямоугольники и тоже по середине пишем выберито то то
+```
+
+## 1178. session `c373a302-144e-4549-87d2-6bc2ecddd8bc` — c373a302-144e-4549-87d2-6bc2ecddd8bc.jsonl:20
+
+```
+Надо в списке затемнять только плашки компов и просто по середине писать(по середине списка, не пк) что нужно выбратьб что-то
+```
+
+## 1179. session `c373a302-144e-4549-87d2-6bc2ecddd8bc` — c373a302-144e-4549-87d2-6bc2ecddd8bc.jsonl:26
+
+```
+не по центру. И в списке тоже нужно отображать состояние пк
+```
+
+## 1180. session `c373a302-144e-4549-87d2-6bc2ecddd8bc` — c373a302-144e-4549-87d2-6bc2ecddd8bc.jsonl:37
+
+```
+В списке просто затемняем не пишем надпись. И состояние пк нужно показывать
+```
+
+## 1181. session `c373a302-144e-4549-87d2-6bc2ecddd8bc` — c373a302-144e-4549-87d2-6bc2ecddd8bc.jsonl:44
+
+```
+состояния пк - Красный занят, зеленый выбран, желтый недоступен пустой - свободен. и так же после изменения фильтров брони нужно сбрасывать выбор пк.
+```
+
+## 1182. session `c4cec548-de0c-44d2-b555-d9a2df06e8cf` — c4cec548-de0c-44d2-b555-d9a2df06e8cf.jsonl:1
+
+```
+В окне с бронью открыл настройки 
+Из них выйти больше не смог, кнопки выйти из настроек пропала. При нажатии на панели навигации на кнопку профиль,открываются снова настройки
+```
+
+## 1183. session `c5e10f44-1073-41ab-bd80-7280dc8adf09` — c5e10f44-1073-41ab-bd80-7280dc8adf09.jsonl:1
+
+```
+когда я нажимаю на лайк или дизлайк мы делаем так, сначало выделяется зеленым, затем через секунду показа мы пишем спасибо за оценку.(зеленым) и через 5 сек скрываем
+```
+
+## 1184. session `c7c20fa5-f0f3-48c7-b7cd-59842d5b5b59` — c7c20fa5-f0f3-48c7-b7cd-59842d5b5b59.jsonl:1
+
+```
+Сбрасывает состояние фильтров при поиске ближ. окна для брони(хотя прога должна сбрасивать только когда выходим с приложения)
+```
+
+## 1185. session `cc318911-9c3f-412c-82cf-49fc264fe06f` — cc318911-9c3f-412c-82cf-49fc264fe06f.jsonl:1
+
+```
+старые сообщения удаляем, новые пишем. и нужно сделать выбор даты длительности времени таким же как и в разделе бронь
+```
+
+## 1186. session `cc318911-9c3f-412c-82cf-49fc264fe06f` — cc318911-9c3f-412c-82cf-49fc264fe06f.jsonl:15
+
+```
+смотри, вот у нас сообщение в какой клуб забронить, должно заменяться на сообщение клуб: Медвежья....(в сообщение нужно писать город клуба)
+Выберете дату:
+
+и это сообщение заменяться на след.
+```
+
+## 1187. session `cc318911-9c3f-412c-82cf-49fc264fe06f` — cc318911-9c3f-412c-82cf-49fc264fe06f.jsonl:25
+
+```
+выбор длительности отличается от выбора в разделе брони.
+И потом выбор пк мы делаем показываю схему или список на выбор. 
+
+Так же нужно придумать как давай возможность изменить фильтр брони какой то, который уже выбрали в чате
+```
+
+## 1188. session `cc318911-9c3f-412c-82cf-49fc264fe06f` — cc318911-9c3f-412c-82cf-49fc264fe06f.jsonl:44
+
+```
+выбор длительности отличается от выбора в разделе брони.
+И потом выбор пк мы делаем показываю схему или список на выбор.
+```
+
+## 1189. session `cc318911-9c3f-412c-82cf-49fc264fe06f` — cc318911-9c3f-412c-82cf-49fc264fe06f.jsonl:61
+
+```
+смотри выбор пк, мы должны открывать меню снизу(как меню выбора фильтра) там будет схема и над ней выбор Схема\список
+```
+
+## 1190. session `cc318911-9c3f-412c-82cf-49fc264fe06f` — cc318911-9c3f-412c-82cf-49fc264fe06f.jsonl:65
+
+```
+если автоматом выбрали клуб, то нужно писать что его выбрали(Клуб:
+Выберете дату:)
+```
+
+## 1191. session `cc318911-9c3f-412c-82cf-49fc264fe06f` — cc318911-9c3f-412c-82cf-49fc264fe06f.jsonl:74
+
+```
+у меня выбор длительность не такой как во вкладке бронь.
+```
+
+## 1192. session `ce3abed2-6cd4-4eaf-8735-63360b447a35` — ce3abed2-6cd4-4eaf-8735-63360b447a35.jsonl:1
+
+```
+так в Еду надо добавить доставку до пк функция, галочкуа которую можно поставить
+```
+
+## 1193. session `ce40178d-8ce4-4eff-a468-74882b0e5c4a` — ce40178d-8ce4-4eff-a468-74882b0e5c4a.jsonl:1
+
+```
+так страница бронирования должна сохранять свое состояние до закрытия приложения
+```
+
+## 1194. session `ce40178d-8ce4-4eff-a468-74882b0e5c4a` — ce40178d-8ce4-4eff-a468-74882b0e5c4a.jsonl:7
+
+```
+изменить параметр должен быть на всех сообщениях с бронью
+```
+
+## 1195. session `ce407b39-36dd-4f98-b470-b59515f34f83` — ce407b39-36dd-4f98-b470-b59515f34f83.jsonl:1
+
+```
+все ровно я нажимаю на любой элемнт и он не выбирается а только звук прокрутки есть
+```
+
+## 1196. session `ce407b39-36dd-4f98-b470-b59515f34f83` — ce407b39-36dd-4f98-b470-b59515f34f83.jsonl:9
+
+```
+когда я нажимаю на элемент, то он сбрасывается в изначальное положение(на первый элемент перематывается)
+```
+
+## 1197. session `ce407b39-36dd-4f98-b470-b59515f34f83` — ce407b39-36dd-4f98-b470-b59515f34f83.jsonl:13
+
+```
+теперь когда я нажимаю а элемент он не выбирается!
+```
+
+## 1198. session `cfc9ac81-f487-4fc8-bf31-af1fb54880a3` — cfc9ac81-f487-4fc8-bf31-af1fb54880a3.jsonl:1
+
+```
+что за квадрат, убирай его, поиск по адресу делаем поиск по названия или адресу.
+
+Так же отзыв о работе переносим вниз, и уменьшаем по высоте размер кнопки.
+
+И в оценки клуба(отзыв) нужно будет добавить выбор клуба который посетили, и оценку по звездам. 
+
+И нужно имулировать отправку(то есть человек вводит и нажимает отправить просто очищаем делаем вид что отправилось)
+```
+
+## 1199. session `d09549c5-7ae8-4140-aca1-5c9e53910c8b` — d09549c5-7ae8-4140-aca1-5c9e53910c8b.jsonl:1
+
+```
+анимация во время загрузочного экрана (после входа в аккаунт или при загрузке приложения) давай ускорим анимацию этого объекта
+```
+
+## 1200. session `d1b47179-a25b-4fa1-8206-634688eae4da` — d1b47179-a25b-4fa1-8206-634688eae4da.jsonl:1
+
+```
+собери все промты, начиная с последнего промта указаного в файле где есть все промты
+```
+
+## 1201. session `d1b47179-a25b-4fa1-8206-634688eae4da` — d1b47179-a25b-4fa1-8206-634688eae4da.jsonl:14
+
+```
+добавь в этот файл новые промты
+```
+
+## 1202. session `d1f65147-c013-446f-a50f-088a7fe1b2e8` — d1f65147-c013-446f-a50f-088a7fe1b2e8.jsonl:1
+
+```
+мне нужно, чтобы у меня 200 руб были по длине полоски больше 100 рублей еще сильнее, 500 руб были больше 200 руб еще сильнее, 1000 больше 500, 1500 больше 1000 еще сильнее
+```
+
+## 1203. session `d1f65147-c013-446f-a50f-088a7fe1b2e8` — d1f65147-c013-446f-a50f-088a7fe1b2e8.jsonl:10
+
+```
+ОЧЕНЬ ПЛОХО. Сделай более агресивно
+```
+
+## 1204. session `d1f65147-c013-446f-a50f-088a7fe1b2e8` — d1f65147-c013-446f-a50f-088a7fe1b2e8.jsonl:14
+
+```
+смотри, 200 руб в 2 раза больше 100, и дальше по такой логике выстраивай длину объектов.
+```
+
+## 1205. session `d1f65147-c013-446f-a50f-088a7fe1b2e8` — d1f65147-c013-446f-a50f-088a7fe1b2e8.jsonl:18
+
+```
+КАК ТЫ СЧИТАЕШЬ. ПОЧЕМУ У МЕНЯ РАВНо. СДЕЛАЙ НОРМАЛЬНОООО!!!
+```
+
+## 1206. session `d1f65147-c013-446f-a50f-088a7fe1b2e8` — d1f65147-c013-446f-a50f-088a7fe1b2e8.jsonl:24
+
+```
+смотри, минимальный размер оставь и отталкивайся от него. то есть 100 руб - мин размер и дальше дальше дальше
+```
+
+## 1207. session `d1f65147-c013-446f-a50f-088a7fe1b2e8` — d1f65147-c013-446f-a50f-088a7fe1b2e8.jsonl:28
+
+```
+НЕ ПОМОГЛО!
+```
+
+## 1208. session `d1f65147-c013-446f-a50f-088a7fe1b2e8` — d1f65147-c013-446f-a50f-088a7fe1b2e8.jsonl:32
+
+```
+200  - 118px 500 - 180px 1000 - 240 px 1500 - 300 px
+```
+
+## 1209. session `d1f65147-c013-446f-a50f-088a7fe1b2e8` — d1f65147-c013-446f-a50f-088a7fe1b2e8.jsonl:37
+
+```
+200 - 100 px 500 - 125px 1000 - 180 px 1500 - 200 px
+```
+
+## 1210. session `d6378760-3428-4d5a-aa02-31c5d57cc421` — d6378760-3428-4d5a-aa02-31c5d57cc421.jsonl:1
+
+```
+смотри у меня быстрая прокрутка кубика длиться столько же как и медлинная а должна быстрее!
+```
+
+## 1211. session `d6539198-975c-4f4d-96ad-da60fc84a246` — d6539198-975c-4f4d-96ad-da60fc84a246.jsonl:1
+
+```
+когда хочешь забронить на пакеты, то gamezone выбор пк работает а выбор для тарифов bootcamp и VIP не работает, пк выбирается и сразу сбрасывается.
+
+Исправь
+```
+
+## 1212. session `d670657f-3a9d-4676-879f-cc925912e0ac` — d670657f-3a9d-4676-879f-cc925912e0ac.jsonl:1
+
+```
+у меня выбор длительности брони в чате не такой как выбор в вкладке брони
+```
+
+## 1213. session `d784e8fb-14c4-4611-bd69-67709f9f3bcc` — d784e8fb-14c4-4611-bd69-67709f9f3bcc.jsonl:1
+
+```
+Не работает. Пусть у нас клуб на медвежьей работает с 10 00 и до 02 00
+
+И нужно синтаксис проверять!!! ИЛи в промте нейронки пиши чтобы она синтаксис паривльно делала
+```
+
+## 1214. session `d929798a-ab10-4a3b-8986-40cd6d1c3691` — d929798a-ab10-4a3b-8986-40cd6d1c3691.jsonl:1
+
+```
+кнопка избранности делаем так - при нажатии заполняем фиолетовым(как в приложении нашем).
+
+Дальше кнопку карты убираем и делаем кнопку Как добараться.
+
+И над отзывам о работе убираем полоску не нужную
+```
+
+## 1215. session `d9f3c676-051c-40d7-8651-48cbc5f5cfe0` — d9f3c676-051c-40d7-8651-48cbc5f5cfe0.jsonl:1
+
+```
+в акциях выезжает кнопка Понятнов в условиях акций
+```
+
+## 1216. session `d9f3c676-051c-40d7-8651-48cbc5f5cfe0` — d9f3c676-051c-40d7-8651-48cbc5f5cfe0.jsonl:11
+
+```
+Переименуй, не 100 бонусов за отзыв, а бонусы за отзыв.
+
+Мини игра Кубик называем бонусы за удачу
+```
+
+## 1217. session `dcd809ec-4f7d-4511-89d0-239d3d9306ca` — dcd809ec-4f7d-4511-89d0-239d3d9306ca.jsonl:1
+
+```
+давай перенесем надписи на схему в соответствующие зоны
+```
+
+## 1218. session `dd45b021-a989-438a-a7fa-ab23195826a6` — dd45b021-a989-438a-a7fa-ab23195826a6.jsonl:1
+
+```
+собери apk локально
+```
+
+## 1219. session `ddf16d16-cb92-47f2-a260-970549ae90e8` — ddf16d16-cb92-47f2-a260-970549ae90e8.jsonl:1
+
+```
+переносим под игру.
+
+Кубик слишком быстро крутиться и не замедляется.
+
+Мне нужно прям очень похожая анимация броска кубика. Поработай.
+
+Время вращения - 3 сек примерно
+```
+
+## 1220. session `de591a1f-3586-4324-afe8-8388f7842af1` — de591a1f-3586-4324-afe8-8388f7842af1.jsonl:1
+
+```
+ЭКРАН НУЖНО СДЕЛАТЬ ВСЕГДА ВЫСОКИМ(НЕ МЕНЯТЬ ЕГО ВЫСОТУ)
+
+Нужно по высоте сделать таким, чтобы все влезало без прокрутки!
+```
+
+## 1221. session `de5f51f8-7438-4846-8508-94fb17ecb5c8` — de5f51f8-7438-4846-8508-94fb17ecb5c8.jsonl:1
+
+```
+точки везде очень маленькие. КУбик кривой и крутиться очень плохо.
+
+Иследуй это, найди решение и сделай мне красивую анимацию проска кубика
+```
+
+## 1222. session `de5f51f8-7438-4846-8508-94fb17ecb5c8` — de5f51f8-7438-4846-8508-94fb17ecb5c8.jsonl:11
+
+```
+точки стоят криво
+```
+
+## 1223. session `dee5d735-577e-4c19-a051-5355ef338d3e` — dee5d735-577e-4c19-a051-5355ef338d3e.jsonl:1
+
+```
+давай при вращении кубика добавим этот звук - @c:\Users\pc\Downloads\dice-roll-sound-2.mp3
+```
+
+## 1224. session `def271ab-7992-43ff-bb57-2a870e7adc0b` — def271ab-7992-43ff-bb57-2a870e7adc0b.jsonl:1
+
+```
+так, в чате когда бронирование происходит и доходит до выбора пк, то пользователя кидает в раздел брони а нужно чтобы открывалась менюшка с схемой или списком(уже есть но невсегда появляется.)
+
+И на схеме в чате выбор не работает
+```
+
+## 1225. session `df078762-d6de-4d25-b620-f06847b8da6b` — df078762-d6de-4d25-b620-f06847b8da6b.jsonl:1
+
+```
+некрасивая плашка, исправь
+```
+
+## 1226. session `df42cc0f-6b4a-4298-aa32-23c816c3b8a6` — df42cc0f-6b4a-4298-aa32-23c816c3b8a6.jsonl:1
+
+```
+в ленте акций сделай их лентой, то есть когда с последнего в право листаем то первый открывается(цикл) если с первого в лево то последний(цикл)
+```
+
+## 1227. session `df93f186-0517-43ea-9239-eb663d2ed2ee` — df93f186-0517-43ea-9239-eb663d2ed2ee.jsonl:1
+
+```
+в названии клуба не нужно писать город(пользователь его выбирает вначале)
+```
+
+## 1228. session `dffa5f1a-91a7-4fb1-adf1-575777e71a43` — dffa5f1a-91a7-4fb1-adf1-575777e71a43.jsonl:1
+
+```
+когда у человека есть активная бронь, которая уже началась, то у него в чате появляеться кнопка прямого чата с админом.
+
+Заканчиваем чат автоматически после инактива от пользователя в теч. 5 минут или пока пользователь не нажмет на кнопку закончить
+```
+
+## 1229. session `e1421ac0-0197-4cdd-8827-dce56ae6a6e2` — e1421ac0-0197-4cdd-8827-dce56ae6a6e2.jsonl:1
+
+```
+D:\BB_Project\bbplay…imatedHelper.js:410 Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation. To resolve this, add `RCTAnimation` module to this app, or remove `useNativeDriver`. Make sure to run `bundle exec pod install` first. Read more about autolinking: https://github.com/react-native-community/cli/blob/master/docs/autolinking.md
+D:\BB_Project\bbplay…arnOnce\index.js:24 props.pointerEvents is deprecated. Use style.pointerEvents
+D:\BB_Project\bbplay…lib\invariant.js:40 Uncaught Invariant Violation: inputRange (9) and outputRange (8) must have the same length
+    at invariant (D:\BB_Project\bbplay…\invariant.js:40:15)
+    at createInterpolation (D:\BB_Project\bbplay…erpolation.js:37:14)
+    at new AnimatedInterpolation (D:\BB_Project\bbplay…rpolation.js:227:27)
+    at AnimatedValue.interpolate (D:\BB_Project\bbplay…atedValue.js:203:12)
+    at D:\BB_Project\bbplay…ameModal.tsx:706:20
+    at mountMemo (D:\BB_Project\bbplay…lopment.js:17225:19)
+    at Object.useMemo (D:\BB_Project\bbplay…lopment.js:17670:16)
+    at useMemo (D:\BB_Project\bbplay…elopment.js:1650:21)
+    at DiceMinigameModal (D:\BB_Project\bbplay…ameModal.tsx:704:25)
+    at renderWithHooks (D:\BB_Project\bbplay…lopment.js:16305:18)
+D:\BB_Project\bbplay…lib\invariant.js:40 Uncaught Invariant Violation: inputRange (9) and outputRange (8) must have the same length
+    at invariant (D:\BB_Project\bbplay…\invariant.js:40:15)
+    at createInterpolation (D:\BB_Project\bbplay…erpolation.js:37:14)
+    at new AnimatedInterpolation (D:\BB_Project\bbplay…rpolation.js:227:27)
+    at AnimatedValue.interpolate (D:\BB_Project\bbplay…atedValue.js:203:12)
+    at D:\BB_Project\bbplay…ameModal.tsx:706:20
+    at mountMemo (D:\BB_Project\bbplay…lopment.js:17225:19)
+    at Object.useMemo (D:\BB_Project\bbplay…lopment.js:17670:16)
+    at useMemo (D:\BB_Project\bbplay…elopment.js:1650:21)
+    at DiceMinigameModal (D:\BB_Project\bbplay…ameModal.tsx:704:25)
+    at renderWithHooks (D:\BB_Project\bbplay…lopment.js:16305:18)
+D:\BB_Project\bbplay…evelopment.js:18687 
+The above error occurred in the <DiceMinigameModal> component:
+
+    at DiceMinigameModal (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:135354:7)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:74593:7
+    at ProfileScreen (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:121031:50)
+    at StaticContainer (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88289:18)
+    at EnsureSingleNavigator (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:85301:7)
+    at SceneView (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88205:7)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at Background (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:90669:7)
+    at Screen (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:91748:73)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at SafeAreaProviderCompat (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:91641:7)
+    at NativeStackView (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:117600:7)
+    at PreventRemoveProvider (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:87264:7)
+    at NavigationContent (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88001:7)
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88018:9
+    at NativeStackNavigator (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:117536:7)
+    at ProfileStack (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:120796:38)
+    at StaticContainer (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88289:18)
+    at EnsureSingleNavigator (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:85301:7)
+    at SceneView (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88205:7)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at Background (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:90669:7)
+    at Screen (http://localhost:8081/node_mo
+D:\BB_Project\bbplay…rrorBoundary.tsx:21 AppErrorBoundary Invariant Violation: inputRange (9) and outputRange (8) must have the same length
+    at invariant (D:\BB_Project\bbplay…\invariant.js:40:15)
+    at createInterpolation (D:\BB_Project\bbplay…erpolation.js:37:14)
+    at new AnimatedInterpolation (D:\BB_Project\bbplay…rpolation.js:227:27)
+    at AnimatedValue.interpolate (D:\BB_Project\bbplay…atedValue.js:203:12)
+    at D:\BB_Project\bbplay…ameModal.tsx:706:20
+    at mountMemo (D:\BB_Project\bbplay…lopment.js:17225:19)
+    at Object.useMemo (D:\BB_Project\bbplay…lopment.js:17670:16)
+    at useMemo (D:\BB_Project\bbplay…elopment.js:1650:21)
+    at DiceMinigameModal (D:\BB_Project\bbplay…ameModal.tsx:704:25)
+    at renderWithHooks (D:\BB_Project\bbplay…lopment.js:16305:18) 
+
+    at DiceMinigameModal (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:135354:7)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:74593:7
+    at ProfileScreen (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:121031:50)
+    at StaticContainer (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88289:18)
+    at EnsureSingleNavigator (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:85301:7)
+    at SceneView (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88205:7)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at Background (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:90669:7)
+    at Screen (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:91748:73)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at SafeAreaProviderCompat (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:91641:7)
+    at NativeStackView (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:117600:7)
+    at PreventRemoveProvider (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:87264:7)
+    at NavigationContent (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88001:7)
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88018:9
+    at NativeStackNavigator (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:117536:7)
+    at ProfileStack (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:120796:38)
+    at StaticContainer (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88289:18)
+    at EnsureSingleNavigator (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:85301:7)
+    at SceneView (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:88205:7)
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at div
+    at http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:35002:27
+    at Background (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:90669:7)
+    at Screen (http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&
+componentDidCatch	@	D:\BB_Project\bbplay…rrorBoundary.tsx:21
+callback	@	D:\BB_Project\bbplay…evelopment.js:18768
+callCallback	@	D:\BB_Project\bbplay…evelopment.js:13923
+commitUpdateQueue	@	D:\BB_Project\bbplay…evelopment.js:13944
+commitLayoutEffectOnFiber	@	D:\BB_Project\bbplay…evelopment.js:23364
+commitLayoutMountEffects_complete	@	D:\BB_Project\bbplay…evelopment.js:24688
+commitLayoutEffects_begin	@	D:\BB_Project\bbplay…evelopment.js:24674
+commitLayoutEffects	@	D:\BB_Project\bbplay…evelopment.js:24612
+commitRootImpl	@	D:\BB_Project\bbplay…evelopment.js:26823
+commitRoot	@	D:\BB_Project\bbplay…evelopment.js:26682
+finishConcurrentRender	@	D:\BB_Project\bbplay…evelopment.js:25892
+performConcurrentWorkOnRoot	@	D:\BB_Project\bbplay…evelopment.js:25809
+workLoop	@	D:\BB_Project\bbplay….development.js:266
+flushWork	@	D:\BB_Project\bbplay….development.js:239
+performWorkUntilDeadline	@	D:\BB_Project\bbplay….development.js:533
+postMessage		
+schedulePerformWorkUntilDeadline	@	D:\BB_Project\bbplay….development.js:574
+requestHostCallback	@	D:\BB_Project\bbplay….development.js:588
+unstable_scheduleCallback	@	D:\BB_Project\bbplay….development.js:441
+scheduleCallback$1	@	D:\BB_Project\bbplay…evelopment.js:27537
+ensureRootIsScheduled	@	D:\BB_Project\bbplay…evelopment.js:25683
+scheduleUpdateOnFiber	@	D:\BB_Project\bbplay…evelopment.js:25531
+dispatchSetState	@	D:\BB_Project\bbplay…evelopment.js:17527
+(anonymous)	@	D:\BB_Project\bbplay…AppBootstrap.ts:125
+await in (anonymous)		
+(anonymous)	@	D:\BB_Project\bbplay…AppBootstrap.ts:127
+commitHookEffectListMount	@	D:\BB_Project\bbplay…evelopment.js:23150
+commitPassiveMountOnFiber	@	D:\BB_Project\bbplay…evelopment.js:24931
+commitPassiveMountEffects_complete	@	D:\BB_Project\bbplay…evelopment.js:24891
+commitPassiveMountEffects_begin	@	D:\BB_Project\bbplay…evelopment.js:24878
+commitPassiveMountEffects	@	D:\BB_Project\bbplay…evelopment.js:24866
+flushPassiveEffectsImpl	@	D:\BB_Project\bbplay…evelopment.js:27039
+flushPassiveEffects	@	D:\BB_Project\bbplay…evelopment.js:26984
+(anonymous)	@	D:\BB_Project\bbplay…evelopment.js:26769
+workLoop	@	D:\BB_Project\bbplay….development.js:266
+flushWork	@	D:\BB_Project\bbplay….development.js:239
+performWorkUntilDeadline	@	D:\BB_Project\bbplay….development.js:533
+postMessage		
+schedulePerformWorkUntilDeadline	@	D:\BB_Project\bbplay….development.js:574
+requestHostCallback	@	D:\BB_Project\bbplay….development.js:588
+unstable_scheduleCallback	@	D:\BB_Project\bbplay….development.js:441
+scheduleCallback$1	@	D:\BB_Project\bbplay…evelopment.js:27537
+ensureRootIsScheduled	@	D:\BB_Project\bbplay…evelopment.js:25683
+scheduleUpdateOnFiber	@	D:\BB_Project\bbplay…evelopment.js:25531
+dispatchReducerAction	@	D:\BB_Project\bbplay…evelopment.js:17452
+(anonymous)	@	D:\BB_Project\bbplay…AnimatedProps.js:55
+(anonymous)	@	D:\BB_Project\bbplay…AnimatedProps.js:29
+update	@	D:\BB_Project\bbplay…AnimatedProps.js:80
+(anonymous)	@	D:\BB_Project\bbplay…AnimatedValue.js:55
+_flush	@	D:\BB_Project\bbplay…AnimatedValue.js:55
+_updateValue	@	D:\BB_Project\bbplay…nimatedValue.js:255
+(anonymous)	@	D:\BB_Project\bbplay…nimatedValue.js:222
+onUpdate	@	D:\BB_Project\bbplay…ingAnimation.js:100
+requestAnimationFrame		
+onUpdate	@	D:\BB_Project\bbplay…ingAnimation.js:103
+requestAnimationFrame		
+onUpdate	@	D:\BB_Project\bbplay…ingAnimation.js:103
+requestAnimationFrame		
+onUpdate	@	D:\BB_Project\bbplay…ingAnimation.js:103
+requestAnimationFrame		
+onUpdate	@	D:\BB_Project\bbplay…ingAnimation.js:103
+requestAnimationFrame		
+onUpdate	@	D:\BB_Project\bbplay…ingAnimation.js:103
+requestAnimationFrame		
+onUpdate	@	D:\BB_Project\bbplay…ingAnimation.js:103
+requestAnimationFrame		
+onUpdate	@	D:\BB_Project\bbplay…ingAnimation.js:103
+requestAnimationFrame		
+onUpdate	@	D:\BB_Project\bbplay…ingAnimation.js:103
+requestAnimationFrame		
+onUpdate	@	D:\BB_Project\bbplay…ingAnimation.js:103
+requestAnimationFrame		
+onUpdate	@	D:\BB_Project\bbplay…ingAnimation.js:103
+requestAnimationFrame		
+onUpdate	@	D:\BB_Project\bbplay…ingAnimation.js:103
+requestAnimationFrame		
+onUpdate	@	D:\BB_Project\bbplay…ingAnimation.js:103
+requestAnimationFrame		
+onUpdate	@	D:\BB_Project\bbplay…ingAnimation.js:103
+requestAnimationFrame		
+onUpdate	@	D:\BB_Project\bbplay…ingAnimation.js:103
+requestAnimationFrame		
+onUpdate	@	D:\BB_Project\bbplay…ingAnimation.js:103
+requestAnimationFrame		
+onUpdate	@	D:\BB_Project\bbplay…ingAnimation.js:103
+requestAnimationFrame		
+start	@	D:\BB_Project\bbplay…mingAnimation.js:75
+start	@	D:\BB_Project\bbplay…mingAnimation.js:84
+animate	@	D:\BB_Project\bbplay…nimatedValue.js:220
+start	@	D:\BB_Project\bbplay…plementation.js:152
+start	@	D:\BB_Project\bbplay…plementation.js:157
+start	@	D:\BB_Project\bbplay…plementation.js:226
+restart	@	D:\BB_Project\bbplay…plementation.js:343
+start	@	D:\BB_Project\bbplay…plementation.js:354
+(anonymous)	@	D:\BB_Project\bbplay…ubDataLoader.tsx:79
+commitHookEffectListMount	@	D:\BB_Project\bbplay…evelopment.js:23150
+commitPassiveMountOnFiber	@	D:\BB_Project\bbplay…evelopment.js:24931
+commitPassiveMountEffects_complete	@	D:\BB_Project\bbplay…evelopment.js:24891
+commitPassiveMountEffects_begin	@	D:\BB_Project\bbplay…evelopment.js:24878
+commitPassiveMountEffects	@	D:\BB_Project\bbplay…evelopment.js:24866
+flushPassiveEffectsImpl	@	D:\BB_Project\bbplay…evelopment.js:27039
+flushPassiveEffects	@	D:\BB_Project\bbplay…evelopment.js:26984
+(anonymous)	@	D:\BB_Project\bbplay…evelopment.js:26769
+workLoop	@	D:\BB_Project\bbplay….development.js:266
+flushWork	@	D:\BB_Project\bbplay….development.js:239
+performWorkUntilDeadline	@	D:\BB_Project\bbplay….development.js:533
+postMessage		
+schedulePerformWorkUntilDeadline	@	D:\BB_Project\bbplay….development.js:574
+performWorkUntilDeadline	@	D:\BB_Project\bbplay….development.js:538
+postMessage		
+schedulePerformWorkUntilDeadline	@	D:\BB_Project\bbplay….development.js:574
+performWorkUntilDeadline	@	D:\BB_Project\bbplay….development.js:538
+postMessage		
+schedulePerformWorkUntilDeadline	@	D:\BB_Project\bbplay….development.js:574
+requestHostCallback	@	D:\BB_Project\bbplay….development.js:588
+unstable_scheduleCallback	@	D:\BB_Project\bbplay….development.js:441
+scheduleCallback$1	@	D:\BB_Project\bbplay…evelopment.js:27537
+ensureRootIsScheduled	@	D:\BB_Project\bbplay…evelopment.js:25683
+scheduleUpdateOnFiber	@	D:\BB_Project\bbplay…evelopment.js:25531
+dispatchSetState	@	D:\BB_Project\bbplay…evelopment.js:17527
+(anonymous)	@	D:\BB_Project\bbplay…ild\FontHooks.js:19
+Promise.then		
+(anonymous)	@	D:\BB_Project\bbplay…ild\FontHooks.js:19
+commitHookEffectListMount	@	D:\BB_Project\bbplay…evelopment.js:23150
+commitPassiveMountOnFiber	@	D:\BB_Project\bbplay…evelopment.js:24931
+commitPassiveMountEffects_complete	@	D:\BB_Project\bbplay…evelopment.js:24891
+commitPassiveMountEffects_begin	@	D:\BB_Project\bbplay…evelopment.js:24878
+commitPassiveMountEffects	@	D:\BB_Project\bbplay…evelopment.js:24866
+flushPassiveEffectsImpl	@	D:\BB_Project\bbplay…evelopment.js:27039
+flushPassiveEffects	@	D:\BB_Project\bbplay…evelopment.js:26984
+(anonymous)	@	D:\BB_Project\bbplay…evelopment.js:26769
+workLoop	@	D:\BB_Project\bbplay….development.js:266
+flushWork	@	D:\BB_Project\bbplay….development.js:239
+performWorkUntilDeadline	@	D:\BB_Project\bbplay….development.js:533
+postMessage		
+schedulePerformWorkUntilDeadline	@	D:\BB_Project\bbplay….development.js:574
+performWorkUntilDeadline	@	D:\BB_Project\bbplay….development.js:538
+postMessage		
+schedulePerformWorkUntilDeadline	@	D:\BB_Project\bbplay….development.js:574
+requestHostCallback	@	D:\BB_Project\bbplay….development.js:588
+unstable_scheduleCallback	@	D:\BB_Project\bbplay….development.js:441
+scheduleCallback$1	@	D:\BB_Project\bbplay…evelopment.js:27537
+ensureRootIsScheduled	@	D:\BB_Project\bbplay…evelopment.js:25683
+scheduleUpdateOnFiber	@	D:\BB_Project\bbplay…evelopment.js:25531
+updateContainer	@	D:\BB_Project\bbplay…evelopment.js:28858
+(anonymous)	@	D:\BB_Project\bbplay…evelopment.js:29314
+render	@	D:\BB_Project\bbplay…\render\index.js:23
+renderApplication	@	D:\BB_Project\bbplay…erApplication.js:24
+(anonymous)	@	D:\BB_Project\bbplay…egistry\index.js:36
+runApplication	@	D:\BB_Project\bbplay…egistry\index.js:74
+registerRootComponent	@	D:\BB_Project\bbplay…RootComponent.js:18
+(anonymous)	@	D:\BB_Project\bbplay…\expo\AppEntry.js:5
+loadModuleImplementation	@	D:\BB_Project\bbplay…ills\require.js:277
+guardedLoadModule	@	D:\BB_Project\bbplay…ills\require.js:177
+metroRequire	@	D:\BB_Project\bbplay…fills\require.js:92
+(anonymous)
+```
+
+## 1230. session `e199732d-11ee-4270-8915-8e2f95da5013` — e199732d-11ee-4270-8915-8e2f95da5013.jsonl:1
+
+```
+смотри, мы плохо подстраиваем под экраны. 
+Наша задача чтобы все влезало на один экран без передвежений, а у меня и по высоте не влезает и по ширине, надо исправить подстройку под экран
+```
+
+## 1231. session `e19adf3d-0190-4cec-9657-e4875a737646` — e19adf3d-0190-4cec-9657-e4875a737646.jsonl:1
+
+```
+Надпись подними и дай ему загловок Правила игры.
+```
+
+## 1232. session `e49c3e34-4ac3-4d1d-bf3f-5dce94097c59` — e49c3e34-4ac3-4d1d-bf3f-5dce94097c59.jsonl:1
+
+```
+так, подумай как лучше обращаться в нейроку ollama, с какими данными может какие то роли прописывать или еще что-то. Его роль это чат-бот в приложении BlackBears Play
+```
+
+## 1233. session `e49c3e34-4ac3-4d1d-bf3f-5dce94097c59` — e49c3e34-4ac3-4d1d-bf3f-5dce94097c59.jsonl:4
+
+```
+смотри, логику не меняем. Я имею введу имено с каким промтом обращаться, помимо инфы из базы знаний
+```
+
+## 1234. session `e49c3e34-4ac3-4d1d-bf3f-5dce94097c59` — e49c3e34-4ac3-4d1d-bf3f-5dce94097c59.jsonl:6
+
+```
+так давай сделай чтобы такой промт посылался.
+```
+
+## 1235. session `e5eb7fe4-0b1b-42a9-a54b-613dc905a29d` — e5eb7fe4-0b1b-42a9-a54b-613dc905a29d.jsonl:1
+
+```
+Лого анимирование делаем больше гораздо и поднимаем на вверх.
+```
+
+## 1236. session `e5eb7fe4-0b1b-42a9-a54b-613dc905a29d` — e5eb7fe4-0b1b-42a9-a54b-613dc905a29d.jsonl:8
+
+```
+еще в 2 раза больше и выше
+```
+
+## 1237. session `e6037ba9-ce11-4c7f-9dd4-92497d9ffd82` — e6037ba9-ce11-4c7f-9dd4-92497d9ffd82.jsonl:1
+
+```
+снизу, где разделы убери прозрачность меню, сейчас оно режеться.
+```
+
+## 1238. session `e6037ba9-ce11-4c7f-9dd4-92497d9ffd82` — e6037ba9-ce11-4c7f-9dd4-92497d9ffd82.jsonl:12
+
+```
+все ровно, не помогло.
+У меня меню должно быть продлито до конца экрана снизу, а оно обрезается почему то
+```
+
+## 1239. session `e6037ba9-ce11-4c7f-9dd4-92497d9ffd82` — e6037ba9-ce11-4c7f-9dd4-92497d9ffd82.jsonl:16
+
+```
+у меня меню не доходит до конца экрана, а режется, исправь!
+```
+
+## 1240. session `e6037ba9-ce11-4c7f-9dd4-92497d9ffd82` — e6037ba9-ce11-4c7f-9dd4-92497d9ffd82.jsonl:20
+
+```
+У МЕНЯ СНИЗУ МЕНЮ ПРОЗРАЧНОЕ. ИСПРАВЬ ЭТО
+```
+
+## 1241. session `e93cc0ca-32d2-47a7-89ac-3578eea14b0c` — e93cc0ca-32d2-47a7-89ac-3578eea14b0c.jsonl:1
+
+```
+так каким боком там кнопка Еда если вопрос про клубы
+```
+
+## 1242. session `e94aba17-b836-485b-a926-a8f4c593843b` — e94aba17-b836-485b-a926-a8f4c593843b.jsonl:1
+
+```
+иногда кубик хорошо крутиться, а когда он стоит близко к числу, на которое должно выпасть, то тогда он очень медлено и криво крутиться. Подумай как сделать, чтобы выглядело нормально
+```
+
+## 1243. session `e99d2b94-24bf-4670-b855-5ff2f91cb094` — e99d2b94-24bf-4670-b855-5ff2f91cb094.jsonl:1
+
+```
+D:\BB_Project\bbplay\node_modules\react-native-web\dist\modules\warnOnce\index.js:24 props.pointerEvents is deprecated. Use style.pointerEvents
+warnOnce @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\modules\warnOnce\index.js:24
+createDOMProps @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\modules\createDOMProps\index.js:805
+createElement @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\createElement\index.js:23
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\View\index.js:111
+renderWithHooks @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:16305
+updateForwardRef @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:19226
+beginWork @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:21636
+beginWork$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27426
+performUnitOfWork @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26560
+workLoopSync @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26466
+renderRootSync @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26434
+performConcurrentWorkOnRoot @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25738
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+dispatchSetState @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17527
+(anonymous) @ D:\BB_Project\bbplay\src\query\useAppBootstrap.ts:125
+await in (anonymous)
+(anonymous) @ D:\BB_Project\bbplay\src\query\useAppBootstrap.ts:127
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+dispatchSetState @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17527
+(anonymous) @ D:\BB_Project\bbplay\src\knowledge\KnowledgeContext.tsx:211
+Promise.then
+(anonymous) @ D:\BB_Project\bbplay\src\knowledge\KnowledgeContext.tsx:208
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+dispatchSetState @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:17527
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo-font\build\FontHooks.js:19
+Promise.then
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo-font\build\FontHooks.js:19
+commitHookEffectListMount @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:23150
+commitPassiveMountOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24931
+commitPassiveMountEffects_complete @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24891
+commitPassiveMountEffects_begin @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24878
+commitPassiveMountEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:24866
+flushPassiveEffectsImpl @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27039
+flushPassiveEffects @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26984
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:26769
+workLoop @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:266
+flushWork @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:239
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:533
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+performWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:538
+postMessage
+schedulePerformWorkUntilDeadline @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:574
+requestHostCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:588
+unstable_scheduleCallback @ D:\BB_Project\bbplay\node_modules\react-dom\node_modules\scheduler\cjs\scheduler.development.js:441
+scheduleCallback$1 @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:27537
+ensureRootIsScheduled @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25683
+scheduleUpdateOnFiber @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:25531
+updateContainer @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:28858
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-dom\cjs\react-dom.development.js:29314
+render @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\render\index.js:23
+renderApplication @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\renderApplication.js:24
+(anonymous) @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\index.js:36
+runApplication @ D:\BB_Project\bbplay\node_modules\react-native-web\dist\exports\AppRegistry\index.js:74
+registerRootComponent @ D:\BB_Project\bbplay\node_modules\expo\build\launch\registerRootComponent.js:18
+(anonymous) @ D:\BB_Project\bbplay\node_modules\expo\AppEntry.js:5
+loadModuleImplementation @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:277
+guardedLoadModule @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:177
+metroRequire @ D:\BB_Project\bbplay\node_modules\metro-runtime\src\polyfills\require.js:92
+(anonymous) @ D:\BB_Project\bbplay\assets\promos\dice-faces\dice-face-6.png:1
+ProfileHome:1 [Intervention] Slow network is detected. See https://www.chromestatus.com/feature/5636954674692096 for more details. Fallback font will be used while loading: http://localhost:8081/assets/?unstable_path=.%2Fassets%2Ffonts%2Fdin_round_pro_medium.otf&platform=web&hash=286ebc7560ceed5589de2eab380ca17f
+ProfileHome:1 [Intervention] Slow network is detected. See https://www.chromestatus.com/feature/5636954674692096 for more details. Fallback font will be used while loading: http://localhost:8081/assets/?unstable_path=.%2Fnode_modules%2F%40expo%2Fvector-icons%2Fbuild%2Fvendor%2Freact-native-vector-icons%2FFonts%2FMaterialCommunityIcons.ttf&platform=web&hash=b62641afc9ab487008e996a5c5865e56
+ProfileHome:1 [Intervention] Slow network is detected. See https://www.chromestatus.com/feature/5636954674692096 for more details. Fallback font will be used while loading: http://localhost:8081/assets/?unstable_path=.%2Fassets%2Ffonts%2Fdin_round_pro_black.otf&platform=web&hash=e363b6511ef52fca1a45fd1e10fc44fe
+ProfileHome:1 [Intervention] Slow network is detected. See https://www.chromestatus.com/feature/5636954674692096 for more details. Fallback font will be used while loading: http://localhost:8081/assets/?unstable_path=.%2Fassets%2Ffonts%2Fdin_round_pro_bold.otf&platform=web&hash=6b4b19105378f6e7e6e4770bc868d56b
+D:\BB_Project\bbplay\node_modules\react-native-web\dist\vendor\react-native\Animated\NativeAnimatedHelper.js:410 Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation. To resolve this, add `RCTAnimation` module to this app, or remove `useNativeDriver`. Make sure to run `bundle exec pod install` first. Read more about autolinking: https://github.com/react-native-community/cli/blob/master/docs/autolinking.md
+
+Как исправить?
+```
+
+## 1244. session `e99d2b94-24bf-4670-b855-5ff2f91cb094` — e99d2b94-24bf-4670-b855-5ff2f91cb094.jsonl:25
+
+```
+D:\BB_Project\bbplay>npx expo start -c --web
+Starting project at D:\BB_Project\bbplay
+Starting Metro Bundler
+warning: Bundler cache is empty, rebuilding (this may take a minute)
+FetchError: request to https://api.expo.dev/v2/versions/latest failed, reason: read ECONNRESET
+FetchError: request to https://api.expo.dev/v2/versions/latest failed, reason: read ECONNRESET
+    at ClientRequest.<anonymous> (D:\BB_Project\bbplay\node_modules\node-fetch\lib\index.js:1501:11)
+    at ClientRequest.emit (node:events:508:28)
+    at emitErrorEvent (node:_http_client:108:11)
+    at TLSSocket.socketErrorListener (node:_http_client:575:5)
+    at TLSSocket.emit (node:events:508:28)
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+    at processTicksAndRejections (node:internal/process/task_queues:90:21)
+```
+
+## 1245. session `e9fb1a0d-291d-42d4-89bf-c970e5855db3` — e9fb1a0d-291d-42d4-89bf-c970e5855db3.jsonl:1
+
+```
+1500 обрезалось сбоку. По высоте поменьше.
+
+И полоску перенеси в левую часть суммы
+```
+
+## 1246. session `e9fb1a0d-291d-42d4-89bf-c970e5855db3` — e9fb1a0d-291d-42d4-89bf-c970e5855db3.jsonl:9
+
+```
+у меня 1500 обрезается, надо уменьшить длину.
+
+И зеленую полоску перенести в правую часть обхектов
+```
+
+## 1247. session `e9fb1a0d-291d-42d4-89bf-c970e5855db3` — e9fb1a0d-291d-42d4-89bf-c970e5855db3.jsonl:13
+
+```
+И зеленую полоску перенести в правую часть обхектов
+```
+
+## 1248. session `eb9bc683-b010-4ac0-aac3-19b18823e236` — eb9bc683-b010-4ac0-aac3-19b18823e236.jsonl:1
+
+```
+в справке еще хуже. Сделай нормально понятное разделение.
+
+И так проверь все сообщения в базе знаний
+```
+
+## 1249. session `ed13fbb8-fbe0-464b-8306-ce06aebcc4b9` — ed13fbb8-fbe0-464b-8306-ce06aebcc4b9.jsonl:1
+
+```
+авто прокрутку нужно дать возможность выключить во время прокрутки, и быструю прокрутку тоже.
+```
+
+## 1250. session `ed13fbb8-fbe0-464b-8306-ce06aebcc4b9` — ed13fbb8-fbe0-464b-8306-ce06aebcc4b9.jsonl:15
+
+```
+у меня снизу отступ до текста меньше чем сверху. снизу величь отступ
+```
+
+## 1251. session `edcfc9fc-6f78-47b5-8283-79a75dae5fbb` — edcfc9fc-6f78-47b5-8283-79a75dae5fbb.jsonl:1
+
+```
+Когда человек нажимает на оценку брони, то открывается меню бронирования, а нужно открывать окно для оценки посещения. И после посещения когда человек заходим в приложения то мы открываем экран оценки где можно оценить или оценить позже
+```
+
+## 1252. session `eeeffe91-c317-470d-959e-8bc48f7e5f48` — eeeffe91-c317-470d-959e-8bc48f7e5f48.jsonl:1
+
+```
+смотри, когда я допустим забронировал и перехожу на гл. экран где баланс, то он обнавляется только когда я уже на странице, а не сразу. Это вводит в заблуждение, надо исправить чтобы сразу актуальный баланс на страницах показывался.
+```
+
+## 1253. session `eeeffe91-c317-470d-959e-8bc48f7e5f48` — eeeffe91-c317-470d-959e-8bc48f7e5f48.jsonl:16
+
+```
+везде проверь, чтобы у меня актуальные данные были
+```
+
+## 1254. session `f065b553-6c4c-43fb-8fb3-92dba398b27b` — f065b553-6c4c-43fb-8fb3-92dba398b27b.jsonl:1
+
+```
+так, проанализируй клуб по api.
+
+И напиши полностью базу знаний, которая подходит под клуб и будет отвечать по нормальному
+```
+
+## 1255. session `f065b553-6c4c-43fb-8fb3-92dba398b27b` — f065b553-6c4c-43fb-8fb3-92dba398b27b.jsonl:12
+
+```
+сделай нормальые ответы на повседневные фразы все
+```
+
+## 1256. session `f065b553-6c4c-43fb-8fb3-92dba398b27b` — f065b553-6c4c-43fb-8fb3-92dba398b27b.jsonl:17
+
+```
+прям нужно широкую базу сделать, чтобы она была будто настоящий человек который поддержит разговор.
+
+И еще используй смайлики стикеры, они делают сообщение более живым.
+```
+
+## 1257. session `f065b553-6c4c-43fb-8fb3-92dba398b27b` — f065b553-6c4c-43fb-8fb3-92dba398b27b.jsonl:36
+
+```
+нужно писать ответ по вопросу по короче(сейчас мы отвечаем и потом много лишнего говорим)
+```
+
+## 1258. session `f0751677-ee76-4d58-aa15-92489084de1d` — f0751677-ee76-4d58-aa15-92489084de1d.jsonl:1
+
+```
+по высоте надо уменьшить, чтобы кнопка была как остальные по размеру
+```
+
+## 1259. session `f0c761d2-9874-4aa2-9e32-d3197945e5d1` — f0c761d2-9874-4aa2-9e32-d3197945e5d1.jsonl:1
+
+```
+чуть чуть увеличь размер по высоте ленты акций
+```
+
+## 1260. session `f0d328d3-d0dc-44bd-b4af-6d87395a7fcb` — f0d328d3-d0dc-44bd-b4af-6d87395a7fcb.jsonl:1
+
+```
+https://vk.com/bbplay__tmb?from=groups&trackcode=4b1e8b29wJseVKcOAoy5GYXYuGIon519zV70AtYTaVcTjkPqhxkE8L62KwZv8IUbntS5eCGphHXBQ6h2HZzcKXw вот отсюда возьми данные про клуб(берем клуб на астраханской(там такое же время работы и тд как у нас в клубе который сервер отдает)),
+
+Все что можешь взять с сервера, бери с сервака и зеливай в базу знаний. Чтобы когда я спрашивал про стоимость мне писалась стоимость, а не где ее можно посмотреть
+```
+
+## 1261. session `f0d328d3-d0dc-44bd-b4af-6d87395a7fcb` — f0d328d3-d0dc-44bd-b4af-6d87395a7fcb.jsonl:24
+
+```
+так все данные который можешь получить с api сначало встрой в локальную базу знаний. И если чего то там не будет, то бери с вк группы
+```
+
+## 1262. session `f0d328d3-d0dc-44bd-b4af-6d87395a7fcb` — f0d328d3-d0dc-44bd-b4af-6d87395a7fcb.jsonl:38
+
+```
+ты подстроил все в базе знаний на конкретные ответы?
+```
+
+## 1263. session `f1b31cb1-9dff-4885-b9fd-92f0925f6f11` — f1b31cb1-9dff-4885-b9fd-92f0925f6f11.jsonl:1
+
+```
+так мне нужно чтобы у меня репозиторий очистился и потом с репо зилили данные с моего пк
+```
+
+## 1264. session `f1b31cb1-9dff-4885-b9fd-92f0925f6f11` — f1b31cb1-9dff-4885-b9fd-92f0925f6f11.jsonl:6
+
+```
+https://github.com/sankripshorts-sketch/bbplay_tgtu я создал новый репозитой как туда зилть?
+```
+
+## 1265. session `f1b31cb1-9dff-4885-b9fd-92f0925f6f11` — f1b31cb1-9dff-4885-b9fd-92f0925f6f11.jsonl:11
+
+```
+отвяжи репозитории и привяжи вот этот -
+```
+
+## 1266. session `f1b31cb1-9dff-4885-b9fd-92f0925f6f11` — f1b31cb1-9dff-4885-b9fd-92f0925f6f11.jsonl:16
+
+```
+смотри мне нужно прислать ссылку на репо с гита, но как мне только по ссылке дать доступ?
+```
+
+## 1267. session `f22887f0-e323-4a7f-8cdd-415297b8a5a5` — f22887f0-e323-4a7f-8cdd-415297b8a5a5.jsonl:1
+
+```
+На экране есть прокрутка,пользоваться не удобно 
+Возможно слишком много плашек,пока не понял
+
+подумай как исправить
+```
+
+## 1268. session `f22887f0-e323-4a7f-8cdd-415297b8a5a5` — f22887f0-e323-4a7f-8cdd-415297b8a5a5.jsonl:7
+
+```
+смотри как сделано, почему тут так мало место занимает, а у меня так много
+```
+
+## 1269. session `f29ed195-303c-49da-8e52-d8c6e4a71ca7` — f29ed195-303c-49da-8e52-d8c6e4a71ca7.jsonl:1
+
+```
+нужно сделать чтобы человек мог указать сразу, параметры и если они указаны то мы их подставили.
+
+Например:
+забронь мне как обычно на 25 апреля в 14 00
+
+Значит клуб, значит изначально ставим длительность сами(с прошлой брони, но при этом открываем окно выбора длительности. чтобы человек мог поменять и потом выбор пк)
+```
+
+## 1270. session `f3aea764-30b4-425a-9cab-e343d410abfa` — f3aea764-30b4-425a-9cab-e343d410abfa.jsonl:1
+
+```
+видишь не бронитсья хотя я все данные дал
+```
+
+## 1271. session `f3aea764-30b4-425a-9cab-e343d410abfa` — f3aea764-30b4-425a-9cab-e343d410abfa.jsonl:15
+
+```
+я написал 18 а мне сказали что в 01.00 и тем более это время уже прошло!
+```
+
+## 1272. session `f5d149ab-b50d-42f9-a4a2-5826dd4c78e4` — f5d149ab-b50d-42f9-a4a2-5826dd4c78e4.jsonl:1
+
+```
+Пернеси карты как показано на скрине
+```
+
+## 1273. session `f6bfc2f8-969b-457a-b781-407872fa3ca5` — f6bfc2f8-969b-457a-b781-407872fa3ca5.jsonl:1
+
+```
+так. Изучи в моем проекте мини игру с кубиком через суб агенты.
+
+ИЗучи данные по этой теме.
+
+И сделай мне красивый кубик и красивую анимацию, будто кубик бросают на стол.
+```
+
+## 1274. session `f6bfc2f8-969b-457a-b781-407872fa3ca5` — f6bfc2f8-969b-457a-b781-407872fa3ca5.jsonl:14
+
+```
+Кубик очень не красивый.
+
+Сделай кубик в стиле как на скрине.
+```
+
+## 1275. session `f6bfc2f8-969b-457a-b781-407872fa3ca5` — f6bfc2f8-969b-457a-b781-407872fa3ca5.jsonl:22
+
+```
+Сделай кубик белым с черными точками. сделай его более реалистичным.
+
+Так же он на углах с пропусками. И фон нужно убрать(сделай такой же как и на всей странице)
+```
+
+## 1276. session `f6bfc2f8-969b-457a-b781-407872fa3ca5` — f6bfc2f8-969b-457a-b781-407872fa3ca5.jsonl:36
+
+```
+так, грани у кубика не сходятся, там есть промежутки между сторонами.
+
+и кубик не везде белый, он где то серый где то еще другого цвета.
+```
+
+## 1277. session `f6bfc2f8-969b-457a-b781-407872fa3ca5` — f6bfc2f8-969b-457a-b781-407872fa3ca5.jsonl:49
+
+```
+кубик слишком большой, выскакивает за границы своей зоны.
+
+И так же углы слишком остарые, их надо сгладить.
+точки их надо вмять как бы и сделать их чуть чуть побольше
+```
+
+## 1278. session `f6bfc2f8-969b-457a-b781-407872fa3ca5` — f6bfc2f8-969b-457a-b781-407872fa3ca5.jsonl:58
+
+```
+И так же углы слишком остарые, их надо сгладить.
+точки их надо вмять как бы и сделать их чуть чуть побольше
+```
+
+## 1279. session `f6bfc2f8-969b-457a-b781-407872fa3ca5` — f6bfc2f8-969b-457a-b781-407872fa3ca5.jsonl:68
+
+```
+еще нужно сгладить грани и убрать промежутки на углах и гранях
+```
+
+## 1280. session `f6bfc2f8-969b-457a-b781-407872fa3ca5` — f6bfc2f8-969b-457a-b781-407872fa3ca5.jsonl:74
+
+```
+точка с белой полосй
+и при анимации он багается
+```
+
+## 1281. session `subagents` — fd427921-e02b-4d88-8270-128f76ce8b18.jsonl:1
+
+```
+In the repo at d:\BB_Project\bbplay, thoroughly find and read all code related to the dice minigame: DiceMinigameModal, promo components, assets (dice-1..6.png), promoCatalog, types, i18n strings. Return: file paths, main component structure, how roll works, what images/assets are used, and any TODOs or limitations.
+```
+
+## 1282. session `f786e4d5-178a-4245-9eb0-9657177a5dac` — f786e4d5-178a-4245-9eb0-9657177a5dac.jsonl:1
+
+```
+на гл. экран перенеси раздел новости. То есть снизу мы заменяем новости на "Еда" и переносим кнопку новости на гл. экран.
+
+В разделе еда теперь будет следующее.
+поиск, категории еды - Напитки, Сладкое, Снеки, Сытное
+И там будет соответствующая еда. 
+Еду ты создай локально, там будут сладкие батончики, чебупели, чебупицца и тд, доширак, Энергетики, газировки. Не забудь добавить фото еды.
+
+ТАм будет кнопка под каждым продуктом Знак корзины(добавить в корзину) и Купить.
+
+Если нажали купить то сразу проверяем баланс, если его хватает то делаем вид что купили(локально)Пишем что сняли столько то. Если денег не достаточно, то пишем что можно пополнить и там кнопка с отсылкой на пополнение.
+нужно показывать что заказ еды прошел успешно или не успешно.
+```
+
+## 1283. session `f786e4d5-178a-4245-9eb0-9657177a5dac` — f786e4d5-178a-4245-9eb0-9657177a5dac.jsonl:64
+
+```
+Briefly inform the user about the task result and perform any follow-up actions (if needed).
+```
+
+## 1284. session `f8dc3c54-1e7f-4da6-b5a9-7916eafce76b` — f8dc3c54-1e7f-4da6-b5a9-7916eafce76b.jsonl:1
+
+```
+когда открыто меню выбора фильтров мы кнопки над строкой ввода блокируем или убираем(я случайно нажимаю когда выбираю фильтр)
+```
+
+## 1285. session `f910e769-a36d-4262-8c44-92d9d660ee7e` — f910e769-a36d-4262-8c44-92d9d660ee7e.jsonl:1
+
+```
+в моих бронях не показываются брони которые уже прошли(были)
+
+Мы их с сервера должны тянуть
+```
+
+## 1286. session `f910e769-a36d-4262-8c44-92d9d660ee7e` — f910e769-a36d-4262-8c44-92d9d660ee7e.jsonl:20
+
+```
+Handle the above notification. The subagent result is visible to the user, so DO NOT reiterate or summarize its contents unless asked, or if multi-task result synthesis is required.
+```
+
+## 1287. session `subagents` — dc816a67-d815-4dc8-8055-154cdf130bfc.jsonl:1
+
+```
+Thoroughness: medium. Explore the repository at d:/BB_Project/bbplay to find where the user's 'my bookings' / bookings screen is implemented and where booking data is fetched or filtered. The user reports that past/expired bookings are not shown and says they should be fetched from the server. Return concise findings: relevant files, components/hooks/API calls, any filters or query params that likely exclude past bookings, and recommended change points. Do not modify files.
+```
+
+## 1288. session `fa74707c-f689-4420-a2a6-43dcedc1bc67` — fa74707c-f689-4420-a2a6-43dcedc1bc67.jsonl:1
+
+```
+Настройки - сделать развертывающийся список.
+
+Вместо пунктов(кнопок) профиль, уведомления...
+
+Мы делаем что человек нажимает на пункт и он вниз раскрывается(и нужно добавить стрелочку сбоку справа)
+```
+
+## 1289. session `faee23d4-341b-442a-bc7d-fd417768990d` — faee23d4-341b-442a-bc7d-fd417768990d.jsonl:1
+
+```
+смотри у меня текст снизу почти прилип к краю. нужно сделать такой же отстпу как и сверху от грани до текста
+```
+
+## 1290. session `fc04be17-bd73-4bf5-8ecd-b29d6bce6a38` — fc04be17-bd73-4bf5-8ecd-b29d6bce6a38.jsonl:1
+
+```
+сразу нужно открывать настройки выбора города(без кнопки настройть).
+
+И нужно сделать, чтобы в настройках галочка стояла на том городе который выбран.
+
+И в бразуере когда выбираю другой город новости не показываются
+```
+
+## 1291. session `fc04be17-bd73-4bf5-8ecd-b29d6bce6a38` — fc04be17-bd73-4bf5-8ecd-b29d6bce6a38.jsonl:16
+
+```
+Везде сделай настройки, чтобы сразу открывались нужные параметры
+```
+
+## 1292. session `fc78d4b8-f1fb-4640-97bb-4cc1c2cc3aa2` — fc78d4b8-f1fb-4640-97bb-4cc1c2cc3aa2.jsonl:1
+
+```
+Очень долгая загрузка данных с сервера + вк
+
+Предложи как можно реализовать загрузку данных
+```
+
+## 1293. session `fc78d4b8-f1fb-4640-97bb-4cc1c2cc3aa2` — fc78d4b8-f1fb-4640-97bb-4cc1c2cc3aa2.jsonl:5
+
+```
+3. Кэш VK между сессиями
+
+Получается мы все загрузили, а ленту грузим постепенно, и соответственно у нас, прилоэение запустилась, подтянулись данные с icafe, потом убрали загрузку, но в это время грузиться лента новосте постепенно, то есть сначало самый новый пост и так дальше дальше дальше, грузим последние 10 постов, а остальные грузим если человек проматал 10 постов и снизу ждет
+```
+
+## 1294. session `fcd74157-1f83-4a9c-b253-3a67e1bb7061` — fcd74157-1f83-4a9c-b253-3a67e1bb7061.jsonl:1
+
+```
+УБЕРИ ГОРОД ИЗ НАЗВАНИЯ КЛУБА!!!!
+
+ТЕКСТ КНОПКИ ГОТОВО ПЕРЕНЕСИ В ЦЕНТР
+```
+
+## 1295. session `fcd74157-1f83-4a9c-b253-3a67e1bb7061` — fcd74157-1f83-4a9c-b253-3a67e1bb7061.jsonl:15
+
+```
+когда я закрываю меню выбора фильтра, то оно потом на мнгновенье опять появялется и потом полностью убирается с затемнением. и добавь крестик по мимо полоски за которую можно тащить
+```
+
+
+## 1296. session `9c2c7591-81d3-4e5d-8f8b-6e65066b1c29` — 9c2c7591-81d3-4e5d-8f8b-6e65066b1c29.jsonl:39
+
+```
+теперь когда я нажимаю на условия и цены просто экран затемняется и ничего не открывается
+```
+

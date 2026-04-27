@@ -302,6 +302,99 @@ export function parseMinsFromPriceItem(p: PriceItem, fallback: number): number {
   return fallback;
 }
 
+/** Колонки «Условия и цены»: 1 ч, 2 ч, пакеты 3 ч и 5 ч (без 30 мин и 1,5 ч — компактная таблица). */
+export const TERMS_MATRIX_DURATION_MINS = [60, 120, 180, 300] as const;
+
+const TERMS_MATRIX_DURATION_SET = new Set<number>(TERMS_MATRIX_DURATION_MINS);
+
+/** Без `Other` («Стандарт») — в витрине только игровые зоны/премиум. */
+const TERMS_MATRIX_ZONE_ORDER: PcZoneKind[] = ['GameZone', 'BootCamp', 'VIP'];
+
+/** Зона строки прайса для витрины: явная группа или имя тарифа (например Default → Other). */
+export function priceItemZoneKindForTerms(p: PriceItem): PcZoneKind {
+  const g = p.group_name?.trim();
+  if (g) return normalizePcZoneKind(g);
+  return normalizePcZoneKind(p.price_name);
+}
+
+/**
+ * Стоимость сессии для строки `prices` на фиксированную длительность: сначала `total_price`, иначе ₽/ч × часы.
+ */
+export function priceItemSessionTotalRubLabel(p: PriceItem): string {
+  const mins = parseMinsFromPriceItem(p, 0);
+  const totalRaw = p.total_price;
+  if (totalRaw != null && String(totalRaw).trim() !== '') {
+    const n = parseFloat(String(totalRaw).replace(',', '.'));
+    if (Number.isFinite(n) && n > 0) return formatRub(totalRaw);
+  }
+  const hourlyRaw = p.price_price1;
+  if (hourlyRaw != null && String(hourlyRaw).trim() !== '' && mins > 0) {
+    const h = parseFloat(String(hourlyRaw).replace(',', '.'));
+    if (Number.isFinite(h) && h > 0) {
+      const r = h * (mins / 60);
+      return r % 1 === 0 ? String(Math.round(r)) : r.toFixed(2);
+    }
+  }
+  return formatRub(p.total_price ?? p.price_price1);
+}
+
+export type TermsTariffMatrixRow = {
+  zoneKind: PcZoneKind;
+  zoneTitle: string;
+  /** Порядок совпадает с `TERMS_MATRIX_DURATION_MINS`: 60, 120, 180, 300 мин. */
+  cells: (string | null)[];
+};
+
+/**
+ * Таблица для «Условия»: 1 ч, 2 ч и пакеты 3 ч / 5 ч по зонам (без «Стандарт»), без дублей.
+ * Сначала заполняются ячейки из `products`, затем пустые — из `prices`.
+ */
+export function buildTermsTariffMatrix(
+  products: ProductItem[],
+  prices: PriceItem[],
+  zoneTitle: (z: PcZoneKind) => string,
+): TermsTariffMatrixRow[] {
+  const map = new Map<PcZoneKind, Partial<Record<number, string>>>();
+
+  const put = (zone: PcZoneKind, mins: number, label: string, onlyIfEmpty: boolean) => {
+    if (!TERMS_MATRIX_DURATION_SET.has(mins)) return;
+    let row = map.get(zone);
+    if (!row) {
+      row = {};
+      map.set(zone, row);
+    }
+    if (onlyIfEmpty && row[mins]) return;
+    row[mins] = label;
+  };
+
+  for (const p of products) {
+    if (isLikelyTopupOrDepositProduct(p)) continue;
+    const m = catalogProductSessionMins(p);
+    if (m == null || !TERMS_MATRIX_DURATION_SET.has(m)) continue;
+    put(wheelProductPcZoneKind(p), m, `${productCostLabel(p)} ₽`, false);
+  }
+
+  for (const p of prices) {
+    const m = parseMinsFromPriceItem(p, 0);
+    if (!TERMS_MATRIX_DURATION_SET.has(m)) continue;
+    put(priceItemZoneKindForTerms(p), m, `${priceItemSessionTotalRubLabel(p)} ₽`, true);
+  }
+
+  const rows: TermsTariffMatrixRow[] = [];
+  for (const kind of TERMS_MATRIX_ZONE_ORDER) {
+    const c = map.get(kind);
+    if (!c) continue;
+    const cells = TERMS_MATRIX_DURATION_MINS.map((mins) => c[mins] ?? null);
+    if (cells.every((v) => v == null)) continue;
+    rows.push({
+      zoneKind: kind,
+      zoneTitle: zoneTitle(kind),
+      cells,
+    });
+  }
+  return rows;
+}
+
 export function tariffMins(t: TariffChoice | null, fallback: number): number {
   if (!t) return fallback;
   return t.kind === 'product'
@@ -345,10 +438,22 @@ export function tariffNameForApi(t: TariffChoice | null): string {
 
 /** Сервисные имена вроде «Default» в UI не показываем (для API остаётся исходная строка). */
 export function displayTariffName(raw: string | undefined | null): string {
-  const s = String(raw ?? '').trim();
+  const s = sanitizeTariffDisplayName(raw);
   if (!s) return '';
   if (/^default$/i.test(s)) return '';
   return s;
+}
+
+/**
+ * iCafe иногда добавляет служебные хвосты к `product_name`/`price_name` (`<<<...`).
+ * Для пользовательского UI оставляем только читаемую часть до первого технического маркера.
+ */
+function sanitizeTariffDisplayName(raw: string | undefined | null): string {
+  const source = String(raw ?? '').trim();
+  if (!source) return '';
+  const left = source.split('<<<')[0]?.trim() ?? '';
+  if (!left) return '';
+  return left.replace(/\s{2,}/g, ' ').replace(/[·\-–—:;,./\s]+$/g, '').trim();
 }
 
 /** Только пакет (для отладки/логики): в POST /booking уходит `product_id`, не `price_id`. */

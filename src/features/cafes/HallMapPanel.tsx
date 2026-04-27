@@ -1,16 +1,21 @@
 import React, { useMemo } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Text } from '../../components/DinText';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigation } from '@react-navigation/native';
+import { type BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { bookingFlowApi } from '../../api/endpoints';
+import { getHallMapTweak } from '../../config/clubLayoutConfig';
 import { queryKeys } from '../../query/queryKeys';
 import type { CafeItem } from '../../api/types';
 import { useLocale } from '../../i18n/LocaleContext';
 import type { ColorPalette } from '../../theme/palettes';
 import { useThemeColors } from '../../theme';
+import type { MainTabParamList } from '../../navigation/types';
 import { ClubLayoutCanvas } from './ClubLayoutCanvas';
+import { HallMapStatusLegend } from './HallMapStatusLegend';
 import type { PcAvailabilityState } from './clubLayoutGeometry';
-import { SkeletonBlock } from '../ui/SkeletonBlock';
+import { ClubDataLoader } from '../ui/ClubDataLoader';
 import { useLivePcsQuery } from '../booking/useLivePcsQuery';
 import { formatPublicErrorMessage } from '../../utils/publicText';
 
@@ -24,6 +29,13 @@ export function HallMapPanel({ cafe, visible, onClose }: Props) {
   const { t } = useLocale();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const navigation = useNavigation<BottomTabNavigationProp<MainTabParamList>>();
+  const { width: windowW } = useWindowDimensions();
+  const scrollHPad = useMemo(() => {
+    if (windowW < 340) return 14;
+    if (windowW < 400) return 18;
+    return 24;
+  }, [windowW]);
 
   const q = useQuery({
     queryKey: queryKeys.structRooms(cafe.icafe_id),
@@ -56,8 +68,13 @@ export function HallMapPanel({ cafe, visible, onClose }: Props) {
     return map;
   }, [q.data?.rooms, liveByName]);
 
+  const hallMapCanonicalLayout = useMemo(
+    () => getHallMapTweak(cafe.icafe_id).canonicalColumns?.enabled === true,
+    [cafe.icafe_id],
+  );
+
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} animationType="fade" onRequestClose={onClose}>
       <View style={styles.modalRoot}>
         <View style={styles.header}>
           <Text style={styles.headerTitle} numberOfLines={2}>
@@ -70,7 +87,7 @@ export function HallMapPanel({ cafe, visible, onClose }: Props) {
 
         {q.isLoading ? (
           <View style={styles.skeletonWrap}>
-            <SkeletonBlock height={220} colors={colors} />
+            <ClubDataLoader message={t('common.loader.captionPc')} compact minHeight={220} />
           </View>
         ) : q.isError ? (
           <Text style={styles.err}>{formatPublicErrorMessage(q.error, t, 'hallMap.loadError')}</Text>
@@ -82,16 +99,51 @@ export function HallMapPanel({ cafe, visible, onClose }: Props) {
             nestedScrollEnabled
             showsVerticalScrollIndicator
           >
-            <Text style={styles.liveHint}>{t('hallMap.liveLegend')}</Text>
             <ClubLayoutCanvas
               rooms={q.data.rooms}
               colors={colors}
               icafeId={cafe.icafe_id}
               pcAvailability={liveQ.isError ? undefined : pcAvailability}
-              horizontalPadding={12}
-              minHeight={300}
-              embedPreviewChrome
+              horizontalPadding={scrollHPad * 2}
+              minHeight={hallMapCanonicalLayout ? 220 : 260}
+              bookingCompact
             />
+            {hallMapCanonicalLayout ? (
+              <HallMapStatusLegend variant="booking" />
+            ) : (
+              <View style={styles.legendRow}>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendDot, { backgroundColor: colors.pcBusy }]} />
+                  <Text style={styles.legendText}>{t('hallMap.legendBusy')}</Text>
+                </View>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendDot, { backgroundColor: colors.pcSelected }]} />
+                  <Text style={styles.legendText}>{t('hallMap.legendSelected')}</Text>
+                </View>
+                <View style={styles.legendItem}>
+                  <View
+                    style={[
+                      styles.legendDot,
+                      { backgroundColor: 'transparent', borderWidth: 2, borderColor: colors.pcFree },
+                    ]}
+                  />
+                  <Text style={styles.legendText}>{t('booking.legendFree')}</Text>
+                </View>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendDot, { backgroundColor: colors.pcUnavailable }]} />
+                  <Text style={styles.legendText}>{t('hallMap.legendUnavailable')}</Text>
+                </View>
+              </View>
+            )}
+            <Pressable
+              style={({ pressed }) => [styles.bookPrimary, pressed && styles.bookPrimaryPressed]}
+              onPress={() => {
+                navigation.navigate('Booking', { prefill: { icafeId: cafe.icafe_id } });
+                onClose();
+              }}
+            >
+              <Text style={styles.bookPrimaryText}>{t('booking.bookingLine1Short')}</Text>
+            </Pressable>
           </ScrollView>
         ) : (
           <Text style={styles.empty}>{t('hallMap.emptyZones')}</Text>
@@ -122,9 +174,31 @@ function createStyles(colors: ColorPalette) {
       justifyContent: 'center',
     },
     closeText: { color: colors.accentBright, fontWeight: '600' },
-    mapBodyScroll: { flex: 1, paddingHorizontal: 16, paddingTop: 8 },
-    mapBodyContent: { paddingBottom: 28 },
-    liveHint: { fontSize: 12, color: colors.muted, marginBottom: 8, lineHeight: 17 },
+    mapBodyScroll: { flex: 1, paddingHorizontal: 16, paddingTop: 4 },
+    mapBodyContent: { paddingBottom: 20 },
+    legendRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: 10,
+      rowGap: 8,
+      marginTop: 8,
+    },
+    legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    legendDot: { width: 12, height: 12, borderRadius: 3 },
+    legendText: { fontSize: 12, color: colors.muted },
+    bookPrimary: {
+      marginTop: 16,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderRadius: 12,
+      backgroundColor: colors.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    bookPrimaryPressed: { opacity: 0.88 },
+    bookPrimaryText: { color: colors.accentTextOnButton, fontWeight: '700', fontSize: 15 },
     skeletonWrap: { padding: 16 },
     err: { color: colors.danger, padding: 20 },
     empty: { color: colors.muted, padding: 20 },

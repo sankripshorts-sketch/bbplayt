@@ -62,6 +62,7 @@ export function VisitFeedbackProvider({ children }: { children: React.ReactNode 
   const [comment, setComment] = useState('');
   const [thanks, setThanks] = useState(false);
   const [display, setDisplay] = useState<PendingVisitFeedback | null>(null);
+  const autoPromptedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     let alive = true;
@@ -102,14 +103,15 @@ export function VisitFeedbackProvider({ children }: { children: React.ReactNode 
     });
   }, []);
 
-  const closeModal = useCallback(async () => {
-    if (display?.bookingKey && !thanks) {
-      await markHandled(display.bookingKey);
+  /** Закрыть без оценки: напомнить при следующем входе в приложение (ключ не в handled). */
+  const dismissRateLater = useCallback(() => {
+    if (display?.bookingKey) {
+      autoPromptedRef.current.delete(display.bookingKey);
     }
     setVisible(false);
     setDisplay(null);
     resetForm();
-  }, [display, thanks, markHandled, resetForm]);
+  }, [display, resetForm]);
 
   const submit = useCallback(async () => {
     if (!display || rating < 1) return;
@@ -135,7 +137,6 @@ export function VisitFeedbackProvider({ children }: { children: React.ReactNode 
 
   const value = useMemo(() => ({ openVisitFeedbackPrompt }), [openVisitFeedbackPrompt]);
 
-  const autoPromptedRef = useRef<Set<string>>(new Set());
   useEffect(() => {
     const tryOpen = () => {
       if (!handledKeys) return;
@@ -159,12 +160,18 @@ export function VisitFeedbackProvider({ children }: { children: React.ReactNode 
   return (
     <VisitFeedbackContext.Provider value={value}>
       {children}
-      <Modal visible={visible} transparent animationType="fade" onRequestClose={() => void closeModal()}>
+      <Modal
+        visible={visible}
+        transparent
+        animationType="fade"
+        onRequestClose={dismissRateLater}
+        presentationStyle={Platform.OS === 'ios' ? 'overFullScreen' : undefined}
+      >
         <KeyboardAvoidingView
           style={styles.backdrop}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
-          <Pressable style={StyleSheet.absoluteFill} onPress={() => void closeModal()} />
+          <Pressable style={StyleSheet.absoluteFill} onPress={dismissRateLater} />
           <View style={styles.sheet}>
             {thanks ? (
               <Text style={styles.title}>{t('feedback.thanks')}</Text>
@@ -213,8 +220,8 @@ export function VisitFeedbackProvider({ children }: { children: React.ReactNode 
                 >
                   <Text style={styles.submitBtnText}>{t('feedback.submit')}</Text>
                 </Pressable>
-                <Pressable style={styles.dismiss} onPress={() => void closeModal()}>
-                  <Text style={styles.dismissText}>{t('feedback.dismiss')}</Text>
+                <Pressable style={styles.dismiss} onPress={dismissRateLater}>
+                  <Text style={styles.dismissText}>{t('feedback.rateLater')}</Text>
                 </Pressable>
               </>
             )}

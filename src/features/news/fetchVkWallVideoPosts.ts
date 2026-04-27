@@ -8,11 +8,18 @@ import {
   getVkWallUrl,
   getVkWallUrlMobile,
 } from '../../config/vkNewsConfig';
-import { parseVkWallPosts, vkWallHtmlLooksValid, type VkWallPost } from './vkWallHtmlParser';
+import {
+  extractCommunityAvatarFromVkWallHtml,
+  parseVkWallPosts,
+  vkWallHtmlLooksValid,
+  type VkWallPost,
+} from './vkWallHtmlParser';
 
 export type VkWallFetchResult = {
   posts: VkWallPost[];
   nextOffset: number | null;
+  /** URL аватара сообщества; только для первой страницы (offset 0) или null */
+  communityAvatarUrl?: string | null;
 };
 
 /** На странице стены VK обычно по 20 записей. */
@@ -66,8 +73,7 @@ function decodeHtmlBody(buf: ArrayBuffer, contentType: string | null): string {
   }
 }
 
-function wallHasMorePages(html: string, currentOffset: number): boolean {
-  const gid = getVkGroupId();
+function wallHasMorePages(html: string, currentOffset: number, gid: number): boolean {
   const nextOff = currentOffset + PAGE_STEP;
   return (
     html.includes(`wall-${gid}?offset=${nextOff}`) ||
@@ -161,25 +167,29 @@ async function fetchWallHtmlAnyProfile(url: string): Promise<string> {
  * Порядок важен: публичная стена `/wall-{id}` по-прежнему отдаёт SSR с PostContentContainer;
  * страница `/club{id}` часто грузит стену только в SPA — парсеру там нечего разбирать.
  */
-function candidateUrls(offset: number): string[] {
+function candidateUrls(offset: number, vkGroupId: number): string[] {
   const custom = getVkFeedCustomUrl();
   const list: string[] = [];
   if (custom && offset === 0) {
     list.push(custom);
   }
   list.push(
-    getVkWallUrl(offset),
-    getVkClubUrl(offset),
-    getVkClubUrlMobile(offset),
-    getVkWallUrlMobile(offset),
+    getVkWallUrl(offset, vkGroupId),
+    getVkClubUrl(offset, vkGroupId),
+    getVkClubUrlMobile(offset, vkGroupId),
+    getVkWallUrlMobile(offset, vkGroupId),
   );
   return list;
 }
 
-export async function fetchVkWallVideoPage(offset: number): Promise<VkWallFetchResult> {
+export async function fetchVkWallVideoPage(
+  offset: number,
+  options?: { vkGroupId?: number },
+): Promise<VkWallFetchResult> {
+  const vkGroupId = options?.vkGroupId ?? getVkGroupId();
   let html = '';
   let lastErr: Error | null = null;
-  for (const url of candidateUrls(offset)) {
+  for (const url of candidateUrls(offset, vkGroupId)) {
     try {
       html = await fetchWallHtmlAnyProfile(url);
       if (vkWallHtmlLooksValid(html)) break;
@@ -200,8 +210,9 @@ export async function fetchVkWallVideoPage(offset: number): Promise<VkWallFetchR
   }
 
   const posts = parseVkWallPosts(html);
-  const hasMore = wallHasMorePages(html, offset);
+  const hasMore = wallHasMorePages(html, offset, vkGroupId);
   const nextOffset = hasMore ? offset + PAGE_STEP : null;
+  const communityAvatarUrl = offset === 0 ? extractCommunityAvatarFromVkWallHtml(html) : null;
 
-  return { posts, nextOffset };
+  return { posts, nextOffset, communityAvatarUrl };
 }

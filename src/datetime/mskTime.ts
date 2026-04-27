@@ -5,6 +5,21 @@
 
 export const SERVER_TIME_ZONE = 'Europe/Moscow';
 
+function devicePrefers12HourClock(): boolean | null {
+  try {
+    const opts = new Intl.DateTimeFormat(undefined, { hour: 'numeric' }).resolvedOptions() as {
+      hour12?: boolean;
+      hourCycle?: 'h11' | 'h12' | 'h23' | 'h24';
+    };
+    if (typeof opts.hour12 === 'boolean') return opts.hour12;
+    if (opts.hourCycle === 'h11' || opts.hourCycle === 'h12') return true;
+    if (opts.hourCycle === 'h23' || opts.hourCycle === 'h24') return false;
+  } catch {
+    // ignore and fallback below
+  }
+  return null;
+}
+
 /** Московское локальное время → абсолютный момент (Date). */
 export function moscowWallTimeToUtc(
   y: number,
@@ -25,20 +40,16 @@ function pad2(n: string): string {
 /** Абсолютный момент → дата и время на часах в Москве (для полей API). */
 /** Время на часах в Москве для UI (без сдвига в локальный пояс устройства). */
 export function formatInstantMoscowWallForLocale(d: Date, locale: 'ru' | 'en'): string {
-  if (locale === 'ru') {
-    return new Intl.DateTimeFormat('ru-RU', {
-      timeZone: SERVER_TIME_ZONE,
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    }).format(d);
-  }
-  return new Intl.DateTimeFormat('en-US', {
+  const device12h = devicePrefers12HourClock();
+  const hour12 = device12h ?? (locale === 'en');
+  const formatted = new Intl.DateTimeFormat(locale === 'en' ? 'en-US' : 'ru-RU', {
     timeZone: SERVER_TIME_ZONE,
     hour: 'numeric',
     minute: '2-digit',
-    hour12: true,
+    hour12,
   }).format(d);
+  if (!hour12) return formatted;
+  return formatted.replace(/\s*AM$/i, ' am').replace(/\s*PM$/i, ' pm');
 }
 
 /** Календарная дата YYYY-MM-DD для момента `d` по часам Москвы. */
@@ -117,6 +128,20 @@ export function formatMoscowCalendarDayShort(iso: string, locale: string): strin
     month: 'short',
     timeZone: SERVER_TIME_ZONE,
   });
+}
+
+/** Дата YYYY-MM-DD + время HH:mm как локальная строка для UI (без смены зоны). */
+export function formatMoscowWallSlotForLocale(
+  dateISO: string,
+  hhmm: string,
+  locale: 'ru' | 'en',
+): string {
+  const [y, mo, d] = dateISO.split('-').map(Number);
+  const [h, m] = hhmm.split(':').map(Number);
+  if (!Number.isFinite(y) || !Number.isFinite(mo) || !Number.isFinite(d)) return `${dateISO} ${hhmm}`;
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return `${dateISO} ${hhmm}`;
+  const instant = moscowWallTimeToUtc(y, mo, d, h, m, 0);
+  return formatInstantMoscowWallForLocale(instant, locale);
 }
 
 export function formatInstantInMoscow(d: Date): { date: string; time: string } {

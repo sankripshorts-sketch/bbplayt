@@ -266,16 +266,19 @@ export function computeCanonicalZoneFrames(
     gameZoneSquareSide = Math.max(gameZoneSquareSide, slot.w * size.x);
   }
 
-  let innerH = Math.max(
-    Math.max(0, minHeight - topInset),
-    naturalRowHeights.length ? Math.max(...naturalRowHeights) : 0,
-    gameZoneSquareSide,
-  );
+  const naturalMax = naturalRowHeights.length ? Math.max(...naturalRowHeights) : 0;
 
-  /** Ниже ряд зон на экране брони: центральный «квадрат» уже → меньше высота всей схемы. */
+  let innerH: number;
   if (layoutOpts?.bookingCompact) {
+    /**
+     * На брони не тянем ряд по `minHeight` с экрана (200–320+) — иначе `innerH` больше квадрата GameZone,
+     * боковые колонки на всю эту высоту, а рамка viewport — пустота снизу и лишний хитбокс.
+     */
+    const base = Math.max(naturalMax, gameZoneSquareSide);
     const softCap = Math.floor(canvasW * 0.62);
-    innerH = Math.max(gameZoneSquareSide, Math.min(innerH, softCap));
+    innerH = Math.max(gameZoneSquareSide, Math.min(base, softCap));
+  } else {
+    innerH = Math.max(Math.max(0, minHeight - topInset), naturalMax, gameZoneSquareSide);
   }
 
   const frames: ZonePixelFrame[] = rooms.map((room) => {
@@ -319,7 +322,15 @@ export function computeCanonicalZoneFrames(
     return { ...f, left: leftC, w: wC };
   });
 
-  const canvasH = topInset + innerH + bottomInset;
+  /** Компактная бронь: высота канваса по фактическому низу зон (без хвоста под короткой GameZone). */
+  let canvasH = topInset + innerH + bottomInset;
+  if (layoutOpts?.bookingCompact && clampedFrames.length) {
+    let maxBottom = topInset;
+    for (const f of clampedFrames) {
+      maxBottom = Math.max(maxBottom, f.top + f.h);
+    }
+    canvasH = maxBottom + bottomInset;
+  }
   return { frames: clampedFrames, canvasH };
 }
 

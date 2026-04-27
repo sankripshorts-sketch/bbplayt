@@ -24,6 +24,7 @@ import type { ColorPalette } from '../../theme/palettes';
 import { useTheme, useThemeColors } from '../../theme';
 import { queryKeys } from '../../query/queryKeys';
 import { formatPublicErrorMessage } from '../../utils/publicText';
+import { ClubDataLoader } from '../ui/ClubDataLoader';
 import {
   birthdayToIso,
   dateToBirthdayDisplay,
@@ -37,6 +38,7 @@ import {
 } from './inputFormatters';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Register'>;
+const BOTTOM_EDGE_BLEED_PX = 128;
 
 export function RegisterScreen({ navigation }: Props) {
   const { t } = useLocale();
@@ -146,7 +148,7 @@ export function RegisterScreen({ navigation }: Props) {
 
           <Text style={styles.label}>{t('register.clubLabel')}</Text>
           {cafesListQ.isLoading ? (
-            <ActivityIndicator color={colors.accentBright} />
+            <ClubDataLoader message={t('common.loader.captionClub')} compact minHeight={120} />
           ) : (
             <View style={styles.chips}>
               <Pressable
@@ -360,7 +362,13 @@ function BirthdayField({
       ) : null}
 
       {pickerOpen && Platform.OS === 'ios' ? (
-        <Modal transparent animationType="slide" visible={pickerOpen} onRequestClose={() => setPickerOpen(false)}>
+        <Modal
+          transparent
+          animationType="fade"
+          visible={pickerOpen}
+          onRequestClose={() => setPickerOpen(false)}
+          presentationStyle={Platform.OS === 'ios' ? 'overFullScreen' : undefined}
+        >
           <Pressable style={styles.modalBackdrop} onPress={() => setPickerOpen(false)}>
             <Pressable style={[styles.modalSheet, { backgroundColor: colors.card }]} onPress={(e) => e.stopPropagation()}>
               <DateTimePicker
@@ -379,6 +387,7 @@ function BirthdayField({
               >
                 <Text style={[styles.pickerCloseText, { color: colors.accentBright }]}>{pickerCloseLabel}</Text>
               </Pressable>
+              <View style={[styles.bottomEdgeSpacer, styles.pointerNone]} />
             </Pressable>
           </Pressable>
         </Modal>
@@ -547,8 +556,11 @@ function createStyles(colors: ColorPalette) {
       borderTopLeftRadius: 16,
       borderTopRightRadius: 16,
       paddingBottom: 8,
+      marginBottom: -BOTTOM_EDGE_BLEED_PX,
       overflow: 'hidden',
     },
+    bottomEdgeSpacer: { height: BOTTOM_EDGE_BLEED_PX },
+    pointerNone: { pointerEvents: 'none' },
     pickerCloseBtn: {
       alignItems: 'center',
       paddingVertical: 14,

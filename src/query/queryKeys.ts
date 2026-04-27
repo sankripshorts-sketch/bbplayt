@@ -1,8 +1,8 @@
-import { getVkGroupId } from '../config/vkNewsConfig';
-
 export const queryKeys = {
-  /** Первая страница стены VK (парсинг HTML) — префетч при старте в useAppBootstrap */
-  vkWallFirstPage: () => ['vk-wall', 'first-page', getVkGroupId()] as const,
+  /** Первая страница стены VK (парсинг HTML) — ключ по id сообщества (город). */
+  vkWallFirstPage: (vkGroupId: number) => ['vk-wall', 'first-page', vkGroupId] as const,
+  /** Агрегированный кэш ленты VK (первая + догруженные страницы). */
+  vkWallFeed: (vkGroupId: number) => ['vk-wall', 'feed', vkGroupId] as const,
   cafes: () => ['cafes'] as const,
   icafeIdForMember: () => ['icafe-id-for-member'] as const,
   structRooms: (cafeId: number) => ['struct-rooms', cafeId] as const,

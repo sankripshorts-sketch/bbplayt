@@ -1,5 +1,14 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { Alert } from 'react-native';
 import bundled from '../../assets/knowledge.json';
+import { useLocale } from '../i18n/LocaleContext';
+import { getVkGroupId } from '../config/vkNewsConfig';
+import { fetchVkWallVideoPage } from '../features/news/fetchVkWallVideoPosts';
+import { bookingFlowApi, cafesApi } from '../api/endpoints';
+import type { AllPricesData, CafeItem, StructRoomsData } from '../api/types';
+import { buildPriceKnowledge } from './priceKnowledge';
+import { buildStructKnowledge } from './structKnowledge';
+import { buildVkSupplement } from './vkKnowledge';
 import { getKnowledgeJsonUrl } from '../config/knowledgeUrl';
 import type { KnowledgeCategory, KnowledgeEntry } from './types';
 import { isKnowledgeCategory } from './types';
@@ -39,6 +48,125 @@ function parseKnowledgeJson(json: unknown): KnowledgeEntry[] | null {
   return out.length > 0 ? out : null;
 }
 
+function nonEmpty(value: string | undefined): string | null {
+  const v = value?.trim();
+  return v ? v : null;
+}
+
+function splitKeywords(value: string): string[] {
+  return value
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s-]/gu, ' ')
+    .split(/\s+/)
+    .map((x) => x.trim())
+    .filter((x) => x.length >= 3);
+}
+
+function cafeLabel(cafe: CafeItem): string {
+  return nonEmpty(cafe.name) ?? cafe.address;
+}
+
+function cafeLine(cafe: CafeItem): string {
+  const parts: string[] = [cafeLabel(cafe), cafe.address];
+  if (nonEmpty(cafe.phone)) parts.push(`тел.: ${cafe.phone}`);
+  if (nonEmpty(cafe.vk_url)) parts.push(`VK: ${cafe.vk_url}`);
+  if (nonEmpty(cafe.site)) parts.push(`сайт: ${cafe.site}`);
+  return `- ${parts.join(' · ')}`;
+}
+
+function buildApiKnowledge(cafes: CafeItem[]): KnowledgeEntry[] {
+  if (cafes.length === 0) return [];
+  const lines = cafes.map(cafeLine);
+  const byCity = new Map<string, CafeItem[]>();
+  for (const cafe of cafes) {
+    const key = cafe.address.split(',')[0]?.trim() || 'другой город';
+    const list = byCity.get(key);
+    if (list) list.push(cafe);
+    else byCity.set(key, [cafe]);
+  }
+  const cityLines = [...byCity.entries()].map(([city, list]) => {
+    const names = list
+      .map((x) => cafeLabel(x))
+      .slice(0, 4)
+      .join(', ');
+    const suffix = list.length > 4 ? ` и ещё ${list.length - 4}` : '';
+    return `- ${city}: ${names}${suffix}`;
+  });
+
+  const perClub = cafes.map((cafe): KnowledgeEntry => {
+    const label = cafeLabel(cafe);
+    const answerParts = [`Клуб: ${label}.`, `Адрес: ${cafe.address}.`];
+    if (nonEmpty(cafe.phone)) answerParts.push(`Телефон: ${cafe.phone}.`);
+    if (nonEmpty(cafe.vk_url)) answerParts.push(`VK: ${cafe.vk_url}.`);
+    if (nonEmpty(cafe.site)) answerParts.push(`Сайт: ${cafe.site}.`);
+    answerParts.push('Быстро перейти к брони можно через «Клубы» → «Бронирование».');
+    return {
+      id: `club-api-${cafe.icafe_id}`,
+      category: 'club',
+      question: `${label}: адрес, контакты и как связаться`,
+      answer: answerParts.join(' '),
+      keywords: [
+        'клуб',
+        'адрес',
+        'телефон',
+        'контакты',
+        'вконтакте',
+        'сайт',
+        ...splitKeywords(label),
+        ...splitKeywords(cafe.address),
+      ],
+    };
+  });
+
+  return [
+    {
+      id: 'club-locations',
+      category: 'club',
+      question: 'Где находятся клубы BBplay: адреса и контакты',
+      answer:
+        `Доступные клубы (${cafes.length}):\n` +
+        `${lines.join('\n')}\n\n` +
+        'Актуальные данные обновляются автоматически из каталога клубов.',
+      keywords: [
+        'где клуб',
+        'адрес',
+        'адреса',
+        'как добраться',
+        'контакты',
+        'телефон клуба',
+        'клубы bbplay',
+      ],
+    },
+    {
+      id: 'club-city-coverage',
+      category: 'club',
+      question: 'В каких городах есть клубы',
+      answer:
+        'Клубы доступны в следующих городах:\n' +
+        cityLines.join('\n') +
+        '\n\nЕсли нужно, подскажу конкретный клуб по вашему району.',
+      keywords: ['какие города', 'города', 'где есть клуб', 'филиалы по городам', 'город'],
+    },
+    {
+      id: 'club-contact-channels',
+      category: 'support',
+      question: 'Как быстро связаться с конкретным клубом',
+      answer:
+        'Откройте вкладку «Клубы», выберите точку и нажмите на телефон/VK/сайт. ' +
+        'Контакты показываются для каждого филиала отдельно.',
+      keywords: ['связаться', 'позвонить', 'контакты', 'телефон', 'вк', 'сайт', 'администратор'],
+    },
+    ...perClub,
+  ];
+}
+
+function mergeKnowledge(base: KnowledgeEntry[], patch: KnowledgeEntry[]): KnowledgeEntry[] {
+  if (patch.length === 0) return base;
+  const out = new Map<string, KnowledgeEntry>(base.map((e) => [e.id, e]));
+  for (const item of patch) out.set(item.id, item);
+  return [...out.values()];
+}
+
 type KnowledgeContextValue = {
   entries: KnowledgeEntry[];
   /** false, пока не завершена попытка загрузки удалённого JSON (если URL задан). */
@@ -50,39 +178,123 @@ const KnowledgeContext = createContext<KnowledgeContextValue | null>(null);
 const initialParsed = parseKnowledgeJson(bundled);
 const initialEntries: KnowledgeEntry[] = initialParsed ?? [];
 
+let startupCafesLoadAlertShown = false;
+
 export function KnowledgeProvider({ children }: { children: React.ReactNode }) {
+  const { t } = useLocale();
   const [entries, setEntries] = useState<KnowledgeEntry[]>(initialEntries);
-  const [knowledgeReady, setKnowledgeReady] = useState(() => !getKnowledgeJsonUrl());
+  const [knowledgeReady, setKnowledgeReady] = useState(false);
 
   useEffect(() => {
     const url = getKnowledgeJsonUrl();
-    if (!url) {
-      setKnowledgeReady(true);
-      return;
-    }
     setKnowledgeReady(false);
     let cancelled = false;
-    fetch(url)
-      .then((r) => {
-        if (!r.ok) throw new Error(String(r.status));
-        return r.json();
-      })
-      .then((json) => {
+    let cafesListLoadFailed = false;
+
+    const remotePromise: Promise<KnowledgeEntry[]> = url
+      ? fetch(url)
+          .then((r) => {
+            if (!r.ok) throw new Error(String(r.status));
+            return r.json();
+          })
+          .then((json) => {
+            const parsed = parseKnowledgeJson(json);
+            if (parsed) return parsed;
+            if (__DEV__) console.warn('[knowledge] remote JSON invalid, keeping bundle');
+            return initialEntries;
+          })
+          .catch(() => {
+            if (__DEV__) console.warn('[knowledge] remote fetch failed, using bundle');
+            return initialEntries;
+          })
+      : Promise.resolve(initialEntries);
+
+    Promise.all([
+      remotePromise,
+      cafesApi.list().catch(() => {
+        cafesListLoadFailed = true;
+        if (__DEV__) console.warn('[knowledge] cafes API unavailable, keeping base entries');
+        return [] as CafeItem[];
+      }),
+    ])
+      .then(async ([baseEntries, cafes]) => {
         if (cancelled) return;
-        const parsed = parseKnowledgeJson(json);
-        if (parsed) setEntries(parsed);
-        else if (__DEV__) console.warn('[knowledge] remote JSON invalid, keeping bundle');
-      })
-      .catch(() => {
-        if (__DEV__) console.warn('[knowledge] remote fetch failed, using bundle');
+        let pricesArr: (AllPricesData | null)[] = [];
+        let structArr: (StructRoomsData | null)[] = [];
+        if (cafes.length > 0) {
+          [pricesArr, structArr] = await Promise.all([
+            Promise.all(
+              cafes.map((c) =>
+                bookingFlowApi.allPrices({ cafeId: c.icafe_id }).catch((): null => {
+                  if (__DEV__) {
+                    console.warn('[knowledge] all-prices-icafe failed for cafe', c.icafe_id);
+                  }
+                  return null;
+                }),
+              ),
+            ),
+            Promise.all(
+              cafes.map((c) =>
+                bookingFlowApi.structRooms(c.icafe_id).catch((): null => {
+                  if (__DEV__) {
+                    console.warn('[knowledge] struct-rooms-icafe failed for cafe', c.icafe_id);
+                  }
+                  return null;
+                }),
+              ),
+            ),
+          ]);
+        }
+
+        const apiEntries = buildApiKnowledge(cafes);
+        const priceEntries = buildPriceKnowledge(cafes, pricesArr);
+        const structEntries = buildStructKnowledge(cafes, structArr);
+        const apiKnownIds = new Set(
+          [...apiEntries, ...priceEntries, ...structEntries].map((entry) => entry.id),
+        );
+
+        const vkGid = getVkGroupId();
+        let vkEntries: ReturnType<typeof buildVkSupplement> = [];
+        if (!cancelled) {
+          try {
+            const page = await fetchVkWallVideoPage(0, { vkGroupId: vkGid });
+            vkEntries = buildVkSupplement({ posts: page.posts, vkGroupId: vkGid }).filter(
+              (entry) => !apiKnownIds.has(entry.id),
+            );
+          } catch (e) {
+            if (__DEV__) {
+              console.warn('[knowledge] VK wall supplement failed', e);
+            }
+          }
+        }
+
+        if (cancelled) return;
+        setEntries(
+          mergeKnowledge(baseEntries, [
+            ...apiEntries,
+            ...priceEntries,
+            ...structEntries,
+            ...vkEntries,
+          ]),
+        );
       })
       .finally(() => {
-        if (!cancelled) setKnowledgeReady(true);
+        if (cancelled) return;
+        setKnowledgeReady(true);
+        if (cafesListLoadFailed && !startupCafesLoadAlertShown) {
+          startupCafesLoadAlertShown = true;
+          Alert.alert(
+            t('startup.cafesUnavailableTitle'),
+            t('startup.cafesUnavailableMessage'),
+            [{ text: t('verify.alertOk') }],
+          );
+        }
       });
+
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [t]);
 
   const value = useMemo(() => ({ entries, knowledgeReady }), [entries, knowledgeReady]);
 

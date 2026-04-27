@@ -10,28 +10,32 @@ export function getVkGroupId(): number {
   return 221562447;
 }
 
-export function getVkWallUrl(offset: number): string {
-  const id = getVkGroupId();
+function resolvedVkGroupId(groupId?: number): number {
+  return groupId ?? getVkGroupId();
+}
+
+export function getVkWallUrl(offset: number, groupId?: number): string {
+  const id = resolvedVkGroupId(groupId);
   const q = offset > 0 ? `?offset=${offset}` : '';
   return `https://vk.com/wall-${id}${q}`;
 }
 
 /** Запасной вариант (иногда отдаёт более стабильную вёрстку для парсера). */
-export function getVkWallUrlMobile(offset: number): string {
-  const id = getVkGroupId();
+export function getVkWallUrlMobile(offset: number, groupId?: number): string {
+  const id = resolvedVkGroupId(groupId);
   const q = offset > 0 ? `?offset=${offset}` : '';
   return `https://m.vk.com/wall-${id}${q}`;
 }
 
 /** Страница сообщества — часто стабильнее для парсера, чем /wall-{id}. */
-export function getVkClubUrl(offset: number): string {
-  const id = getVkGroupId();
+export function getVkClubUrl(offset: number, groupId?: number): string {
+  const id = resolvedVkGroupId(groupId);
   const q = offset > 0 ? `?offset=${offset}` : '';
   return `https://vk.com/club${id}${q}`;
 }
 
-export function getVkClubUrlMobile(offset: number): string {
-  const id = getVkGroupId();
+export function getVkClubUrlMobile(offset: number, groupId?: number): string {
+  const id = resolvedVkGroupId(groupId);
   const q = offset > 0 ? `?offset=${offset}` : '';
   return `https://m.vk.com/club${id}${q}`;
 }
@@ -50,12 +54,12 @@ export function getVkFeedCustomUrl(): string | undefined {
  * URL для WebView: мобильная стена сообщества (устойчивее, чем парсинг HTML / прямой fetch — VK часто отдаёт 418 ботам).
  * Переопределение: EXPO_PUBLIC_VK_M_URL=https://m.vk.com/club123 или https://m.vk.com/screen_name
  */
-export function getVkNewsWebViewUrl(): string {
+export function getVkNewsWebViewUrl(groupId?: number): string {
   const custom = process.env.EXPO_PUBLIC_VK_M_URL?.trim();
   if (custom && /^https?:\/\//i.test(custom)) return custom;
   const fromFeed = getVkFeedCustomUrl();
   if (fromFeed) return fromFeed.replace(/^https?:\/\/(www\.)?vk\.com/i, 'https://m.vk.com');
-  const id = getVkGroupId();
+  const id = resolvedVkGroupId(groupId);
   return `https://m.vk.com/club${id}`;
 }
 
@@ -71,11 +75,18 @@ export function getVkWallPostMobileUrl(ownerId: number, postId: number): string 
   return `https://m.vk.com/wall${ownerId}_${postId}`;
 }
 
+function normalizeRemoteUrl(raw: string | undefined): string | null {
+  if (!raw) return null;
+  const trimmed = raw.trim().replace(/&amp;/g, '&');
+  if (!trimmed) return null;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (trimmed.startsWith('//')) return `https:${trimmed}`;
+  return null;
+}
+
 /** URL аватарки сообщества для карточек. Иначе в UI — локальный assets/icon.png. */
 export function getVkCommunityAvatarUri(): string | null {
-  const u = process.env.EXPO_PUBLIC_VK_GROUP_AVATAR_URL?.trim();
-  if (u && /^https?:\/\//i.test(u)) return u;
-  return null;
+  return normalizeRemoteUrl(process.env.EXPO_PUBLIC_VK_GROUP_AVATAR_URL);
 }
 
 /**

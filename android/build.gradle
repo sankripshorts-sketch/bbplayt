@@ -37,5 +37,12 @@ allprojects {
         google()
         mavenCentral()
         maven { url 'https://www.jitpack.io' }
+        // expo-camera ships com.google.android:cameraview here (not on Google Maven)
+        maven {
+            url(new File(
+                new File(["node", "--print", "require.resolve('expo-camera/package.json')"].execute(null, rootDir).text.trim()).parentFile,
+                "android/maven"
+            ))
+        }
     }
 }

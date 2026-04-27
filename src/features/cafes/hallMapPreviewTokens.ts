@@ -10,7 +10,7 @@ export const HALL_PREVIEW = {
   chipIdleText: '#e8e8ea',
   /** Заливка состояния внутри постоянной серой обводки `chipIdleBorder`. */
   busy: { fill: '#dc2626', border: '#dc2626' },
-  selected: { fill: '#16a34a', border: '#16a34a' },
+  selected: { fill: '#22c55e', border: '#22c55e' },
   idleLegendBorder: '#6b7280',
-  unavail: { fill: '#fbbf24', border: '#fbbf24' },
+  unavail: { fill: '#eab308', border: '#ca8a04' },
 } as const;

@@ -471,31 +471,33 @@ function hourlyTotalFrom60MinExtrapolation(product: ProductItem, prices: PriceIt
   return bestTotal;
 }
 
-/** Ключ зоны для строк только GameZone (подпись «выгоднее» всегда от листа GZ). */
-function gameZoneBaselineZoneKeyFromPrices(gz: PriceItem[]): string {
-  if (gz.length === 0) return '';
+/** Ключ зоны для листовых строк выбранной зоны (подпись «выгоднее» от той зоны, где выбран ПК). */
+function baselineZoneKeyFromPrices(zonePrices: PriceItem[], zone: PcZoneKind): string {
+  if (zonePrices.length === 0) return '';
   const row =
-    gz.find((p) => normalizePcZoneKind(p.group_name) === 'GameZone') ?? gz[0]!;
+    zonePrices.find((p) => normalizePcZoneKind(p.group_name) === zone) ?? zonePrices[0]!;
   const g = row.group_name?.trim();
-  return g ? normalizeZoneKey(g) : normalizeZoneKey('GameZone');
+  return g ? normalizeZoneKey(g) : normalizeZoneKey(zone);
 }
 
-/**
- * База P_прив для подписи «выгоднее»: **только** сетка GameZone (₽/ч × часы), не зона пакета (VIP/BC).
- */
-function hourlyTotalBaselineGameZoneListOnly(product: ProductItem, allPrices: PriceItem[]): number | null {
-  const gz = priceItemsGameZoneOnly(allPrices);
-  if (gz.length === 0) return null;
+/** База P_прив для подписи «выгоднее»: листовая почасовка выбранной зоны (₽/ч × часы). */
+function hourlyTotalBaselineZoneListOnly(
+  product: ProductItem,
+  allPrices: PriceItem[],
+  zone: PcZoneKind,
+): number | null {
+  const zonePrices = priceItemsForPcZoneKind(allPrices, zone);
+  if (zonePrices.length === 0) return null;
   const sessionMins = parseMinsFromProduct(product, 0);
   if (!sessionMins || sessionMins <= 0) return null;
-  const zoneKey = gameZoneBaselineZoneKeyFromPrices(gz);
+  const zoneKey = baselineZoneKeyFromPrices(zonePrices, zone);
 
-  const canon = hourlyBaselineTotalFromCanonicalZoneSticker(sessionMins, gz, zoneKey);
+  const canon = hourlyBaselineTotalFromCanonicalZoneSticker(sessionMins, zonePrices, zoneKey);
   if (canon != null && Number.isFinite(canon) && canon > 0) return canon;
 
   let bestTotal: number | null = null;
-  for (const refMins of distinctShortRefMinutesFromPrices(gz, sessionMins)) {
-    const cands = hourlyCandidatesForSessionMins(gz, refMins);
+  for (const refMins of distinctShortRefMinutesFromPrices(zonePrices, sessionMins)) {
+    const cands = hourlyCandidatesForSessionMins(zonePrices, refMins);
     if (cands.length === 0) continue;
     const hourly = pickBestHourlyStickerTierForBaseline(cands, zoneKey);
     if (!hourly) continue;
@@ -815,53 +817,59 @@ function percentFromMaxLinearAlternativeAmongCatalog(product: ProductItem, catal
   return pct > 0 ? pct : null;
 }
 
-/**
- * Эталон для подписи «выгоднее»: пакет **GameZone** той же длительности из каталога.
- * Цена VIP/BootCamp не подставляется — процент не должен меняться при смене тарифа/зоны в UI.
- */
-export function wheelGameZoneProductForSavingLabel(product: ProductItem, catalog: ProductItem[]): ProductItem {
+/** Эталон для подписи «выгоднее»: пакет той же длительности в выбранной зоне ПК. */
+export function wheelZoneProductForSavingLabel(
+  product: ProductItem,
+  catalog: ProductItem[],
+  zone: PcZoneKind,
+): ProductItem {
   const sessionMins = catalogProductSessionMins(product) ?? parseMinsFromProduct(product, 0);
   if (!sessionMins || sessionMins <= 0 || !catalog.length) return product;
   const pool = catalog.filter(
     (p) => !isLikelyTopupOrDepositProduct(p) && catalogProductSessionMins(p) === sessionMins,
   );
   if (pool.length === 0) return product;
-  return pickProductPackageForZoneKind(pool, 'GameZone') ?? product;
+  return pickProductPackageForZoneKind(pool, zone) ?? product;
+}
+
+/** @deprecated Используйте {@link wheelZoneProductForSavingLabel} с явной зоной. */
+export function wheelGameZoneProductForSavingLabel(product: ProductItem, catalog: ProductItem[]): ProductItem {
+  return wheelZoneProductForSavingLabel(product, catalog, 'GameZone');
 }
 
 /**
- * Процент для подписи в колесе: сравнение цены пакета с **листовой почасовкой GameZone** (строки `group_name` GameZone в `prices`),
- * не с VIP/BootCamp. Цена пакета в числителе — **всегда GameZone** для этой длительности (если есть в `products`), не зона выбранного тарифа.
+ * Процент для подписи в колесе: сравнение цены пакета с листовой почасовкой выбранной зоны.
  */
 export function packageSavingPercentForWheel(
   product: ProductItem,
   prices: PriceItem[],
   catalog: ProductItem[] = [],
+  zone: PcZoneKind = 'GameZone',
 ): number | null {
   const sessionMins = parseMinsFromProduct(product, 0);
   if (!sessionMins || sessionMins <= 0) return null;
 
-  const ref = wheelGameZoneProductForSavingLabel(product, catalog);
-  const gzPrices = priceItemsGameZoneOnly(prices);
-  const gzZoneKey = gzPrices.length > 0 ? gameZoneBaselineZoneKeyFromPrices(gzPrices) : '';
-  const gzCatalog = productItemsForPcZoneKind(catalog, 'GameZone');
-  const catalogPool = gzCatalog.length > 0 ? gzCatalog : catalog;
+  const ref = wheelZoneProductForSavingLabel(product, catalog, zone);
+  const zonePrices = priceItemsForPcZoneKind(prices, zone);
+  const zoneKey = zonePrices.length > 0 ? baselineZoneKeyFromPrices(zonePrices, zone) : '';
+  const zoneCatalog = productItemsForPcZoneKind(catalog, zone);
+  const catalogPool = zoneCatalog.length > 0 ? zoneCatalog : catalog;
 
   const pkg = productRubFromItem(ref);
   if (!Number.isFinite(pkg) || pkg <= 0) return null;
 
   const hasGridHourlyBaseline =
-    gzPrices.length > 0 && pickMaxHourlyStickerTierForZoneBaseline(gzPrices, gzZoneKey) != null;
+    zonePrices.length > 0 && pickMaxHourlyStickerTierForZoneBaseline(zonePrices, zoneKey) != null;
 
-  if (gzPrices.length > 0) {
-    const baseEx = hourlyTotalBaselineGameZoneListOnly(ref, prices);
+  if (zonePrices.length > 0) {
+    const baseEx = hourlyTotalBaselineZoneListOnly(ref, prices, zone);
     if (baseEx != null && Number.isFinite(baseEx) && baseEx > 0) {
       if (pkg + 0.5 >= baseEx) return 0;
       const rawPct = (1 - pkg / baseEx) * 100;
       const pct = ceilPercentToMultipleOf5(rawPct);
       return pct > 0 ? pct : 0;
     }
-    const perHourPct = gameZonePerHourPackageSavingPercent(sessionMins, pkg, gzPrices);
+    const perHourPct = gameZonePerHourPackageSavingPercent(sessionMins, pkg, zonePrices);
     if (perHourPct != null) return perHourPct;
   }
 

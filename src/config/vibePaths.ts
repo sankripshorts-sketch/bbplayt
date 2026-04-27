@@ -1,11 +1,11 @@
 import Constants from 'expo-constants';
 
-/** По API_VIBE — `/all-books-cafes`; при необходимости переопределите env. */
-const DEFAULT_ALL_BOOKS = '/all-books-cafes';
+/** Для «Мои брони» по умолчанию используем member endpoint, чтобы сервер отдавал историю пользователя. */
+const DEFAULT_ALL_BOOKS = '/all-books-member';
 
 /**
- * GET vibe: список броней по клубам.
- * Дефолт `/all-books-cafes`; альтернатива `/all-books-member` (тот же query `memberAccount`).
+ * GET vibe: список броней пользователя по клубам.
+ * Дефолт `/all-books-member`; альтернатива `/all-books-cafes` (тот же query `memberAccount`).
  * Задаётся `EXPO_PUBLIC_ALL_BOOKS_PATH` или `app.config.js` → `extra.allBooksPath`.
  */
 export function getAllBooksPath(): string {

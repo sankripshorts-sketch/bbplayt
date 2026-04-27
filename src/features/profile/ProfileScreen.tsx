@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
-  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -12,54 +11,51 @@ import {
 } from 'react-native';
 import { Text } from '../../components/DinText';
 import { TextInput } from '../../components/DinTextInput';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useQueryClient } from '@tanstack/react-query';
+import { useFocusEffect, useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { bookingFlowApi } from '../../api/endpoints';
 import { TodaysBookingBanner } from '../booking/TodaysBookingBanner';
-import { fetchMemberTopupBonus, memberTopupSmartFlow } from '../../api/memberMoneyApi';
-import { ApiError } from '../../api/client';
 import { useAuth } from '../../auth/AuthContext';
 import { useLocale } from '../../i18n/LocaleContext';
 import type { ColorPalette } from '../../theme/palettes';
-import { useThemeColors } from '../../theme';
+import { fonts, useThemeColors } from '../../theme';
 import type { ProfileStackParamList } from '../../navigation/types';
+import { localTopupBonusRub } from '../../utils/localTopupMock';
 import { formatPublicErrorMessage } from '../../utils/publicText';
+import { TabScreenTopBar } from '../../components/TabScreenTopBar';
+import { DimmedSheetModal } from '../../components/DimmedSheetModal';
+import { DraggableWheelSheet } from '../booking/DraggableWheelSheet';
+import { grantDiceRollOnTopupIfEligible } from '../../preferences/diceMinigameRolls';
+import { loadAppPreferences } from '../../preferences/appPreferences';
+import { queryKeys } from '../../query/queryKeys';
+import { ProfilePromoFeed } from '../promos/ProfilePromoFeed';
+import { PromoDetailModal } from '../promos/PromoDetailModal';
+import { DiceMinigameModal } from '../promos/DiceMinigameModal';
+import type { PromoId } from '../promos/promoTypes';
 
 const TOP_UP_QUICK_AMOUNTS = [100, 200, 500, 1000, 1500] as const;
 
-/**
- * Акцент уровня суммы — только из палитры темы (полоска слева), фон нейтральный:
- * читаемость и единый вид со всем приложением, без «неоновых» прямоугольников.
- */
-function topUpTierStripeColor(
-  amount: (typeof TOP_UP_QUICK_AMOUNTS)[number],
-  palette: ColorPalette,
-): string {
-  const order: Record<(typeof TOP_UP_QUICK_AMOUNTS)[number], number> = {
-    100: 0,
-    200: 1,
-    500: 2,
-    1000: 3,
-    1500: 4,
-  };
-  const stripes: string[] = [
-    palette.pcFree,
-    palette.accentSecondary,
-    palette.accent,
-    palette.pcLiveBusy,
-    palette.danger,
-  ];
-  return stripes[order[amount] ?? 0] ?? palette.accent;
-}
+/** Фиксированные ширины полос в таблице бонусов (px). 100 ₽ — минимум, дальше — по заданной шкале. */
+const TOP_UP_TABLE_PILL_WIDTH: Record<(typeof TOP_UP_QUICK_AMOUNTS)[number], number> = {
+  100: 50,
+  200: 100,
+  500: 125,
+  1000: 180,
+  1500: 200,
+};
 
 export function ProfileScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
-  const { user, logout, refreshMemberBalance } = useAuth();
+  const route = useRoute<RouteProp<ProfileStackParamList, 'ProfileHome'>>();
+  const queryClient = useQueryClient();
+  const { user, patchUser } = useAuth();
   const { t } = useLocale();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  /** Табы уже снаружи области экрана — большой padding создавал пустоту над таббаром */
+  const styles = useMemo(() => createStyles(colors, 14), [colors]);
 
   const [topUpOpen, setTopUpOpen] = useState(false);
   const [topUpAmount, setTopUpAmount] = useState('');
@@ -69,71 +65,64 @@ export function ProfileScreen() {
   const [topUpBonusByAmount, setTopUpBonusByAmount] = useState<
     Record<(typeof TOP_UP_QUICK_AMOUNTS)[number], number | null>
   >({} as Record<(typeof TOP_UP_QUICK_AMOUNTS)[number], number | null>);
-  const [topUpBonusPreviewLoading, setTopUpBonusPreviewLoading] = useState(false);
+  const [localPromoBonusRub, setLocalPromoBonusRub] = useState(0);
+  const [promoDetailId, setPromoDetailId] = useState<'birthday' | 'maps_review' | null>(null);
+  const [diceOpen, setDiceOpen] = useState(false);
 
   const accountLabel = user?.memberAccount ?? '—';
+
+  const refreshLocalPromoBonus = useCallback(() => {
+    void loadAppPreferences().then((p) => setLocalPromoBonusRub(p.localPromoBonusRub));
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshLocalPromoBonus();
+      if (user?.memberId) {
+        void queryClient.prefetchQuery({
+          queryKey: queryKeys.icafeIdForMember(),
+          queryFn: () => bookingFlowApi.icafeIdForMember(),
+          staleTime: 5 * 60 * 1000,
+        });
+      }
+    }, [refreshLocalPromoBonus, queryClient, user?.memberId]),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (route.params?.openTopUp) {
+        setTopUpOpen(true);
+        navigation.setParams({ openTopUp: undefined });
+      }
+      if (route.params?.openDice) {
+        setDiceOpen(true);
+        navigation.setParams({ openDice: undefined });
+      }
+    }, [route.params?.openTopUp, route.params?.openDice, navigation]),
+  );
+
+  const onSelectPromo = useCallback((id: PromoId) => {
+    if (id === 'dice') {
+      setDiceOpen(true);
+      return;
+    }
+    setPromoDetailId(id);
+  }, []);
 
   useEffect(() => {
     if (!topUpOpen || !user?.memberId) {
       setTopUpBonusByAmount({} as Record<(typeof TOP_UP_QUICK_AMOUNTS)[number], number | null>);
-      setTopUpBonusPreviewLoading(false);
       return;
     }
-    let cancelled = false;
-    setTopUpBonusPreviewLoading(true);
     const promo = topUpPromo.trim() || undefined;
-    void (async () => {
-      try {
-        const { icafe_id } = await bookingFlowApi.icafeIdForMember();
-        const cafeId = Number(String(icafe_id).trim());
-        if (!Number.isFinite(cafeId)) {
-          throw new ApiError(t('profile.topUpPrepareError'), 0);
-        }
-        const entries = await Promise.all(
-          TOP_UP_QUICK_AMOUNTS.map(async (amount) => {
-            try {
-              const { bonusAmount } = await fetchMemberTopupBonus({
-                cafeId,
-                memberId: user.memberId!,
-                topupValue: amount,
-                promoCode: promo,
-              });
-              const b =
-                bonusAmount != null && Number.isFinite(bonusAmount) && bonusAmount >= 0
-                  ? bonusAmount
-                  : 0;
-              return [amount, b] as const;
-            } catch {
-              return [amount, null] as const;
-            }
-          })
-        );
-        if (cancelled) return;
-        setTopUpBonusByAmount(
-          Object.fromEntries(entries) as Record<
-            (typeof TOP_UP_QUICK_AMOUNTS)[number],
-            number | null
-          >
-        );
-      } catch {
-        if (!cancelled) {
-          setTopUpBonusByAmount({} as Record<(typeof TOP_UP_QUICK_AMOUNTS)[number], number | null>);
-        }
-      } finally {
-        if (!cancelled) setTopUpBonusPreviewLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
+    setTopUpBonusByAmount(
+      Object.fromEntries(
+        TOP_UP_QUICK_AMOUNTS.map(
+          (amount) => [amount, localTopupBonusRub(amount, promo)] as const,
+        ),
+      ) as Record<(typeof TOP_UP_QUICK_AMOUNTS)[number], number | null>,
+    );
   }, [topUpOpen, user?.memberId, topUpPromo]);
-
-  useFocusEffect(
-    useCallback(() => {
-      if (!user?.memberId || !user.memberAccount.trim()) return;
-      void refreshMemberBalance();
-    }, [user?.memberId, user?.memberAccount, refreshMemberBalance])
-  );
 
   const closeTopUp = useCallback(() => {
     if (topUpBusy) return;
@@ -152,18 +141,12 @@ export function ProfileScreen() {
     setTopUpErr(null);
     setTopUpBusy(true);
     try {
-      const { icafe_id } = await bookingFlowApi.icafeIdForMember();
-      const cafeId = Number(String(icafe_id).trim());
-      if (!Number.isFinite(cafeId)) {
-        throw new ApiError(t('profile.topUpPrepareError'), 0);
-      }
-      await memberTopupSmartFlow({
-        cafeId,
-        memberId: user.memberId,
-        topupValue: amount,
-        promoCode: topUpPromo.trim() || undefined,
-      });
-      await refreshMemberBalance();
+      const promo = topUpPromo.trim() || undefined;
+      const bonus = localTopupBonusRub(amount, promo);
+      const nextBalance = (user.balanceRub ?? 0) + amount;
+      const nextBonus = (user.bonusBalanceRub ?? 0) + bonus;
+      await patchUser({ balanceRub: nextBalance, bonusBalanceRub: nextBonus });
+      await grantDiceRollOnTopupIfEligible(amount);
       setTopUpOpen(false);
       setTopUpAmount('');
       setTopUpPromo('');
@@ -173,130 +156,191 @@ export function ProfileScreen() {
     } finally {
       setTopUpBusy(false);
     }
-  }, [user?.memberId, topUpAmount, topUpPromo, refreshMemberBalance, t]);
+  }, [user, topUpAmount, topUpPromo, patchUser, t]);
 
   return (
     <SafeAreaView style={styles.root} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <TodaysBookingBanner />
-        <View style={styles.headerRow}>
-          <View style={styles.headerTitles}>
-            <Text style={styles.heroGreeting}>{t('profile.greeting')}</Text>
-            <Text style={styles.heroAccount} numberOfLines={2}>
-              {accountLabel}
-            </Text>
+      <View style={styles.headerChrome}>
+        <TabScreenTopBar
+          title={t('tabs.profile')}
+          horizontalPadding={0}
+          rightAccessory={
+            <View style={styles.settingsAccessory}>
+              <Pressable
+                style={({ pressed }) => [styles.iconBtn, pressed && styles.iconBtnPressed]}
+                onPress={() => navigation.navigate('Settings')}
+                accessibilityRole="button"
+                accessibilityLabel={t('profile.settings')}
+              >
+                <MaterialCommunityIcons name="cog-outline" size={26} color={colors.text} />
+              </Pressable>
+            </View>
+          }
+        />
+        <ProfilePromoFeed
+          paused={promoDetailId != null || diceOpen}
+          onSelectPromo={onSelectPromo}
+        />
+      </View>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="handled"
+        /** Вложенная горизонтальная лента акций иначе борется с этим скроллом (Android + часть web). */
+        nestedScrollEnabled
+        scrollEnabled={promoDetailId == null && !diceOpen}
+      >
+        <View style={styles.scrollTopSpacer} />
+        <View style={styles.heroTextBlock}>
+          <Text style={styles.heroLine} numberOfLines={1}>
+            {t('profile.greetingWithLogin', { login: accountLabel })}
+          </Text>
+        </View>
+
+        <View style={styles.balanceTopUpCard}>
+          <View style={styles.balanceTopUpCardTop}>
+            <View style={styles.balanceLabelRow}>
+              <MaterialCommunityIcons name="wallet-outline" size={16} color={colors.muted} />
+              <Text style={styles.balanceCardLabel}>{t('profile.balance')}</Text>
+            </View>
+            {user?.balanceRub !== undefined ? (
+              <Text style={styles.balanceCardValue}>{user.balanceRub.toFixed(2)} ₽</Text>
+            ) : (
+              <Text style={styles.heroHint}>{t('profile.balanceHint')}</Text>
+            )}
+            {user?.memberId ? (
+              <Text style={styles.bonusHint}>
+                {t('profile.bonusBalance')}:{' '}
+                {user.bonusBalanceRub !== undefined
+                  ? `${user.bonusBalanceRub.toFixed(2)} ₽`
+                  : '—'}
+              </Text>
+            ) : null}
+            {localPromoBonusRub > 0 ? (
+              <Text style={styles.localPromoHint}>
+                {t('profile.localPromoBonus', { amount: localPromoBonusRub.toFixed(0) })}
+              </Text>
+            ) : null}
           </View>
           <Pressable
-            style={({ pressed }) => [styles.iconBtn, pressed && styles.iconBtnPressed]}
-            onPress={() => navigation.navigate('Settings')}
+            style={({ pressed }) => [
+              styles.balanceTopUpStrip,
+              pressed && styles.balanceTopUpStripPressed,
+            ]}
+            onPress={() => setTopUpOpen(true)}
             accessibilityRole="button"
-            accessibilityLabel={t('profile.settings')}
+            accessibilityLabel={t('profile.topUpInApp')}
           >
-            <MaterialCommunityIcons name="cog-outline" size={26} color={colors.text} />
+            <Text style={styles.balanceTopUpStripText}>{t('profile.topUpFused')}</Text>
           </Pressable>
         </View>
 
-        <View style={styles.balanceCard}>
-          <Text style={styles.balanceCardLabel}>{t('profile.balance')}</Text>
-          {user?.balanceRub !== undefined ? (
-            <Text style={styles.balanceCardValue}>{user.balanceRub.toFixed(2)} ₽</Text>
-          ) : (
-            <Text style={styles.heroHint}>{t('profile.balanceHint')}</Text>
-          )}
-          {user?.memberId ? (
-            <Text style={styles.bonusHint}>
-              {t('profile.bonusBalance')}:{' '}
-              {user.bonusBalanceRub !== undefined
-                ? `${user.bonusBalanceRub.toFixed(2)} ₽`
-                : '—'}
-            </Text>
-          ) : null}
-        </View>
-
-        <Text style={styles.sectionTitle}>{t('profile.topUpModalTitle')}</Text>
         <Pressable
-          style={({ pressed }) => [styles.primaryCta, pressed && styles.primaryCtaPressed]}
-          onPress={() => setTopUpOpen(true)}
+          style={({ pressed }) => [
+            styles.qrLoginCard,
+            pressed && styles.actionCardPressed,
+          ]}
+          onPress={() => navigation.navigate('QrLogin')}
           accessibilityRole="button"
+          accessibilityLabel={t('profile.qrLoginShortcut')}
         >
-          <MaterialCommunityIcons name="wallet-plus-outline" size={22} color={colors.accentTextOnButton} />
-          <Text style={styles.primaryCtaText}>{t('profile.topUpInApp')}</Text>
+          <View style={styles.qrLoginIcon}>
+            <MaterialCommunityIcons name="qrcode-scan" size={22} color={colors.accentTextOnButton} />
+          </View>
+          <View style={styles.actionCardText}>
+            <Text style={styles.qrLoginTitle} numberOfLines={1}>
+              {t('profile.qrLoginShortcut')}
+            </Text>
+          </View>
+          <MaterialCommunityIcons name="chevron-right" size={22} color={colors.accentTextOnButton} />
+        </Pressable>
+
+        <Pressable
+          style={({ pressed }) => [
+            styles.actionCard,
+            pressed && styles.actionCardPressed,
+          ]}
+          onPress={() => navigation.navigate('News')}
+          accessibilityRole="button"
+          accessibilityLabel={t('profile.newsShortcut')}
+        >
+          <MaterialCommunityIcons
+            name="newspaper-variant-outline"
+            size={22}
+            color={colors.accentBright}
+          />
+          <View style={styles.actionCardText}>
+            <Text style={styles.actionCardTitle} numberOfLines={1}>
+              {t('profile.newsShortcut')}
+            </Text>
+          </View>
+          <MaterialCommunityIcons name="chevron-right" size={22} color={colors.muted} />
         </Pressable>
 
         {user?.memberId ? (
           <>
-            <Text style={styles.sectionTitle}>{t('profile.insightSectionTitle')}</Text>
             <Pressable
-              style={({ pressed }) => [styles.actionCard, pressed && styles.actionCardPressed]}
-              onPress={() => navigation.navigate('BalanceHistory')}
+              style={({ pressed }) => [
+                styles.actionCard,
+                pressed && styles.actionCardPressed,
+              ]}
+              onPress={() => navigation.navigate('InsightsHub')}
+              accessibilityRole="button"
+              accessibilityLabel={t('profile.statisticsButton')}
             >
-              <MaterialCommunityIcons name="cash-multiple" size={22} color={colors.accentBright} />
+              <MaterialCommunityIcons name="chart-box-outline" size={22} color={colors.accentBright} />
               <View style={styles.actionCardText}>
-                <Text style={styles.actionCardTitle}>{t('profile.ctaBalanceHistory')}</Text>
-              </View>
-              <MaterialCommunityIcons name="chevron-right" size={22} color={colors.muted} />
-            </Pressable>
-            <Pressable
-              style={({ pressed }) => [styles.actionCard, pressed && styles.actionCardPressed]}
-              onPress={() => navigation.navigate('GameSessions')}
-            >
-              <MaterialCommunityIcons name="controller-classic-outline" size={22} color={colors.accentBright} />
-              <View style={styles.actionCardText}>
-                <Text style={styles.actionCardTitle}>{t('profile.ctaGameSessions')}</Text>
-              </View>
-              <MaterialCommunityIcons name="chevron-right" size={22} color={colors.muted} />
-            </Pressable>
-            <Pressable
-              style={({ pressed }) => [styles.actionCard, pressed && styles.actionCardPressed]}
-              onPress={() => navigation.navigate('CustomerAnalysis')}
-              disabled={!user?.memberAccount}
-            >
-              <MaterialCommunityIcons name="chart-line" size={22} color={colors.accentBright} />
-              <View style={styles.actionCardText}>
-                <Text style={styles.actionCardTitle}>{t('profile.ctaCustomerAnalysis')}</Text>
-              </View>
-              <MaterialCommunityIcons name="chevron-right" size={22} color={colors.muted} />
-            </Pressable>
-            <Pressable
-              style={({ pressed }) => [styles.actionCard, pressed && styles.actionCardPressed]}
-              onPress={() => navigation.navigate('Ranking')}
-            >
-              <MaterialCommunityIcons name="trophy-outline" size={22} color={colors.accentBright} />
-              <View style={styles.actionCardText}>
-                <Text style={styles.actionCardTitle}>{t('profile.ctaRanking')}</Text>
+                <Text style={styles.actionCardTitle} numberOfLines={2}>
+                  {t('profile.statisticsButton')}
+                </Text>
               </View>
               <MaterialCommunityIcons name="chevron-right" size={22} color={colors.muted} />
             </Pressable>
           </>
         ) : null}
 
-        <Pressable onPress={() => logout()} style={styles.out}>
-          <Text style={styles.outText}>{t('profile.logout')}</Text>
-        </Pressable>
       </ScrollView>
 
-      <Modal visible={topUpOpen} animationType="slide" transparent onRequestClose={closeTopUp}>
-        <KeyboardAvoidingView
-          style={styles.modalBackdrop}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        >
-          <Pressable style={StyleSheet.absoluteFill} onPress={closeTopUp} />
-          <SafeAreaView style={styles.modalSheet} edges={['bottom']}>
-            <View style={styles.modalGrab}>
-              <View style={styles.modalGrabBar} />
-            </View>
+      <PromoDetailModal
+        visible={promoDetailId != null}
+        promoId={promoDetailId}
+        onClose={() => setPromoDetailId(null)}
+      />
+      <DiceMinigameModal
+        visible={diceOpen}
+        onClose={() => setDiceOpen(false)}
+        onLocalBonusChanged={refreshLocalPromoBonus}
+      />
+
+      <DimmedSheetModal
+        visible={topUpOpen}
+        onRequestClose={closeTopUp}
+        contentAlign="stretch"
+        contentWrapperStyle={styles.topUpModalHost}
+      >
+        {(onSheetDrag) => (
+          <KeyboardAvoidingView
+            style={styles.topUpKeyboardHost}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          >
+            <DraggableWheelSheet
+              open={topUpOpen}
+              onRequestClose={closeTopUp}
+              onDragOffsetChange={onSheetDrag}
+              colors={colors}
+              sheetStyle={styles.modalSheet}
+              dragExtendBelowGrabberPx={100}
+              extendToBottomEdge={false}
+            >
+            <SafeAreaView style={styles.topUpSheetInner} edges={['bottom']}>
             <View style={styles.modalBar}>
               <Text style={styles.modalTitle}>{t('profile.topUpModalTitle')}</Text>
-              <Pressable onPress={closeTopUp} hitSlop={12} disabled={topUpBusy}>
-                <Text style={styles.modalClose}>{t('profile.close')}</Text>
-              </Pressable>
             </View>
             <ScrollView
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.modalScrollContent}
             >
-            <Text style={styles.modalHint}>{t('profile.mockTopupAutoHint')}</Text>
             {user?.memberId ? (
               <View style={styles.bonusTable}>
                 <Text style={styles.bonusTableTitle}>{t('profile.topUpBonusPreviewTitle')}</Text>
@@ -310,13 +354,10 @@ export function ProfileScreen() {
                 </View>
                 {TOP_UP_QUICK_AMOUNTS.map((amount, idx) => {
                   const bonus = topUpBonusByAmount[amount];
-                  const tierStripe = topUpTierStripeColor(amount, colors);
-                  const bonusOk =
-                    !topUpBonusPreviewLoading && bonus !== undefined && bonus !== null;
+                  const bonusOk = bonus !== undefined && bonus !== null;
                   const bonusText = (() => {
-                    if (topUpBonusPreviewLoading) return t('profile.topUpBonusLoading');
                     if (bonus === undefined || bonus === null) return t('profile.topUpBonusUnavailable');
-                    return `${bonus.toFixed(0)} ₽`;
+                    return bonus.toFixed(0);
                   })();
                   const isLast = idx === TOP_UP_QUICK_AMOUNTS.length - 1;
                   return (
@@ -328,9 +369,7 @@ export function ProfileScreen() {
                         <View
                           style={[
                             styles.bonusAmountBar,
-                            {
-                              borderLeftColor: tierStripe,
-                            },
+                            { borderRightColor: colors.accent, width: TOP_UP_TABLE_PILL_WIDTH[amount] },
                           ]}
                         >
                           <Text style={[styles.bonusAmountBarText, { color: colors.text }]}>
@@ -354,25 +393,27 @@ export function ProfileScreen() {
             ) : null}
             <Text style={styles.inputLabel}>{t('profile.topUpAmountLabel')}</Text>
             <View style={styles.quickAmountsRow}>
-              {TOP_UP_QUICK_AMOUNTS.map((n) => {
-                const tierStripe = topUpTierStripeColor(n, colors);
-                return (
+              {TOP_UP_QUICK_AMOUNTS.map((n) => (
                   <Pressable
                     key={n}
                     style={({ pressed }) => [
                       styles.quickAmountChip,
-                      { borderLeftColor: tierStripe },
+                      { borderRightColor: colors.accent },
                       pressed && styles.quickAmountChipPressed,
                     ]}
                     onPress={() => setTopUpAmount(String(n))}
                     disabled={topUpBusy}
                   >
-                    <Text style={[styles.quickAmountChipText, { color: colors.text }]}>
+                    <Text
+                      style={[styles.quickAmountChipText, { color: colors.text }]}
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.85}
+                    >
                       {`${n}\u00a0₽`}
                     </Text>
                   </Pressable>
-                );
-              })}
+              ))}
             </View>
             <TextInput
               style={styles.input}
@@ -391,7 +432,6 @@ export function ProfileScreen() {
               autoCapitalize="none"
               editable={!topUpBusy}
             />
-            <Text style={styles.promoHint}>{t('profile.topupPromoHint')}</Text>
             {topUpErr ? <Text style={styles.topUpErr}>{topUpErr}</Text> : null}
             <Pressable
               style={({ pressed }) => [
@@ -412,31 +452,83 @@ export function ProfileScreen() {
             ) : null}
             </ScrollView>
           </SafeAreaView>
-        </KeyboardAvoidingView>
-      </Modal>
+            </DraggableWheelSheet>
+          </KeyboardAvoidingView>
+        )}
+      </DimmedSheetModal>
+      <TodaysBookingBanner style={styles.bookingHeadsUpOverlay} />
     </SafeAreaView>
   );
 }
 
-function createStyles(colors: ColorPalette) {
+function createStyles(colors: ColorPalette, contentPaddingBottom: number) {
   return StyleSheet.create({
     root: { flex: 1, backgroundColor: colors.bg },
-    scroll: { padding: 20, paddingBottom: 40 },
-    headerRow: {
+    topUpModalHost: {
+      flex: 1,
+      justifyContent: 'flex-end',
+    },
+    topUpKeyboardHost: {
+      flex: 1,
+      width: '100%',
+      justifyContent: 'flex-end',
+    },
+    /** Шапка вне скролла — заголовок и настройки всегда сверху */
+    headerChrome: { paddingHorizontal: 16, paddingTop: 4 },
+    bookingHeadsUpOverlay: {
+      position: 'absolute',
+      left: 16,
+      right: 16,
+      top: 8,
+      zIndex: 30,
+      elevation: 30,
+    },
+    /** Чтобы `flexGrow` у контента работал — скролл занимает всю высоту экрана */
+    scrollView: { flex: 1 },
+    scroll: {
+      flexGrow: 1,
+      paddingHorizontal: 16,
+      paddingTop: 4,
+      paddingBottom: contentPaddingBottom,
+    },
+    /** Растягивает скролл по высоте экрана — контент оказывается у табов */
+    scrollTopSpacer: { flexGrow: 1, minHeight: 1 },
+    heroTextBlock: { marginBottom: 14 },
+    heroLine: { fontSize: 22, fontWeight: '800', color: colors.text },
+    heroHint: { color: colors.muted, fontSize: 14, lineHeight: 20, marginTop: 4 },
+    qrLoginCard: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between',
-      marginBottom: 16,
-      gap: 12,
+      gap: 11,
+      backgroundColor: colors.accent,
+      borderRadius: 15,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      marginBottom: 12,
+      minHeight: 64,
+      borderWidth: 1,
+      borderColor: colors.accentBright,
     },
-    headerTitles: { flex: 1, minWidth: 0 },
-    heroGreeting: { fontSize: 15, fontWeight: '600', color: colors.muted, marginBottom: 6 },
-    heroAccount: { fontSize: 24, fontWeight: '800', color: colors.text },
-    heroHint: { color: colors.muted, fontSize: 14, lineHeight: 20, marginTop: 4 },
+    qrLoginIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'rgba(0,0,0,0.18)',
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.22)',
+    },
+    qrLoginTitle: {
+      fontSize: 16,
+      lineHeight: 20,
+      fontWeight: '800',
+      color: colors.accentTextOnButton,
+    },
     iconBtn: {
-      minWidth: 48,
-      minHeight: 48,
-      padding: 10,
+      minWidth: 46,
+      minHeight: 46,
+      padding: 9,
       borderRadius: 12,
       borderWidth: 1,
       borderColor: colors.border,
@@ -444,32 +536,51 @@ function createStyles(colors: ColorPalette) {
       justifyContent: 'center',
       alignItems: 'center',
     },
+    settingsAccessory: { marginTop: 10 },
     iconBtnPressed: { opacity: 0.85 },
-    balanceCard: {
-      backgroundColor: colors.cardElevated,
-      borderRadius: 20,
-      padding: 20,
-      marginBottom: 20,
+    balanceTopUpCard: {
+      borderRadius: 18,
+      overflow: 'hidden',
+      marginBottom: 16,
       borderWidth: 1,
       borderColor: colors.border,
     },
-    balanceCardLabel: { fontSize: 13, fontWeight: '700', color: colors.muted, marginBottom: 8 },
-    balanceCardValue: { fontSize: 32, fontWeight: '800', color: colors.text },
-    bonusHint: { marginTop: 10, fontSize: 14, color: colors.accentBright, fontWeight: '600' },
-    quickAmountsRow: {
-      flexDirection: 'row',
-      flexWrap: 'nowrap',
-      gap: 8,
-      marginBottom: 10,
+    balanceTopUpCardTop: {
+      backgroundColor: colors.cardElevated,
+      padding: 16,
     },
+    balanceLabelRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      marginBottom: 6,
+    },
+    balanceTopUpStrip: {
+      backgroundColor: colors.accent,
+      paddingVertical: 15,
+      paddingHorizontal: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    balanceTopUpStripPressed: { opacity: 0.92 },
+    balanceTopUpStripText: {
+      color: colors.accentTextOnButton,
+      fontWeight: '800',
+      fontSize: 16,
+    },
+    balanceCardLabel: { fontSize: 13, fontWeight: '700', color: colors.muted },
+    balanceCardValue: { fontSize: 30, fontWeight: '800', color: colors.text },
+    bonusHint: { marginTop: 8, fontSize: 14, color: colors.accentBright, fontWeight: '600' },
+    localPromoHint: { marginTop: 6, fontSize: 13, color: colors.success, fontWeight: '600' },
+    quickAmountsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
     quickAmountChip: {
-      flex: 1,
-      minWidth: 0,
-      paddingVertical: 8,
-      paddingHorizontal: 4,
+      minWidth: 56,
+      minHeight: 30,
+      paddingVertical: 6,
+      paddingHorizontal: 8,
       borderRadius: 10,
       borderWidth: 1,
-      borderLeftWidth: 4,
+      borderRightWidth: 3,
       backgroundColor: colors.chipOn,
       borderColor: colors.border,
       alignItems: 'center',
@@ -484,42 +595,26 @@ function createStyles(colors: ColorPalette) {
       textAlign: 'center',
       ...(Platform.OS === 'android' ? { includeFontPadding: false } : null),
     },
-    sectionTitle: {
-      fontSize: 13,
-      fontWeight: '700',
-      letterSpacing: 0.6,
-      textTransform: 'uppercase',
-      color: colors.accentBright,
-      marginBottom: 10,
-    },
     actionCard: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 12,
+      gap: 11,
       backgroundColor: colors.card,
-      borderRadius: 16,
-      padding: 16,
-      marginBottom: 16,
+      borderRadius: 15,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      marginBottom: 12,
+      minHeight: 64,
       borderWidth: 1,
       borderColor: colors.border,
     },
     actionCardPressed: { opacity: 0.92 },
-    actionCardText: { flex: 1, minWidth: 0 },
-    actionCardTitle: { fontSize: 16, fontWeight: '700', color: colors.text },
-    actionCardSub: { fontSize: 13, color: colors.muted, marginTop: 4 },
-    primaryCta: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 10,
-      backgroundColor: colors.accent,
-      paddingVertical: 16,
-      paddingHorizontal: 20,
-      borderRadius: 14,
-      marginBottom: 10,
+    actionCardText: { flex: 1, minWidth: 0, justifyContent: 'center' },
+    actionCardTitle: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: colors.text,
     },
-    primaryCtaPressed: { opacity: 0.92 },
-    primaryCtaText: { color: colors.accentTextOnButton, fontWeight: '800', fontSize: 16 },
     card: {
       backgroundColor: colors.card,
       borderRadius: 16,
@@ -528,41 +623,36 @@ function createStyles(colors: ColorPalette) {
       borderColor: colors.border,
       marginBottom: 20,
     },
-    out: {
-      alignSelf: 'flex-start',
-      paddingVertical: 12,
-      paddingHorizontal: 20,
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: colors.border,
-      marginTop: 4,
-    },
-    outText: { color: colors.danger, fontWeight: '600' },
-    modalBackdrop: {
-      flex: 1,
-      justifyContent: 'flex-end',
-      backgroundColor: 'rgba(0,0,0,0.45)',
-    },
     modalSheet: {
+      width: '100%',
+      alignSelf: 'stretch',
       backgroundColor: colors.bg,
       borderTopLeftRadius: 20,
       borderTopRightRadius: 20,
-      paddingHorizontal: 20,
-      paddingTop: 8,
-      paddingBottom: 24,
+      paddingHorizontal: 0,
+      paddingTop: 0,
+      paddingBottom: 0,
       borderWidth: 1,
       borderColor: colors.border,
-      maxHeight: '92%',
+      maxHeight: '82%',
     },
-    modalGrab: { alignItems: 'center', paddingBottom: 8 },
-    modalGrabBar: { width: 40, height: 4, borderRadius: 2, backgroundColor: colors.border },
-    modalScrollContent: { paddingBottom: 8 },
+    topUpSheetInner: {
+      minHeight: 0,
+      width: '100%',
+      paddingHorizontal: 16,
+      paddingTop: 6,
+      paddingBottom: 6,
+    },
+    modalScrollContent: {
+      paddingBottom: 18,
+      paddingTop: 0,
+    },
     bonusTable: {
       borderRadius: 12,
       borderWidth: 1,
       borderColor: colors.border,
       backgroundColor: colors.card,
-      marginBottom: 16,
+      marginBottom: 18,
       overflow: 'hidden',
     },
     bonusTableTitle: {
@@ -589,32 +679,34 @@ function createStyles(colors: ColorPalette) {
     bonusTableAmountCell: {
       flex: 1,
       justifyContent: 'center',
-      paddingVertical: 3,
+      alignItems: 'flex-start',
+      paddingVertical: 4,
       paddingLeft: 8,
       paddingRight: 4,
     },
     bonusAmountBar: {
-      alignSelf: 'flex-start',
+      minWidth: 48,
       borderRadius: 8,
-      paddingVertical: 6,
-      paddingHorizontal: 10,
+      height: 30,
       justifyContent: 'center',
-      minWidth: 88,
       borderWidth: 1,
-      borderLeftWidth: 4,
+      borderRightWidth: 3,
       backgroundColor: colors.chipOn,
       borderColor: colors.border,
-      overflow: 'hidden',
+      overflow: 'visible',
+      position: 'relative',
     },
     bonusAmountBarText: {
       fontSize: 14,
       lineHeight: 18,
       fontWeight: '700',
+      position: 'absolute',
+      left: 6,
       ...(Platform.OS === 'android' ? { includeFontPadding: false } : null),
     },
     bonusTableCell: {
       flex: 1,
-      paddingVertical: 6,
+      paddingVertical: 8,
       paddingHorizontal: 12,
       fontSize: 14,
       color: colors.text,
@@ -632,28 +724,25 @@ function createStyles(colors: ColorPalette) {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      marginBottom: 12,
+      marginBottom: 8,
     },
     modalTitle: { color: colors.text, fontSize: 18, fontWeight: '800', flex: 1 },
-    modalClose: { color: colors.accentBright, fontSize: 16, fontWeight: '600' },
-    modalHint: { color: colors.muted, fontSize: 12, lineHeight: 18, marginBottom: 14 },
     inputLabel: { color: colors.muted, fontSize: 13, fontWeight: '600', marginBottom: 6 },
     input: {
       borderWidth: 1,
       borderColor: colors.border,
       borderRadius: 12,
-      paddingHorizontal: 14,
-      paddingVertical: Platform.OS === 'ios' ? 12 : 10,
-      fontSize: 17,
+      paddingHorizontal: 12,
+      paddingVertical: Platform.OS === 'ios' ? 10 : 9,
+      fontSize: 16,
       color: colors.text,
       backgroundColor: colors.card,
-      marginBottom: 14,
+      marginBottom: 10,
     },
-    promoHint: { color: colors.muted, fontSize: 11, lineHeight: 16, marginBottom: 12 },
-    topUpErr: { color: colors.danger, fontSize: 13, marginBottom: 10 },
+    topUpErr: { color: colors.danger, fontSize: 13, marginBottom: 8 },
     modalSubmit: {
       backgroundColor: colors.accent,
-      paddingVertical: 16,
+      paddingVertical: 13,
       borderRadius: 14,
       alignItems: 'center',
       marginTop: 4,

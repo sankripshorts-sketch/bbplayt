@@ -1,16 +1,5 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Animated,
-  Easing,
-  LayoutChangeEvent,
-  PanResponder,
-  Platform,
-  Pressable,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { LayoutChangeEvent, Platform, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Text } from '../../components/DinText';
 import type { StructRoom } from '../../api/types';
 import {
@@ -47,7 +36,8 @@ const ZONE_BORDER_FALLBACK = '#d4af37';
 
 const ZONE_TITLE_INSET_PX = 22;
 
-const PAN_RESET_MS = 280;
+/** Снижение яркости зон/чипов при блокировке (поверх оверлея). */
+const SCHEME_CONTENT_DIMMED_OPACITY = 0.2;
 
 function previewChipColors(state: PcAvailabilityState): { bg: string; text: string } {
   switch (state) {
@@ -84,12 +74,13 @@ export type ClubLayoutCanvasProps = {
   horizontalPadding?: number;
   minHeight?: number;
   /**
-   * Полный вид как в `preview/hall-zones-colors.html`: белая рамка, подписи зон строкой сверху,
-   * легенда статусов снизу. Для экрана брони не включать — там своя легенда.
+   * Полный вид как в `preview/hall-zones-colors.html`: белая рамка, легенда статусов снизу.
+   * Подписи зон — внутри рамок (или `zoneTitlesAbove` для строки над картой). Для экрана брони не включать — там своя легенда.
    */
   embedPreviewChrome?: boolean;
   /**
-   * Подписи BootCamp / GameZone / VIP строкой над зонами (как в HTML). По умолчанию true при канонической схеме.
+   * Подписи BootCamp / GameZone / VIP строкой над зонами (как в старом HTML-макете).
+   * По умолчанию подписи рисуются внутри рамок зон на канонической схеме.
    */
   zoneTitlesAbove?: boolean;
   /**
@@ -97,10 +88,20 @@ export type ClubLayoutCanvasProps = {
    * чтобы схема занимала меньше места по вертикали.
    */
   bookingCompact?: boolean;
-  /** Внешний контрол сброса панорамы вместо встроенной кнопки сброса вида. */
-  showResetControl?: boolean;
-  /** Токен внешнего сброса панорамы; при изменении возвращаем карту в исходное положение. */
-  resetNonce?: number;
+  /**
+   * Жёсткий потолок высоты окна просмотра схемы (px). На экране брони задаётся из оставшегося места
+   * под колонкой flex — иначе каноническая схема раздувает ScrollView по высоте.
+   */
+  maxViewportHeight?: number;
+  /**
+   * Затемнение только окна схемы (белая рамка), без строки BootCamp/GameZone/VIP и без лишней области вокруг.
+   */
+  bookingBlockedOverlay?: { hint: string; onPress: () => void } | null;
+  /**
+   * Понизить яркость зон и ПК (opacity), например при оверлее «сначала выберите дату».
+   * Если задан `bookingBlockedOverlay` — снижение яркости включается автоматически.
+   */
+  dimContent?: boolean;
 };
 
 export function ClubLayoutCanvas({
@@ -115,15 +116,13 @@ export function ClubLayoutCanvas({
   embedPreviewChrome = false,
   zoneTitlesAbove,
   bookingCompact = false,
-  showResetControl = true,
-  resetNonce,
+  maxViewportHeight,
+  bookingBlockedOverlay,
+  dimContent = false,
 }: ClubLayoutCanvasProps) {
   const { t } = useLocale();
   const { width: windowW, height: windowH } = useWindowDimensions();
   const [measuredW, setMeasuredW] = useState<number | null>(null);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const panXY = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
-  const panOrigin = useRef({ x: 0, y: 0, px: 0, py: 0 });
 
   const onMeasure = useCallback((e: LayoutChangeEvent) => {
     const w = e.nativeEvent.layout.width;
@@ -167,13 +166,13 @@ export function ClubLayoutCanvas({
     [layoutCanvasW, hallTweakForLayout.canonicalColumns, bookingCompact],
   );
 
-  const showZoneTitlesRow = (zoneTitlesAbove !== false) && schemePreview && columnLayout != null;
+  const showZoneTitlesRow = zoneTitlesAbove === true && schemePreview && columnLayout != null;
 
   /** Высота канваса привязана к ширине (без «лишней» высоты при узком экране). */
   const effectiveMinHeight = useMemo(() => {
     if (!schemePreview) return minHeight;
-    const aspect = bookingCompact ? 0.56 : 0.64;
-    const minCanonical = bookingCompact ? 180 : 180;
+    const aspect = bookingCompact ? 0.5 : 0.64;
+    const minCanonical = bookingCompact ? 160 : 180;
     const hFromWidth = Math.floor(layoutCanvasW * aspect);
     return Math.max(minHeight, hFromWidth, minCanonical);
   }, [schemePreview, minHeight, layoutCanvasW, bookingCompact]);
@@ -186,6 +185,15 @@ export function ClubLayoutCanvas({
   const zoneTitlesGapBottom = bookingCompact
     ? Math.max(4, Math.min(8, Math.floor(layoutCanvasW * 0.014)))
     : Math.max(6, Math.min(14, Math.floor(layoutCanvasW * 0.022)));
+  /** Отступ сверху зоны под подпись внутри рамки (каноническая схема без строки над картой). */
+  const schemeInnerTitleInsetPx = useMemo(() => {
+    if (!schemePreview || showZoneTitlesRow) return 12;
+    return Math.max(14, Math.floor(zoneTitleFontSize + 10));
+  }, [schemePreview, showZoneTitlesRow, zoneTitleFontSize]);
+
+  /** Схема брони: без внешней рамки и заливки — фон как у экрана. */
+  const flatBookingScheme = schemePreview && bookingCompact;
+  const schemeContentDimmed = dimContent || bookingBlockedOverlay != null;
 
   const layout = useMemo(() => {
     const canonical = computeCanonicalZoneFrames(rooms, layoutCanvasW, effectiveMinHeight, hallTweakForLayout, {
@@ -209,12 +217,12 @@ export function ClubLayoutCanvas({
   const previewUniformChipScale = useMemo(() => {
     if (!schemePreview || !rooms.length) return undefined;
     let g = Infinity;
-    const hideInnerZoneTitles = schemeEmbed || showZoneTitlesRow;
+    const hideInnerZoneTitles = showZoneTitlesRow;
     for (let idx = 0; idx < rooms.length; idx++) {
       const r = rooms[idx]!;
       const zf = layout.zoneFrames[idx]!;
       const { w, h, extentH, aw, ax, ay } = zf;
-      const titleInsetPx = hideInnerZoneTitles ? 4 : schemePreview ? 12 : ZONE_TITLE_INSET_PX;
+      const titleInsetPx = hideInnerZoneTitles ? 4 : schemeInnerTitleInsetPx;
       const syZone = h / Math.max(1, extentH);
       const insetLogical = titleInsetPx / syZone;
       const pcs = r.pcs_list ?? [];
@@ -227,7 +235,7 @@ export function ClubLayoutCanvas({
       if (s > 0) g = Math.min(g, s);
     }
     return Number.isFinite(g) && g < Infinity ? g : undefined;
-  }, [schemePreview, rooms, layout.zoneFrames, schemeEmbed, showZoneTitlesRow, logicalChipUnits]);
+  }, [schemePreview, rooms, layout.zoneFrames, showZoneTitlesRow, schemeInnerTitleInsetPx, logicalChipUnits]);
 
   const zoneRenderIndices = useMemo(() => {
     if (!rooms.length) return [];
@@ -238,15 +246,19 @@ export function ClubLayoutCanvas({
     return items.sort((a, b) => b.area - a.area).map((it) => it.idx);
   }, [rooms, layout.zoneFrames]);
 
-  const viewportFloorPx = bookingCompact ? 220 : 220;
-  const contentNeedH = Math.max(viewportFloorPx, layout.canvasH);
+  const viewportFloorPx = bookingCompact ? 200 : 220;
+  /** На брони каноническая схема: окно = высоте канваса, без «пола» 200px — иначе под схемой пустота с тем же хитбоксом, что и рамка. */
+  const contentNeedH =
+    schemePreview && bookingCompact
+      ? Math.max(1, layout.canvasH)
+      : Math.max(viewportFloorPx, layout.canvasH);
 
   /**
    * Каноническая схема (BootCamp / GameZone / VIP): высота окна = высота схемы.
    * Раньше брали `Math.min(screenCapH, …)` — при `canvasH > screenCapH` низ обрезался под `overflow: hidden`,
    * хотя родительский `ScrollView` мог бы показать карту целиком по вертикали.
    */
-  const viewportMaxH = schemePreview
+  let viewportMaxH = schemePreview
     ? contentNeedH
     : Math.min(
         bookingCompact
@@ -254,80 +266,42 @@ export function ClubLayoutCanvas({
           : Math.min(640, Math.max(220, Math.floor(windowH * 0.58))),
         contentNeedH,
       );
-  /** Только если окно выше схемы — центрируем (редко при minHeight с API). */
-  const centerCanvasVerticallyInViewport = layout.canvasH < viewportMaxH - 0.5;
-  const panRef = useRef(pan);
-  panRef.current = pan;
-
-  const panResponder = useMemo(
-    () =>
-      PanResponder.create({
-        onStartShouldSetPanResponder: () => false,
-        onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 5 || Math.abs(g.dy) > 5,
-        onPanResponderTerminationRequest: () => true,
-        onPanResponderGrant: () => {
-          panXY.stopAnimation((value) => {
-            const px = value.x;
-            const py = value.y;
-            panOrigin.current = { x: 0, y: 0, px, py };
-            setPan({ x: px, y: py });
-          });
-        },
-        onPanResponderMove: (_, g) => {
-          const nx = panOrigin.current.px + g.dx;
-          const ny = panOrigin.current.py + g.dy;
-          panXY.setValue({ x: nx, y: ny });
-          setPan({ x: nx, y: ny });
-        },
-      }),
-    [panXY],
-  );
-
-  const animateResetPan = useCallback(() => {
-    panXY.stopAnimation(() => {});
-    Animated.parallel([
-      Animated.timing(panXY.x, {
-        toValue: 0,
-        duration: PAN_RESET_MS,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(panXY.y, {
-        toValue: 0,
-        duration: PAN_RESET_MS,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-    ]).start(({ finished }) => {
-      if (finished) {
-        panXY.setValue({ x: 0, y: 0 });
-        setPan({ x: 0, y: 0 });
-      }
-    });
-  }, [panXY]);
-
-  const panIsOrigin = pan.x === 0 && pan.y === 0;
-
-  useEffect(() => {
-    if (resetNonce == null) return;
-    animateResetPan();
-  }, [resetNonce, animateResetPan]);
+  if (maxViewportHeight != null && Number.isFinite(maxViewportHeight) && maxViewportHeight > 0) {
+    /** Не опускаем потолок ниже высоты самой схемы — иначе низ и рамка режутся (`overflow: hidden`), хотя `ScrollView` может показать блок целиком. */
+    const capWithoutClippingCanvas = Math.max(maxViewportHeight, layout.canvasH);
+    viewportMaxH = Math.min(viewportMaxH, capWithoutClippingCanvas);
+  }
+  if (!(schemePreview && bookingCompact)) {
+    const floor = bookingCompact ? 72 : 100;
+    const cap = maxViewportHeight != null && maxViewportHeight > 0 ? maxViewportHeight : Number.POSITIVE_INFINITY;
+    viewportMaxH = Math.max(viewportMaxH, Math.min(floor, cap));
+  }
+  /** Только если окно выше схемы — центрируем (редко при minHeight с API). На брони не центрируем — лишняя область жестов. */
+  const centerCanvasVerticallyInViewport =
+    !(schemePreview && bookingCompact) && layout.canvasH < viewportMaxH - 0.5;
 
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const renderViewport = () => (
-    <View style={[styles.viewport, { height: viewportMaxH }]} {...panResponder.panHandlers}>
+    <View
+      style={[
+        styles.viewport,
+        { height: viewportMaxH },
+        flatBookingScheme && { backgroundColor: 'transparent' },
+      ]}
+    >
         <View style={[styles.panClip, centerCanvasVerticallyInViewport && styles.panClipCentered]}>
-          <Animated.View style={[styles.panLayer, { transform: panXY.getTranslateTransform() }]}>
+          <View style={styles.panLayer}>
             <View
               style={[
                 styles.canvas,
                 {
                   width: layoutCanvasW,
                   height: layout.canvasH,
-                  backgroundColor: colors.card,
-                  borderWidth: schemeEmbed ? 0 : 1,
-                  borderColor: schemeEmbed ? 'transparent' : colors.border,
+                  backgroundColor: schemeEmbed || flatBookingScheme ? 'transparent' : colors.card,
+                  borderWidth: schemeEmbed || flatBookingScheme ? 0 : 1,
+                  borderColor: schemeEmbed || flatBookingScheme ? 'transparent' : colors.border,
+                  ...(schemeContentDimmed && { opacity: SCHEME_CONTENT_DIMMED_OPACITY }),
                 },
               ]}
             >
@@ -343,12 +317,12 @@ export function ClubLayoutCanvas({
                       ? ZONE_BORDER_FALLBACK
                       : hexColor(r.color_border, ZONE_BORDER_FALLBACK);
                 const syZone = h / Math.max(1, extentH);
-                const hideInnerZoneTitles = schemeEmbed || showZoneTitlesRow;
+                const hideInnerZoneTitles = showZoneTitlesRow;
                 /** Строка названий над зонами — внутри рамки только отступ под чипы. */
                 const titleInsetPx = hideInnerZoneTitles
                   ? 4
                   : schemePreview
-                    ? 12
+                    ? schemeInnerTitleInsetPx
                     : ZONE_TITLE_INSET_PX;
                 const insetLogical = titleInsetPx / syZone;
                 const placements = pcOffsetsInZonePixels(
@@ -388,20 +362,32 @@ export function ClubLayoutCanvas({
                     ]}
                   >
                     {!hideInnerZoneTitles && (
-                      <View style={[styles.zoneDragHandle, { pointerEvents: 'box-none' }]}>
+                      <View
+                        style={[
+                          styles.zoneDragHandle,
+                          schemePreview && {
+                            minHeight: Math.max(28, zoneTitleFontSize + 14),
+                            paddingTop: 6,
+                          },
+                          { pointerEvents: 'box-none' },
+                        ]}
+                      >
                         <Text
                           style={[
-                            styles.zoneTitleText,
+                            schemePreview ? styles.zoneLabelPreview : styles.zoneTitleText,
+                            schemePreview && normalizePcZoneKind(r.area_name) === 'BootCamp' && styles.zoneLabelPreviewBoot,
+                            schemePreview && normalizePcZoneKind(r.area_name) === 'GameZone' && styles.zoneLabelPreviewGame,
                             {
                               color:
                                 schemePreview && previewBorder
                                   ? previewBorder
                                   : hexColor(r.color_text, colors.text),
+                              ...(schemePreview ? { fontSize: zoneTitleFontSize } : {}),
                             },
                           ]}
                           numberOfLines={2}
                           adjustsFontSizeToFit
-                          minimumFontScale={0.72}
+                          minimumFontScale={schemePreview ? 0.45 : 0.72}
                         >
                           {formatPublicZoneLabel(r.area_name, t)}
                         </Text>
@@ -426,8 +412,8 @@ export function ClubLayoutCanvas({
                             : state === 'liveBusy'
                               ? colors.pcLiveBusy
                               : state === 'free'
-                                ? colors.pcFree
-                                : colors.accentDim;
+                                ? 'transparent'
+                                : colors.pcUnavailable;
                       const cw = Math.max(2, adj.chipW);
                       const ch = Math.max(2, adj.chipH);
                       const chipBorderW = 2;
@@ -440,7 +426,13 @@ export function ClubLayoutCanvas({
                         Math.min(schemePreview ? 14 : 12, cw * (schemePreview ? 0.42 : 0.28)),
                       );
                       const displayName = formatPcLabelForHallMap(pc.pc_name);
-                      const textColor = schemePreview ? preview!.text : '#ffffff';
+                      const textColor = schemePreview
+                        ? preview!.text
+                        : state === 'free'
+                          ? colors.text
+                          : state === 'unknown'
+                            ? '#1c1917'
+                            : '#ffffff';
                       const chipOuterStyle = [
                         styles.pcChip,
                         {
@@ -450,7 +442,11 @@ export function ClubLayoutCanvas({
                           height: ch,
                           minHeight: ch,
                           borderWidth: chipBorderW,
-                          borderColor: schemePreview ? HALL_PREVIEW.chipIdleBorder : colors.borderLight,
+                          borderColor: schemePreview
+                            ? HALL_PREVIEW.chipIdleBorder
+                            : state === 'free'
+                              ? colors.pcFree
+                              : colors.borderLight,
                           borderRadius: chipOuterRadius,
                           ...(dimmedByTariff ? { opacity: 0.4 } : {}),
                         },
@@ -505,7 +501,13 @@ export function ClubLayoutCanvas({
 
                       if (onPcPress) {
                         return (
-                          <Pressable key={pc.pc_name} onPress={() => onPcPress(pc.pc_name)} style={chipOuterStyle}>
+                          <Pressable
+                            key={pc.pc_name}
+                            onPress={() => onPcPress(pc.pc_name)}
+                            style={chipOuterStyle}
+                            hitSlop={6}
+                            pressRetentionOffset={10}
+                          >
                             {chipBody}
                           </Pressable>
                         );
@@ -520,45 +522,50 @@ export function ClubLayoutCanvas({
                 );
               })}
             </View>
-          </Animated.View>
+          </View>
         </View>
-        <View
-          style={[
-            styles.viewportEdge,
-            {
-              pointerEvents: 'none',
-              borderColor: schemePreview ? HALL_PREVIEW.mapEdge : colors.accent,
-              opacity: schemePreview ? 0.92 : 0.55,
-            },
-          ]}
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-        />
-        {showResetControl && !panIsOrigin ? (
-          <Pressable
-            onPress={animateResetPan}
-            style={({ pressed }) => [
-              styles.resetPanOverlayBtn,
-              bookingCompact && styles.resetPanOverlayBtnCompact,
-              pressed && styles.resetPanBtnPressed,
+        {!flatBookingScheme && (
+          <View
+            style={[
+              styles.viewportEdge,
+              {
+                pointerEvents: 'none',
+                borderColor: schemePreview ? HALL_PREVIEW.mapEdge : colors.accent,
+                opacity: schemePreview ? 0.92 : 0.55,
+              },
             ]}
-            accessibilityRole="button"
-            accessibilityLabel={t('hallMap.resetView')}
-          >
-            <MaterialCommunityIcons name="arrow-all" size={22} color={colors.success} />
-          </Pressable>
-        ) : null}
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          />
+        )}
       </View>
   );
 
   const innerMap = renderViewport();
 
+  const innerMapStack =
+    bookingBlockedOverlay != null ? (
+      <View
+        style={[styles.bookingViewportDimHost, flatBookingScheme && styles.bookingViewportDimHostFlat]}
+      >
+        {innerMap}
+        <Pressable
+          style={[styles.bookingBlockedOverlay, flatBookingScheme && styles.bookingBlockedOverlayFlat]}
+          onPress={bookingBlockedOverlay.onPress}
+        >
+          <Text style={styles.bookingBlockedOverlayText}>{bookingBlockedOverlay.hint}</Text>
+        </Pressable>
+      </View>
+    ) : (
+      innerMap
+    );
+
   const zoneTitlesRow =
     columnLayout && showZoneTitlesRow ? (
       <View
         style={{
-          width: layoutCanvasW,
-          maxWidth: '100%',
+          width: '100%',
+          maxWidth: layoutCanvasW,
           alignSelf: 'center',
           flexDirection: 'row',
           alignItems: 'center',
@@ -583,7 +590,11 @@ export function ClubLayoutCanvas({
         <View style={{ width: columnLayout.gap }} />
         <View style={{ width: columnLayout.centerW }}>
           <Text
-            style={[styles.zoneLabelPreview, { color: HALL_PREVIEW.zoneGame, fontSize: zoneTitleFontSize }]}
+            style={[
+              styles.zoneLabelPreview,
+              styles.zoneLabelPreviewGame,
+              { color: HALL_PREVIEW.zoneGame, fontSize: zoneTitleFontSize },
+            ]}
             numberOfLines={1}
             adjustsFontSizeToFit
             minimumFontScale={0.75}
@@ -620,16 +631,16 @@ export function ClubLayoutCanvas({
           ]}
         >
           {zoneTitlesRow}
-          {innerMap}
+          {innerMapStack}
           <HallMapStatusLegend />
         </View>
       ) : showZoneTitlesRow ? (
         <View style={styles.zoneTitlesMapColumn}>
           {zoneTitlesRow}
-          {innerMap}
+          {innerMapStack}
         </View>
       ) : (
-        innerMap
+        innerMapStack
       )}
     </View>
   );
@@ -641,6 +652,32 @@ function createStyles(colors: ColorPalette) {
     /** Не даём подписям зон и рамке вылезти за ширину скролла (обрезка VIP справа). */
     measureOuterBooking: { maxWidth: '100%' },
     zoneTitlesMapColumn: { width: '100%', maxWidth: '100%', alignItems: 'center', overflow: 'hidden' },
+    /** Как у `viewport` — обрезаем затемнение по скруглению рамки схемы. */
+    bookingViewportDimHost: {
+      position: 'relative',
+      alignSelf: 'stretch',
+      width: '100%',
+      borderRadius: 14,
+      overflow: 'hidden',
+    },
+    bookingViewportDimHostFlat: { borderRadius: 0 },
+    bookingBlockedOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: 'rgba(0,0,0,0.40)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 16,
+      zIndex: 10,
+      borderRadius: 14,
+    },
+    bookingBlockedOverlayFlat: { borderRadius: 0 },
+    bookingBlockedOverlayText: {
+      color: colors.text,
+      fontSize: 13,
+      fontWeight: '600',
+      textAlign: 'center',
+      lineHeight: 18,
+    },
     previewShell: {
       width: '100%',
       borderWidth: 2,
@@ -659,21 +696,11 @@ function createStyles(colors: ColorPalette) {
       letterSpacing: 0,
       textTransform: 'none',
     },
-    /** Кнопка сброса панорамы — поверх окна схемы, правый верхний угол. */
-    resetPanOverlayBtn: {
-      position: 'absolute',
-      top: 5,
-      right: 5,
-      zIndex: 4,
-      minWidth: 44,
-      minHeight: 44,
-      paddingVertical: 0,
-      paddingHorizontal: 0,
-      justifyContent: 'flex-start',
-      alignItems: 'flex-end',
+    /** «GameZone» в каноническом написании, не ALL CAPS. */
+    zoneLabelPreviewGame: {
+      letterSpacing: 0,
+      textTransform: 'none',
     },
-    resetPanOverlayBtnCompact: { top: 4, right: 4 },
-    resetPanBtnPressed: { opacity: 0.75 },
     viewport: {
       width: '100%',
       overflow: 'hidden',
@@ -682,7 +709,7 @@ function createStyles(colors: ColorPalette) {
       zIndex: 0,
       position: 'relative',
     },
-    /** Видимая граница окна, в котором двигается схема (не перехватывает жесты). */
+    /** Видимая граница окна схемы (не перехватывает жесты). */
     viewportEdge: {
       ...StyleSheet.absoluteFillObject,
       borderRadius: 14,
@@ -711,7 +738,7 @@ function createStyles(colors: ColorPalette) {
     },
     zone: {
       position: 'absolute',
-      borderWidth: 2,
+      borderWidth: StyleSheet.hairlineWidth,
       borderRadius: 10,
       backgroundColor: 'rgba(108, 92, 231, 0.09)',
       overflow: 'hidden',

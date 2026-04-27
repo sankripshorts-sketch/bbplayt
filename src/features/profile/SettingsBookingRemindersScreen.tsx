@@ -11,10 +11,8 @@ import {
 } from '../../preferences/appPreferences';
 import { createSettingsStyles, SettingsTile } from './settingsShared';
 
-export function SettingsBookingRemindersScreen() {
+export function SettingsBookingRemindersPanel({ styles }: { styles: ReturnType<typeof createSettingsStyles> }) {
   const { t } = useLocale();
-  const colors = useThemeColors();
-  const styles = useMemo(() => createSettingsStyles(colors), [colors]);
   const [reminderMode, setReminderMode] = useState<ReminderMode>('single');
   const [reminderMinutes, setReminderMinutes] = useState(30);
   const [prepHours, setPrepHours] = useState(2);
@@ -67,43 +65,54 @@ export function SettingsBookingRemindersScreen() {
       : t('profile.todaysBookingOnce');
 
   return (
+    <>
+      <SettingsTile
+        styles={styles}
+        label={t('profile.reminderMode')}
+        value={reminderMode === 'single' ? t('profile.reminderSingle') : t('profile.reminderTriple')}
+        onPress={() => setMode(reminderMode === 'single' ? 'triple' : 'single')}
+        accessibilityHint={t('profile.reminderMode')}
+      />
+      {reminderMode === 'single' ? (
+        <SettingsTile
+          styles={styles}
+          label={t('profile.reminderMinutes')}
+          value={t('profile.minutesValue', { n: reminderMinutes })}
+          onPress={cycleMinutes}
+          accessibilityHint={t('profile.reminderMinutes')}
+        />
+      ) : null}
+      <SettingsTile
+        styles={styles}
+        label={t('profile.prepDepartHours')}
+        value={prepValueText}
+        onPress={cyclePrepHours}
+        accessibilityHint={t('profile.prepDepartHours')}
+      />
+
+      <SettingsTile
+        styles={styles}
+        label={t('profile.todaysBookingModeLabel')}
+        value={todaysBookingValue}
+        onPress={cycleTodaysBooking}
+        accessibilityHint={t('profile.todaysBookingModeLabel')}
+      />
+    </>
+  );
+}
+
+export function SettingsBookingRemindersScreen() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createSettingsStyles(colors), [colors]);
+
+  return (
     <KeyboardAvoidingView
       style={styles.flex}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <SafeAreaView style={styles.root} edges={['bottom']}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <SettingsTile
-            styles={styles}
-            label={t('profile.reminderMode')}
-            value={reminderMode === 'single' ? t('profile.reminderSingle') : t('profile.reminderTriple')}
-            onPress={() => setMode(reminderMode === 'single' ? 'triple' : 'single')}
-            accessibilityHint={t('profile.reminderMode')}
-          />
-          {reminderMode === 'single' ? (
-            <SettingsTile
-              styles={styles}
-              label={t('profile.reminderMinutes')}
-              value={t('profile.minutesValue', { n: reminderMinutes })}
-              onPress={cycleMinutes}
-              accessibilityHint={t('profile.reminderMinutes')}
-            />
-          ) : null}
-          <SettingsTile
-            styles={styles}
-            label={t('profile.prepDepartHours')}
-            value={prepValueText}
-            onPress={cyclePrepHours}
-            accessibilityHint={t('profile.prepDepartHours')}
-          />
-
-          <SettingsTile
-            styles={styles}
-            label={t('profile.todaysBookingModeLabel')}
-            value={todaysBookingValue}
-            onPress={cycleTodaysBooking}
-            accessibilityHint={t('profile.todaysBookingModeLabel')}
-          />
+          <SettingsBookingRemindersPanel styles={styles} />
         </ScrollView>
       </SafeAreaView>
     </KeyboardAvoidingView>

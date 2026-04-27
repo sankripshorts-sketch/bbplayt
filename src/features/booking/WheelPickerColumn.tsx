@@ -10,6 +10,7 @@ import React, {
 import {
   Easing,
   FlatList,
+  type NativeTouchEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
   Platform,
@@ -17,6 +18,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
+import { Audio, type AVPlaybackSource } from 'expo-av';
 import * as Haptics from 'expo-haptics';
 import { Text } from '../../components/DinText';
 import type { ColorPalette } from '../../theme/palettes';
@@ -91,6 +93,14 @@ const MAGNETIC_EASE = Easing.bezier(0.22, 0.61, 0.36, 1);
 const WEB_WHEEL_TICK_MIN_GAP_MS = 42;
 const WEB_WHEEL_TICK_GAIN = 0.024;
 const WEB_WHEEL_TICK_DURATION_S = 0.018;
+const NATIVE_WHEEL_TICK_MIN_GAP_MS = 55;
+const WHEEL_TICK_SOUND: AVPlaybackSource = require('../../../assets/audio/wheel-tick.wav');
+/** Допуски для "тапа по строке", когда RN отменяет onPress как скролл. */
+const TAP_FALLBACK_MAX_TRAVEL_PX = 12;
+const TAP_FALLBACK_MAX_AGE_MS = 560;
+const TAP_FALLBACK_ITEMPRESS_GUARD_MS = 140;
+/** Защита от двойного вызова (onPressIn + onPress). */
+const ITEM_PRESS_DEDUPE_MS = 180;
 
 let webWheelAudioCtx: AudioContext | null = null;
 let webWheelLastTickAtMs = 0;
@@ -207,6 +217,62 @@ export const WheelPickerColumn = forwardRef<WheelPickerColumnHandle, Props>(func
   const visualPaintRafRef = useRef<number | null>(null);
   /** Чтобы не дублировать «щелчок» и не щёлкать во время программной доводки (runMagneticScroll). */
   const lastWheelTickIdxRef = useRef<number | null>(null);
+  /** Fallback для тапа: когда Pressable отменён скролл-резпондером, выбираем элемент по координате касания. */
+  const touchStartScrollYRef = useRef(0);
+  const touchStartAtMsRef = useRef(0);
+  const lastItemPressAtMsRef = useRef(0);
+  const lastItemApplyAtMsRef = useRef(0);
+  const nativeWheelTickSoundRef = useRef<Audio.Sound | null>(null);
+  const nativeWheelTickSoundLoadPromiseRef = useRef<Promise<Audio.Sound | null> | null>(null);
+  const nativeWheelLastTickAtMsRef = useRef(0);
+
+  const getNativeWheelTickSound = useCallback(async () => {
+    if (Platform.OS === 'web') return null;
+    if (nativeWheelTickSoundRef.current) return nativeWheelTickSoundRef.current;
+    if (nativeWheelTickSoundLoadPromiseRef.current) return nativeWheelTickSoundLoadPromiseRef.current;
+
+    nativeWheelTickSoundLoadPromiseRef.current = Audio.Sound.createAsync(WHEEL_TICK_SOUND, {
+      shouldPlay: false,
+      volume: 0.55,
+    })
+      .then(({ sound }) => {
+        nativeWheelTickSoundRef.current = sound;
+        return sound;
+      })
+      .catch(() => null)
+      .finally(() => {
+        nativeWheelTickSoundLoadPromiseRef.current = null;
+      });
+
+    return nativeWheelTickSoundLoadPromiseRef.current;
+  }, []);
+
+  const primeWheelTickAudio = useCallback(() => {
+    if (Platform.OS === 'web') {
+      primeWebWheelAudio();
+      return;
+    }
+    void getNativeWheelTickSound();
+  }, [getNativeWheelTickSound]);
+
+  const playWheelTick = useCallback(() => {
+    if (Platform.OS === 'web') {
+      playWebWheelTick();
+      return;
+    }
+    const nowMs = Date.now();
+    if (nowMs - nativeWheelLastTickAtMsRef.current < NATIVE_WHEEL_TICK_MIN_GAP_MS) return;
+    nativeWheelLastTickAtMsRef.current = nowMs;
+    void (async () => {
+      try {
+        const sound = await getNativeWheelTickSound();
+        if (!sound) return;
+        await sound.replayAsync();
+      } catch {
+        // Tick is purely decorative and should never block picker interaction.
+      }
+    })();
+  }, [getNativeWheelTickSound]);
 
   const scheduleVisualScrollPaint = useCallback(() => {
     if (visualPaintRafRef.current != null) return;
@@ -239,10 +305,9 @@ export const WheelPickerColumn = forwardRef<WheelPickerColumnHandle, Props>(func
       if (isMagneticAnimRef.current) return;
       if (lastWheelTickIdxRef.current === nextIdx) return;
       lastWheelTickIdxRef.current = nextIdx;
-      void Haptics.selectionAsync().catch(() => {});
-      playWebWheelTick();
+      playWheelTick();
     },
-    [active, data.length],
+    [active, data.length, playWheelTick],
   );
 
   const runMagneticScroll = useCallback((fromY: number, toY: number, onDone: () => void) => {
@@ -449,17 +514,19 @@ export const WheelPickerColumn = forwardRef<WheelPickerColumnHandle, Props>(func
   const onScrollBeginDrag = useCallback(() => {
     pendingOpenIdxRef.current = null;
     fingerDownRef.current = true;
-    primeWebWheelAudio();
+    primeWheelTickAudio();
     cancelIdleSnapAndBumpGesture();
-  }, [cancelIdleSnapAndBumpGesture]);
+  }, [cancelIdleSnapAndBumpGesture, primeWheelTickAudio]);
 
   /** На части устройств/вложений onScrollBeginDrag приходит ненадёжно — без этого idle-таймер доводит колесо во время медленного жеста. */
   const onWheelTouchStart = useCallback(() => {
     pendingOpenIdxRef.current = null;
     fingerDownRef.current = true;
-    primeWebWheelAudio();
+    touchStartScrollYRef.current = lastYRef.current;
+    touchStartAtMsRef.current = Date.now();
+    primeWheelTickAudio();
     cancelIdleSnapAndBumpGesture();
-  }, [cancelIdleSnapAndBumpGesture]);
+  }, [cancelIdleSnapAndBumpGesture, primeWheelTickAudio]);
 
   /**
    * После отпускания пальца: на части устройств `onScrollEndDrag` не приходит, если жест
@@ -476,7 +543,73 @@ export const WheelPickerColumn = forwardRef<WheelPickerColumnHandle, Props>(func
     });
   }, [finalizeSnapIfSettled]);
 
-  const onWheelTouchEnd = useCallback(() => {
+  const applyTappedIndex = useCallback(
+    (index: number) => {
+      const clamped = Math.max(0, Math.min(data.length - 1, index));
+      pendingOpenIdxRef.current = null;
+      lastPushedToParentRef.current = clamped;
+      onChangeIndex(clamped);
+      setCenterIndex(clamped);
+      centerIndexRef.current = clamped;
+      lastWheelTickIdxRef.current = clamped;
+      primeWheelTickAudio();
+      void Haptics.selectionAsync().catch(() => {});
+      playWheelTick();
+      scrollToIndex(clamped, true);
+      onItemPress?.(clamped);
+    },
+    [data.length, onChangeIndex, onItemPress, playWheelTick, primeWheelTickAudio, scrollToIndex],
+  );
+
+  const triggerItemApply = useCallback(
+    (index: number) => {
+      const now = Date.now();
+      if (now - lastItemApplyAtMsRef.current < ITEM_PRESS_DEDUPE_MS) return;
+      lastItemApplyAtMsRef.current = now;
+      lastItemPressAtMsRef.current = now;
+      applyTappedIndex(index);
+    },
+    [applyTappedIndex],
+  );
+
+  const onWheelTouchEnd = useCallback((e: NativeSyntheticEvent<NativeTouchEvent>) => {
+    fingerDownRef.current = false;
+    if (idleSnapTimerRef.current) {
+      clearTimeout(idleSnapTimerRef.current);
+      idleSnapTimerRef.current = null;
+    }
+    const msSinceItemPress = Date.now() - lastItemPressAtMsRef.current;
+    const travel = Math.abs(lastYRef.current - touchStartScrollYRef.current);
+    const tapAgeMs = Date.now() - touchStartAtMsRef.current;
+    if (
+      msSinceItemPress > TAP_FALLBACK_ITEMPRESS_GUARD_MS &&
+      travel < TAP_FALLBACK_MAX_TRAVEL_PX &&
+      tapAgeMs < TAP_FALLBACK_MAX_AGE_MS &&
+      data.length > 0
+    ) {
+      const yTap = e.nativeEvent.locationY;
+      const tapLooksValid = Number.isFinite(yTap) && yTap >= 0 && yTap <= WHEEL_VIEWPORT_HEIGHT;
+      if (!tapLooksValid) {
+        scheduleSnapAfterFingerUp();
+        return;
+      }
+      /**
+       * Если RN отменил `onPress` как «начатый скролл», выбираем строку по позиции касания.
+       * Для web `locationY` в touch-end иногда шумный, но fallback остаётся безопасным,
+       * потому что срабатывает только без реальной прокрутки.
+       */
+      const roughIndex = Math.round((lastYRef.current + yTap - PAD_Y) / WHEEL_ITEM_HEIGHT);
+      if (!Number.isFinite(roughIndex)) {
+        scheduleSnapAfterFingerUp();
+        return;
+      }
+      applyTappedIndex(roughIndex);
+      return;
+    }
+    scheduleSnapAfterFingerUp();
+  }, [applyTappedIndex, data.length, scheduleSnapAfterFingerUp]);
+
+  const onWheelTouchCancel = useCallback(() => {
     fingerDownRef.current = false;
     if (idleSnapTimerRef.current) {
       clearTimeout(idleSnapTimerRef.current);
@@ -485,6 +618,11 @@ export const WheelPickerColumn = forwardRef<WheelPickerColumnHandle, Props>(func
     scheduleSnapAfterFingerUp();
   }, [scheduleSnapAfterFingerUp]);
 
+  useEffect(() => {
+    if (!active || Platform.OS === 'web') return;
+    void getNativeWheelTickSound();
+  }, [active, getNativeWheelTickSound]);
+
   useEffect(
     () => () => {
       if (idleSnapTimerRef.current) clearTimeout(idleSnapTimerRef.current);
@@ -492,6 +630,11 @@ export const WheelPickerColumn = forwardRef<WheelPickerColumnHandle, Props>(func
       if (visualPaintRafRef.current != null) {
         cancelAnimationFrame(visualPaintRafRef.current);
         visualPaintRafRef.current = null;
+      }
+      const sound = nativeWheelTickSoundRef.current;
+      nativeWheelTickSoundRef.current = null;
+      if (sound) {
+        void sound.unloadAsync();
       }
     },
     [],
@@ -620,19 +763,7 @@ export const WheelPickerColumn = forwardRef<WheelPickerColumnHandle, Props>(func
           style={styles.item}
           accessibilityRole={onItemPress ? 'button' : 'text'}
           accessibilityState={{ selected: on }}
-          onPress={() => {
-            pendingOpenIdxRef.current = null;
-            lastPushedToParentRef.current = index;
-            onChangeIndex(index);
-            setCenterIndex(index);
-            centerIndexRef.current = index;
-            lastWheelTickIdxRef.current = index;
-            primeWebWheelAudio();
-            void Haptics.selectionAsync().catch(() => {});
-            playWebWheelTick();
-            scrollToIndex(index, true);
-            onItemPress?.(index);
-          }}
+          onPress={() => triggerItemApply(index)}
         >
           <View
             style={[
@@ -680,7 +811,7 @@ export const WheelPickerColumn = forwardRef<WheelPickerColumnHandle, Props>(func
       colors.text,
       onChangeIndex,
       onItemPress,
-      scrollToIndex,
+      triggerItemApply,
       theme,
     ],
   );
@@ -721,7 +852,7 @@ export const WheelPickerColumn = forwardRef<WheelPickerColumnHandle, Props>(func
         ListFooterComponent={listPadFooter}
         onTouchStart={onWheelTouchStart}
         onTouchEnd={onWheelTouchEnd}
-        onTouchCancel={onWheelTouchEnd}
+        onTouchCancel={onWheelTouchCancel}
         showsVerticalScrollIndicator={false}
         {...Platform.select({
           ios: {

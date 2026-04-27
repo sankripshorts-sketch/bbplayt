@@ -35,6 +35,8 @@ export type SessionUser = {
 
 export type CafeItem = {
   address: string;
+  /** Отображаемое название клуба, если приходит с API */
+  name?: string;
   icafe_id: number;
   lat?: number;
   lng?: number;

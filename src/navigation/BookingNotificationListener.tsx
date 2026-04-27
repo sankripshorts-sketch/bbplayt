@@ -39,10 +39,11 @@ export function BookingNotificationListener() {
 
       const booking = data as { kind?: string; reminderKind?: BookingReminderKind } | undefined;
       if (booking?.kind !== BOOKING_NOTIFICATION_DATA_KIND) return;
-      navigation.navigate('Booking');
       if (booking.reminderKind === 'visitFeedback') {
         openVisitFeedbackPrompt();
+        return;
       }
+      navigation.navigate('Booking');
     };
 
     if (Platform.OS !== 'web') {

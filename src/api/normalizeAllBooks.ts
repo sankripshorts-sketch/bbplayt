@@ -108,8 +108,9 @@ export function normalizeAllBooksData(raw: unknown): AllBooksData {
       const cafeRaw = o.icafe_id ?? o.cafe_id ?? o.member_icafe_id ?? o.pc_icafe_id;
       const n = typeof cafeRaw === 'number' ? cafeRaw : typeof cafeRaw === 'string' ? parseFloat(cafeRaw) : NaN;
       const row = coerceMemberBookingRow(item);
-      if (!row || !Number.isFinite(n)) continue;
-      const k = String(Math.trunc(n));
+      if (!row) continue;
+      /** Без id клуба кладём в «0», иначе при смешанном ответе такие строки терялись, если у других icafe_id был. */
+      const k = Number.isFinite(n) ? String(Math.trunc(n)) : '0';
       if (!byCafe[k]) byCafe[k] = [];
       byCafe[k]!.push(row);
     }
@@ -168,4 +169,33 @@ export function normalizeFlatIcafeBookingsList(raw: unknown): MemberBookingRow[]
     if (Array.isArray(flat)) return normalizeRows(flat);
   }
   return [];
+}
+
+/**
+ * Объединяет ответы all-books из разных путей (`/all-books-member` и `/all-books-cafes`),
+ * чтобы не терять архив, если один из шлюзов вернул усечённый список.
+ */
+export function mergeAllBooksData(...parts: AllBooksData[]): AllBooksData {
+  const out: AllBooksData = {};
+  for (const part of parts) {
+    for (const [icafeId, rowsRaw] of Object.entries(part ?? {})) {
+      const rows = Array.isArray(rowsRaw) ? rowsRaw : rowsRaw ? [rowsRaw as MemberBookingRow] : [];
+      if (!rows.length) continue;
+      if (!out[icafeId]) out[icafeId] = [];
+      const bucket = out[icafeId]!;
+      const seen = new Set(
+        bucket.map(
+          (r) =>
+            `${r.product_id}|${r.product_pc_name}|${r.product_available_date_local_from}|${r.product_available_date_local_to}`,
+        ),
+      );
+      for (const row of rows) {
+        const key = `${row.product_id}|${row.product_pc_name}|${row.product_available_date_local_from}|${row.product_available_date_local_to}`;
+        if (seen.has(key)) continue;
+        bucket.push(row);
+        seen.add(key);
+      }
+    }
+  }
+  return out;
 }

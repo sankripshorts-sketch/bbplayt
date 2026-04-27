@@ -30,6 +30,7 @@ import { useLocale } from '../../i18n/LocaleContext';
 import type { ColorPalette } from '../../theme/palettes';
 import { useThemeColors } from '../../theme';
 import { queryKeys } from '../../query/queryKeys';
+import { ClubDataLoader } from '../ui/ClubDataLoader';
 import {
   birthdayToIso,
   formatBirthdayInput,
@@ -268,7 +269,7 @@ export function EditProfileSection() {
   if (icafeQ.isLoading || (icafeQ.isSuccess && profileQ.isLoading)) {
     return (
       <View style={styles.embeddedBlock}>
-        <ActivityIndicator color={colors.accentBright} size="large" />
+        <ClubDataLoader message={t('common.loadingData')} compact minHeight={180} />
       </View>
     );
   }
@@ -574,6 +575,8 @@ function createStyles(colors: ColorPalette) {
       paddingHorizontal: 12,
       paddingVertical: 8,
       fontSize: 16,
+      lineHeight: 22,
+      minHeight: 44,
       color: colors.text,
       backgroundColor: colors.card,
     },
@@ -595,6 +598,8 @@ function createStyles(colors: ColorPalette) {
       paddingHorizontal: 12,
       paddingVertical: 8,
       fontSize: 16,
+      lineHeight: 22,
+      minHeight: 44,
       color: colors.text,
     },
     eyeBtn: { padding: 6, justifyContent: 'center', alignItems: 'center' },

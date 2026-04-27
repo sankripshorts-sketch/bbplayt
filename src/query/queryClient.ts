@@ -14,6 +14,8 @@ export const queryClient = new QueryClient({
       staleTime: 60 * 1000,
       gcTime: 30 * 60 * 1000,
       refetchOnReconnect: true,
+      /** RN: refetch при «фокусе» окна часто дергается при клавиатуре. */
+      refetchOnWindowFocus: false,
     },
   },
 });
@@ -26,7 +28,7 @@ export const asyncStoragePersister = createAsyncStoragePersister({
 
 function shouldPersistQueryKey(queryKey: readonly unknown[]): boolean {
   const head = queryKey[0];
-  return head === 'cafes' || head === 'struct-rooms';
+  return head === 'cafes' || head === 'struct-rooms' || head === 'vk-wall';
 }
 
 export const persistOptions: PersistQueryClientProviderProps['persistOptions'] = {

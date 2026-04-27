@@ -8,7 +8,7 @@ import type {
   StructRoomsData,
 } from './types';
 import { getAllBooksPath } from '../config/vibePaths';
-import { normalizeAllBooksData } from './normalizeAllBooks';
+import { mergeAllBooksData, normalizeAllBooksData } from './normalizeAllBooks';
 import { normalizeAllPricesData } from './normalizeAllPrices';
 import { normalizeAvailablePcsData } from './normalizeAvailablePcs';
 import {
@@ -20,12 +20,29 @@ import {
 } from './vibeClient';
 import { buildBookingKey } from './bookingKey';
 
+function normalizeCafeText(cafe: CafeItem): string {
+  return `${cafe.name ?? ''} ${cafe.address ?? ''}`.toLowerCase().replace(/ё/g, 'е');
+}
+
+function isHiddenCafe(cafe: CafeItem): boolean {
+  return normalizeCafeText(cafe).includes('астраханск');
+}
+
+function isPrimaryCafe(cafe: CafeItem): boolean {
+  return normalizeCafeText(cafe).includes('медвеж');
+}
+
+function visibleCafes(cafes: CafeItem[]): CafeItem[] {
+  const withoutHidden = cafes.filter((cafe) => !isHiddenCafe(cafe));
+  return withoutHidden.filter(isPrimaryCafe);
+}
+
 export async function loginRequest(creds: LoginRequest) {
   return vibeLogin(creds.username, creds.password);
 }
 
 export const cafesApi = {
-  list: () => vibeGet<CafeItem[]>('/cafes'),
+  list: async () => visibleCafes(await vibeGet<CafeItem[]>('/cafes')),
 };
 
 export const bookingFlowApi = {
@@ -82,10 +99,24 @@ export const bookingFlowApi = {
 
   memberBooks: async (memberAccount?: string): Promise<AllBooksData> => {
     const acc = memberAccount?.trim();
-    const raw = await vibeGet<unknown>(getAllBooksPath(), {
+    const query = {
       ...(acc ? { memberAccount: acc, member_account: acc } : {}),
-    });
-    return normalizeAllBooksData(raw);
+      // Server-side history flags: keep mixed spellings for old/new gateways.
+      includePast: true,
+      include_past: true,
+      showPast: true,
+      show_past: true,
+      history: true,
+    };
+    const primaryPath = getAllBooksPath();
+    const altPath = primaryPath === '/all-books-member' ? '/all-books-cafes' : '/all-books-member';
+    const [primary, fallback] = await Promise.allSettled([
+      vibeGet<unknown>(primaryPath, query),
+      vibeGet<unknown>(altPath, query),
+    ]);
+    const primaryData = primary.status === 'fulfilled' ? normalizeAllBooksData(primary.value) : {};
+    const fallbackData = fallback.status === 'fulfilled' ? normalizeAllBooksData(fallback.value) : {};
+    return mergeAllBooksData(primaryData, fallbackData);
   },
 
   icafeIdForMember: () => vibeGet<IcafeIdForMemberData>('/icafe-id-for-member'),

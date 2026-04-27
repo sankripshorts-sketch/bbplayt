@@ -10,8 +10,8 @@
 |--------|------------|
 | Платформа | **Expo SDK 51** (React Native 0.74, React 18), TypeScript |
 | Навигация | `@react-navigation/native`, bottom tabs + стеки (профиль, авторизация) |
-| Серверное состояние | `@tanstack/react-query` (в `App.tsx` отключён `refetchOnWindowFocus`, чтобы не сбрасывать ввод при клавиатуре на RN) |
-| Персистентность кэша | Зависимости `@tanstack/react-query-persist-client`, `@tanstack/query-async-storage-persister`, `@react-native-async-storage/async-storage` установлены; черновой конфиг и отбор ключей — в [`src/query/queryClient.ts`](../src/query/queryClient.ts). В корне сейчас используется обычный `QueryClientProvider` из [`App.tsx`](../App.tsx) (без `PersistQueryClientProvider`), то есть **дисковый персист в рантайме не подключён**. |
+| Серверное состояние | `@tanstack/react-query` (в `queryClient` отключён `refetchOnWindowFocus`, чтобы не сбрасывать ввод при клавиатуре на RN) |
+| Персистентность кэша | `PersistQueryClientProvider` в [`App.tsx`](../App.tsx) + [`src/query/queryClient.ts`](../src/query/queryClient.ts): AsyncStorage, персист **только** для ключей `cafes`, `struct-rooms`, `vk-wall`, `maxAge` 7 суток |
 | Навигация (натив) | `react-native-screens`, `react-native-safe-area-context`, `react-native-gesture-handler` |
 | UI-ввод даты/времени | `@react-native-community/datetimepicker` |
 | Шрифты | `expo-font` + локальные OTF в `assets/fonts/` |
@@ -39,12 +39,13 @@ flowchart TB
   subgraph providers [Корневые провайдеры App.tsx]
     Theme[ThemeProvider]
     Locale[LocaleProvider]
-    RQ[QueryClientProvider]
+    RQ[PersistQueryClient]
     Auth[AuthProvider]
+    Food[FoodProvider]
     Knowledge[KnowledgeProvider]
     Err[AppErrorBoundary]
   end
-  Theme --> Locale --> RQ --> Auth --> Knowledge --> Err --> Nav[RootNavigator]
+  Theme --> Locale --> RQ --> Auth --> Food --> Knowledge --> Err --> Nav[RootNavigator]
   Nav --> Tabs[Bottom tabs]
   Nav --> AuthNav[AuthNavigator]
 ```
@@ -63,6 +64,8 @@ flowchart TB
 | Клубы | `src/features/cafes/` | Список клубов, карта зала (`ClubLayoutCanvas`, `HallMapPanel`, геометрия раскладки) |
 | Новости | `src/features/news/` | VK-стена / видео, модалки |
 | Бронь | `src/features/booking/` | Тарифы, живые ПК, создание брони, баннер «сегодня», утилиты времени |
+| Еда (меню) | `src/features/food/` | `FoodProvider`, каталог/контекст по сценариям |
+| Промо | `src/features/promos/` | Акции, 3D-кости, лента в профиле |
 | Чат | `src/features/chat/` | Поиск по базе знаний без вызова внешних LLM |
 | Уведомления | `src/notifications/` | Напоминания, отзыв после визита, отбор pending feedback |
 
@@ -72,7 +75,7 @@ flowchart TB
 
 1. **Логин / регистрация** — запросы к vibe/iCafe, сохранение сессии и токенов при необходимости.
 2. **Клубы и бронь** — `GET` списков, `POST /booking` с подписью; брони пользователя — пути из конфига (`allBooksPath` и др.).
-3. **Чат** — только локальный поиск по структурированной базе (`assets/knowledge.json` или удалённый JSON); **без** обращения к облачным LLM из приложения.
+3. **Чат** — поиск по структурированной базе (`assets/knowledge.json` или удалённый JSON); опционально режим **Ollama Cloud** (RAG по той же базе) при заданном `EXPO_PUBLIC_OLLAMA_API_KEY` в [`app.config.js`](../app.config.js).
 
 ## Подходы к разработке
 
@@ -89,9 +92,9 @@ flowchart TB
 | **Cursor** (Agent / Composer) | Основная среда: генерация и правка кода, рефакторинг, документация. |
 | Модели в Cursor | Зависят от тарифа/настроек Cursor (конкретная модель в репозитории не фиксируется). |
 
-Полный перечень **промптов пользователя к Cursor Agent** — в [`PROMPTS_ALL.md`](PROMPTS_ALL.md) (генерация: `npm run export:cursor-prompts` и `npm run docs:prompts-md`). Краткое оглавление и ручные дополнения — в [`PROMPTS.md`](PROMPTS.md).
+Полный перечень **промптов пользователя к Cursor Agent** — в [`PROMPTS_ALL.md`](PROMPTS_ALL.md) (добавление новых: `npm run docs:append-prompts` → `scripts/append-cursor-prompts.mjs`). Краткое оглавление и ручные дополнения — в [`PROMPTS.md`](PROMPTS.md).
 
-Приложение **не** встраивает API-ключи сторонних LLM для пользовательского чата: «бот поддержки» работает на **локальной** базе знаний.
+По умолчанию чат опирается на **локальную** базу знаний; ключ **Ollama** задаётся через переменные окружения при сборке — без него внешний LLM не используется.
 
 ## Сборка APK / iOS (EAS)
 
@@ -126,3 +129,12 @@ npx expo run:ios
 |-----------|-----|---------------------|
 | Android | APK (preview) / AAB (production) | _вставить после `eas build`_ |
 | iOS | ipa / TestFlight | _вставить после `eas build`_ |
+
+## Где лежит подробная инструкция
+
+- **Сводный обзор архитектуры** (дерево провайдеров, `src/`, потоки, ссылки): [`ARCHITECTURE_OVERVIEW.md`](ARCHITECTURE_OVERVIEW.md).
+- **Фишки продукта** (для описания снаружи): [`PROJECT_FEATURES.md`](PROJECT_FEATURES.md).
+- **Оглавление** всех разделов (запуск, конфиг, потоки, отладка): [`docs/docs/README.md`](docs/docs/README.md).
+- **Пошаговый запуск** и среда: [`docs/docs/submoduli/run.md`](docs/docs/submoduli/run.md).
+- **Переменные и `app.config.js`**: [`docs/docs/submoduli/configuration.md`](docs/docs/submoduli/configuration.md).
+- **Практика для разработчика** (тема, i18n, API, бронь): [`docs/docs/developer-guide.md`](docs/docs/developer-guide.md).

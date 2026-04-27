@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 /** @type {import('expo/config').ExpoConfig} */
 module.exports = {
   name: 'BBplay',
@@ -9,7 +11,7 @@ module.exports = {
   splash: {
     image: './assets/splash-icon.png',
     resizeMode: 'contain',
-    backgroundColor: '#0a0514',
+    backgroundColor: '#141824',
   },
   assetBundlePatterns: ['**/*'],
   ios: {
@@ -22,12 +24,13 @@ module.exports = {
   android: {
     adaptiveIcon: {
       foregroundImage: './assets/adaptive-icon.png',
-      backgroundColor: '#0a0514',
+      backgroundColor: '#141824',
     },
     package: 'com.bbplay.app',
     permissions: [
       'ACCESS_COARSE_LOCATION',
       'ACCESS_FINE_LOCATION',
+      'CAMERA',
       'READ_CALENDAR',
       'WRITE_CALENDAR',
     ],
@@ -36,6 +39,13 @@ module.exports = {
   plugins: [
     'expo-font',
     'expo-notifications',
+    [
+      'expo-camera',
+      {
+        cameraPermission:
+          'BBplay использует камеру, чтобы добавить фото лица в профиль и сканировать QR-код входа на ПК.',
+      },
+    ],
     [
       'expo-calendar',
       {
@@ -74,11 +84,15 @@ module.exports = {
      * Если регистрация идёт на другом хосте — задайте. Иначе = apiBaseUrl.
      */
     icafeApiBaseUrl: process.env.EXPO_PUBLIC_ICAFE_API_BASE_URL || '',
-    /** GET vibe: брони пользователя (см. API_VIBE — по умолчанию `/all-books-cafes`) */
-    allBooksPath: process.env.EXPO_PUBLIC_ALL_BOOKS_PATH || '/all-books-cafes',
+    /** GET vibe: брони пользователя (включая историю, если сервер отдаёт её для `/all-books-member`) */
+    allBooksPath: process.env.EXPO_PUBLIC_ALL_BOOKS_PATH || '/all-books-member',
     /** Опционально: публичный URL JSON базы знаний для чата (формат как assets/knowledge.json) */
     knowledgeJsonUrl: process.env.EXPO_PUBLIC_KNOWLEDGE_JSON_URL || '',
     /** Опционально: URL формы «отзыв о работе» (экран «Клубы»). Пусто — показывается подсказка. */
     jobReviewUrl: process.env.EXPO_PUBLIC_JOB_REVIEW_URL || '',
+    /** Ollama Cloud: https://ollama.com/api — чат /api/chat, ключ в Ollama → Settings → API keys */
+    ollamaBaseUrl: process.env.EXPO_PUBLIC_OLLAMA_BASE_URL || 'https://ollama.com/api',
+    ollamaModel: process.env.EXPO_PUBLIC_OLLAMA_MODEL || 'gpt-oss:120b',
+    ollamaApiKey: process.env.EXPO_PUBLIC_OLLAMA_API_KEY || '',
   },
 };

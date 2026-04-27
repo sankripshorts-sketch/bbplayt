@@ -6,6 +6,7 @@ import {
   intervalFromPcBookingFields,
   intervalsOverlap,
   intervalTouchesCalendarDay,
+  parseServerDateTimeString,
   type TimeInterval,
 } from './bookingTimeUtils';
 import { pcNamesLooselyEqual } from './pcNameMatch';
@@ -16,6 +17,42 @@ export function hasAnyMemberBookingRows(data: AllBooksData | undefined): boolean
   for (const v of Object.values(data)) {
     const rows = Array.isArray(v) ? v : v ? [v as MemberBookingRow] : [];
     if (rows.length > 0) return true;
+  }
+  return false;
+}
+
+/** Сколько строк брони во всех клубах (для бейджа «Мои брони»). */
+export function countTotalMemberBookingsInData(data: AllBooksData | undefined): number {
+  if (!data) return 0;
+  let n = 0;
+  for (const v of Object.values(data)) {
+    const rows = Array.isArray(v) ? v : v ? [v as MemberBookingRow] : [];
+    n += rows.length;
+  }
+  return n;
+}
+
+/**
+ * Считаем бронь «в прошлом» по интервалу; если не разобрали — по сырому `to` или `from`+`product_mins`
+ * (часть старых/усечённых ответов all-books не даёт пары from/to для {@link intervalFromMemberRow}).
+ */
+export function isMemberBookingRowInPast(
+  row: MemberBookingRow,
+  nowMs: number = nowForBookingCompareMs(),
+): boolean {
+  const s = bookingRowLifecycleStatus(row, nowMs);
+  if (s === 'upcoming' || s === 'active') return false;
+  if (s === 'ended') return true;
+  const toRaw = row.product_available_date_local_to?.trim() ?? '';
+  if (toRaw) {
+    const end = parseServerDateTimeString(toRaw);
+    if (end && nowMs >= end.getTime()) return true;
+  }
+  const fromRaw = row.product_available_date_local_from?.trim() ?? '';
+  const start = parseServerDateTimeString(fromRaw);
+  const mins = row.product_mins;
+  if (start && Number.isFinite(mins) && mins > 0) {
+    return nowMs >= start.getTime() + mins * 60 * 1000;
   }
   return false;
 }
@@ -337,11 +374,22 @@ export function getBannerBookingSections(
   return { today, otherUpcoming };
 }
 
+export type SortMemberBookingsOptions = {
+  /**
+   * Для «идёт/предстоит» — по времени слота брони, не по дате создания записи.
+   * `newestFirst` — сначала более поздний слот (по `start` интервала).
+   * `chronological` — раньше по календарю/часу (как в списке загрузки ПК/занятости).
+   */
+  nonEndedSlotOrder?: 'chronological' | 'newestFirst';
+};
+
 export function sortMemberBookingRows(
   rows: MemberBookingRow[],
   nowMs: number = nowForBookingCompareMs(),
+  options?: SortMemberBookingsOptions,
 ): MemberBookingRow[] {
   const now = nowMs;
+  const nonEndedSlotOrder = options?.nonEndedSlotOrder ?? 'chronological';
   const rank = (s: BookingLifecycle | null) =>
     s === 'active' ? 0 : s === 'upcoming' ? 1 : s === 'ended' ? 2 : 3;
   return [...rows].sort((a, b) => {
@@ -353,6 +401,9 @@ export function sortMemberBookingRows(
     const ib = intervalFromMemberRow(b);
     if (sa === 'ended' && sb === 'ended')
       return (ib?.end.getTime() ?? 0) - (ia?.end.getTime() ?? 0);
+    if (nonEndedSlotOrder === 'newestFirst') {
+      return (ib?.start.getTime() ?? 0) - (ia?.start.getTime() ?? 0);
+    }
     return (ia?.start.getTime() ?? 0) - (ib?.start.getTime() ?? 0);
   });
 }

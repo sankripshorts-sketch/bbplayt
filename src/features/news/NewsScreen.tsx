@@ -1,4 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { cafesApi } from '../../api/endpoints';
+import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import {
@@ -15,13 +17,22 @@ import {
 } from 'react-native';
 import { Text } from '../../components/DinText';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { TabSettingsButton } from '../../components/TabSettingsButton';
+import {
+  DEFAULT_CITY_ID,
+  getCityDefinition,
+  vkCommunityTitleForCity,
+  vkGroupIdForCityId,
+} from '../../config/citiesCatalog';
+import type { CafeItem } from '../../api/types';
 import { getVkCommunityAvatarUri, getVkWallPostMobileUrl } from '../../config/vkNewsConfig';
+import { loadAppPreferences } from '../../preferences/appPreferences';
+import { resolveEffectiveCityId } from '../../preferences/effectiveCity';
 import { useLocale } from '../../i18n/LocaleContext';
 import type { ColorPalette } from '../../theme/palettes';
 import { useThemeColors } from '../../theme';
 import { queryKeys } from '../../query/queryKeys';
 import { TodaysBookingBanner } from '../booking/TodaysBookingBanner';
+import { ClubDataLoader } from '../ui/ClubDataLoader';
 import { fetchVkWallVideoPage } from './fetchVkWallVideoPosts';
 import type { VkWallFetchResult } from './fetchVkWallVideoPosts';
 import { VkVideoEmbedModal } from './VkVideoEmbedModal';
@@ -60,8 +71,10 @@ function mergeTailPosts(prev: VkWallPost[], more: VkWallPost[]): VkWallPost[] {
   return merged;
 }
 
-/** Интервал появления следующей карточки (первая показывается сразу). */
+/** Интервал появления следующей карточки в первой порции (первая — сразу). */
 const POST_REVEAL_STAGGER_MS = 110;
+/** Сначала показываем столько постов; дальше — из уже загруженной первой страницы или сеть при догрузке. */
+const HEAD_BATCH = 10;
 
 export function NewsScreen() {
   const colors = useThemeColors();
@@ -69,17 +82,14 @@ export function NewsScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const qc = useQueryClient();
 
-  const vkFirst = useQuery({
-    queryKey: queryKeys.vkWallFirstPage(),
-    queryFn: () => fetchVkWallVideoPage(0),
-    /** Лента не «протухает» при переключении вкладок — показываем кэш, обновление только вручную. */
-    staleTime: Infinity,
-    gcTime: 24 * 60 * 60 * 1000,
-    retry: 1,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+  const cafesQ = useQuery({
+    queryKey: queryKeys.cafes(),
+    queryFn: () => cafesApi.list(),
+    staleTime: 10 * 60 * 1000,
   });
+
+  const [newsCityId, setNewsCityId] = useState(DEFAULT_CITY_ID);
+  const newsVkGroupId = useMemo(() => vkGroupIdForCityId(newsCityId), [newsCityId]);
 
   const [tailPosts, setTailPosts] = useState<VkWallPost[]>([]);
   const [nextOffset, setNextOffset] = useState<number | null>(null);
@@ -88,18 +98,69 @@ export function NewsScreen() {
   const [videoEmbedUri, setVideoEmbedUri] = useState<string | null>(null);
   const [videoTitle, setVideoTitle] = useState('');
   const [likedKeys, setLikedKeys] = useState<Set<string>>(() => new Set());
+  const [windowEnd, setWindowEnd] = useState(0);
+  const [paintCount, setPaintCount] = useState(0);
 
   const loadingMoreRef = useRef(false);
 
-  const avatarSource = useMemo<ImageSourcePropType>(() => {
-    const uri = getVkCommunityAvatarUri();
-    return uri ? { uri } : DEFAULT_NEWS_AVATAR;
-  }, []);
+  const reloadNewsCity = useCallback(() => {
+    void loadAppPreferences().then((p) => {
+      const cafes = cafesQ.data ?? qc.getQueryData<CafeItem[]>(queryKeys.cafes());
+      setNewsCityId(resolveEffectiveCityId(p, cafes));
+    });
+  }, [cafesQ.data, qc]);
 
-  const communityTitle = useMemo(
-    () => process.env.EXPO_PUBLIC_VK_GROUP_TITLE?.trim() || t('news.communityName'),
-    [t],
+  useFocusEffect(
+    useCallback(() => {
+      reloadNewsCity();
+    }, [reloadNewsCity]),
   );
+
+  /** Подгруженные клубы участвуют в «авто»-городе; без пересчёта лента могла остаться на дефолте до фокуса. */
+  useEffect(() => {
+    reloadNewsCity();
+  }, [reloadNewsCity]);
+
+  useEffect(() => {
+    setTailPosts([]);
+    setNextOffset(null);
+    setWindowEnd(0);
+    setPaintCount(0);
+  }, [newsVkGroupId]);
+
+  const vkFirst = useQuery({
+    queryKey: queryKeys.vkWallFirstPage(newsVkGroupId),
+    queryFn: () => fetchVkWallVideoPage(0, { vkGroupId: newsVkGroupId }),
+    /** Лента не «протухает» при переключении вкладок — показываем кэш, обновление только вручную. */
+    staleTime: Infinity,
+    gcTime: 24 * 60 * 60 * 1000,
+    retry: 1,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
+  const vkFeedCache = useQuery({
+    queryKey: queryKeys.vkWallFeed(newsVkGroupId),
+    queryFn: async () => ({ posts: [], nextOffset: null, communityAvatarUrl: null } as VkWallFetchResult),
+    enabled: false,
+    staleTime: Infinity,
+    gcTime: 24 * 60 * 60 * 1000,
+  });
+
+  const cityCatalogAvatar = useMemo(() => getCityDefinition(newsCityId)?.vkGroupAvatarUrl ?? null, [newsCityId]);
+
+  const avatarSource = useMemo<ImageSourcePropType>(() => {
+    const uri = getVkCommunityAvatarUri() ?? vkFirst.data?.communityAvatarUrl ?? cityCatalogAvatar;
+    return uri ? { uri } : DEFAULT_NEWS_AVATAR;
+  }, [cityCatalogAvatar, vkFirst.data?.communityAvatarUrl]);
+
+  const communityTitle = useMemo(() => {
+    const envTitle = process.env.EXPO_PUBLIC_VK_GROUP_TITLE?.trim();
+    if (envTitle) return envTitle;
+    const byCity = vkCommunityTitleForCity(newsCityId, locale === 'en' ? 'en' : 'ru');
+    if (byCity) return byCity;
+    return t('news.communityName');
+  }, [newsCityId, locale, t]);
 
   useEffect(() => {
     void getLikedPostKeys().then(setLikedKeys);
@@ -123,39 +184,42 @@ export function NewsScreen() {
     return mergeTailPosts(head, tailPosts);
   }, [vkFirst.data?.posts, tailPosts]);
 
-  /** Смена «первой страницы» из react-query — сбрасываем пошаговое появление. */
+  /** Смена «первой страницы» из react-query — сбрасываем окно и пошаговое появление первой порции. */
   const feedHeadSignature = useMemo(
     () => `${vkFirst.dataUpdatedAt ?? 0}-${vkFirst.data?.posts?.[0]?.key ?? 'none'}`,
     [vkFirst.data?.posts, vkFirst.dataUpdatedAt],
   );
 
-  const [visiblePostCount, setVisiblePostCount] = useState(0);
-  const prevHeadSigRef = useRef<string | null>(null);
-
   useEffect(() => {
-    if (prevHeadSigRef.current !== null && prevHeadSigRef.current !== feedHeadSignature) {
-      setVisiblePostCount(0);
-    }
-    prevHeadSigRef.current = feedHeadSignature;
+    setWindowEnd(Math.min(HEAD_BATCH, posts.length));
+    setPaintCount(0);
   }, [feedHeadSignature]);
 
+  /** Пошагово раскрываем только первые до HEAD_BATCH карточек; остальное в окне — сразу. */
   useEffect(() => {
+    const staggerTarget = Math.min(HEAD_BATCH, windowEnd, posts.length);
     if (posts.length === 0) {
-      setVisiblePostCount(0);
+      setPaintCount(0);
       return;
     }
-    if (visiblePostCount >= posts.length) return;
-    const delay = visiblePostCount === 0 ? 0 : POST_REVEAL_STAGGER_MS;
+    if (paintCount >= staggerTarget) return;
+    const delay = paintCount === 0 ? 0 : POST_REVEAL_STAGGER_MS;
     const id = setTimeout(() => {
-      setVisiblePostCount((c) => Math.min(c + 1, posts.length));
+      setPaintCount((c) => Math.min(c + 1, staggerTarget));
     }, delay);
     return () => clearTimeout(id);
-  }, [posts.length, visiblePostCount]);
+  }, [feedHeadSignature, paintCount, posts.length, windowEnd]);
 
-  const displayedPosts = useMemo(
-    () => posts.slice(0, visiblePostCount),
-    [posts, visiblePostCount],
-  );
+  const displayedPosts = useMemo(() => {
+    if (posts.length === 0) return [];
+    const firstCap = Math.min(HEAD_BATCH, windowEnd);
+    const staggerTarget = Math.min(firstCap, posts.length);
+    const nStaggered = Math.min(paintCount, staggerTarget);
+    const staggered = posts.slice(0, nStaggered);
+    const rest =
+      firstCap < windowEnd ? posts.slice(firstCap, Math.min(windowEnd, posts.length)) : [];
+    return [...staggered, ...rest];
+  }, [paintCount, posts, windowEnd]);
 
   useEffect(() => {
     if (!vkFirst.data) return;
@@ -164,19 +228,26 @@ export function NewsScreen() {
     }
   }, [vkFirst.data, tailPosts.length]);
 
+  useEffect(() => {
+    if (!vkFeedCache.data) return;
+    setTailPosts(vkFeedCache.data.posts);
+    setNextOffset(vkFeedCache.data.nextOffset);
+  }, [vkFeedCache.data]);
+
   const loadingFirst = vkFirst.isPending && !vkFirst.data;
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     loadingMoreRef.current = false;
     try {
-      const fresh = await fetchVkWallVideoPage(0);
+      const fresh = await fetchVkWallVideoPage(0, { vkGroupId: newsVkGroupId });
       const head = vkFirst.data?.posts ?? [];
       const currentPosts = mergeTailPosts(head, tailPosts);
       const currentKeys = new Set(currentPosts.map((p) => p.key));
       const hasNew = fresh.posts.some((p) => !currentKeys.has(p.key));
       if (hasNew) {
-        qc.setQueryData<VkWallFetchResult>(queryKeys.vkWallFirstPage(), fresh);
+        qc.setQueryData<VkWallFetchResult>(queryKeys.vkWallFirstPage(newsVkGroupId), fresh);
+        qc.setQueryData<VkWallFetchResult>(queryKeys.vkWallFeed(newsVkGroupId), fresh);
         setTailPosts([]);
         setNextOffset(fresh.nextOffset);
       }
@@ -185,28 +256,40 @@ export function NewsScreen() {
     } finally {
       setRefreshing(false);
     }
-  }, [qc, tailPosts, vkFirst.data?.posts]);
+  }, [qc, newsVkGroupId, tailPosts, vkFirst.data?.posts]);
 
   const onRetry = useCallback(() => {
     void vkFirst.refetch();
   }, [vkFirst]);
 
   const onEndReached = useCallback(() => {
-    if (
-      loadingFirst ||
-      refreshing ||
-      nextOffset === null ||
-      loadingMoreRef.current ||
-      visiblePostCount < posts.length
-    ) {
+    if (loadingFirst || refreshing || loadingMoreRef.current) return;
+
+    if (windowEnd < posts.length) {
+      setWindowEnd((w) => Math.min(w + HEAD_BATCH, posts.length));
       return;
     }
+
+    if (nextOffset === null) return;
+
     loadingMoreRef.current = true;
     setLoadingMore(true);
     const off = nextOffset;
-    void fetchVkWallVideoPage(off)
+    void fetchVkWallVideoPage(off, { vkGroupId: newsVkGroupId })
       .then((res) => {
-        setTailPosts((prev) => mergeTailPosts(prev, res.posts));
+        setTailPosts((prev) => {
+          const merged = mergeTailPosts(prev, res.posts);
+          const head = vkFirst.data?.posts ?? [];
+          const av =
+            qc.getQueryData<VkWallFetchResult>(queryKeys.vkWallFirstPage(newsVkGroupId))?.communityAvatarUrl ??
+            null;
+          qc.setQueryData<VkWallFetchResult>(queryKeys.vkWallFeed(newsVkGroupId), {
+            posts: mergeTailPosts(head, merged),
+            nextOffset: res.nextOffset,
+            communityAvatarUrl: av,
+          });
+          return merged;
+        });
         setNextOffset(res.nextOffset);
       })
       .catch(() => {
@@ -216,7 +299,7 @@ export function NewsScreen() {
         setLoadingMore(false);
         loadingMoreRef.current = false;
       });
-  }, [loadingFirst, nextOffset, posts.length, refreshing, visiblePostCount]);
+  }, [loadingFirst, newsVkGroupId, nextOffset, posts.length, refreshing, vkFirst.data?.posts, windowEnd]);
 
   const openPostUrl = useCallback((p: VkWallPost) => {
     void Linking.openURL(getVkWallPostMobileUrl(p.ownerId, p.postId));
@@ -254,16 +337,9 @@ export function NewsScreen() {
     () => (
       <>
         <TodaysBookingBanner />
-        <View style={styles.headerRow}>
-          <View style={styles.headerTitles}>
-            <Text style={styles.h1}>{t('news.title')}</Text>
-            <Text style={styles.sub}>{t('news.subtitle')}</Text>
-          </View>
-          <TabSettingsButton />
-        </View>
       </>
     ),
-    [styles.headerRow, styles.headerTitles, styles.h1, styles.sub, t],
+    [],
   );
 
   const renderItem = useCallback(
@@ -355,8 +431,7 @@ export function NewsScreen() {
       <SafeAreaView style={styles.root} edges={['top']}>
         {listHeader}
         <View style={styles.centerFill}>
-          <ActivityIndicator size="large" color={colors.accentBright} />
-          <Text style={styles.hint}>{t('news.scanning')}</Text>
+          <ClubDataLoader message={t('news.scanning')} />
         </View>
       </SafeAreaView>
     );
@@ -422,18 +497,6 @@ export function NewsScreen() {
 function createStyles(colors: ColorPalette) {
   return StyleSheet.create({
     root: { flex: 1, backgroundColor: colors.bg },
-    headerRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: 20,
-      paddingTop: 4,
-      marginBottom: 8,
-      gap: 12,
-    },
-    headerTitles: { flex: 1, minWidth: 0 },
-    h1: { fontSize: 26, fontWeight: '700', color: colors.text, marginBottom: 6 },
-    sub: { fontSize: 14, color: colors.muted, lineHeight: 20 },
     listContent: { paddingHorizontal: 20, paddingBottom: 24 },
     centerFill: {
       flex: 1,
@@ -442,7 +505,6 @@ function createStyles(colors: ColorPalette) {
       alignItems: 'center',
       paddingHorizontal: 20,
     },
-    hint: { marginTop: 16, color: colors.muted, textAlign: 'center' },
     err: { color: colors.danger, textAlign: 'center', marginTop: 12, lineHeight: 22 },
     retry: {
       alignSelf: 'center',
@@ -478,10 +540,11 @@ function createStyles(colors: ColorPalette) {
     postDate: { color: colors.muted, fontSize: 13, marginTop: 2 },
     preview: {
       width: '100%',
-      aspectRatio: 16 / 9,
+      height: 220,
       borderRadius: 10,
       marginBottom: 10,
       backgroundColor: colors.bg,
+      overflow: 'hidden',
     },
     postText: { color: colors.text, fontSize: 15, lineHeight: 22 },
     postTextMuted: { color: colors.muted, fontSize: 15 },

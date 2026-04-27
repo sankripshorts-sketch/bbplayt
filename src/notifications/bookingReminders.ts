@@ -86,6 +86,18 @@ export async function cancelVisitFeedbackReminderForRow(icafeId: number, row: Me
   await cancelVisitFeedbackReminderForBookingSlot({ icafeId, visitStartMs: iv.start.getTime() });
 }
 
+/**
+ * После успешной отмены брони снимаем все связанные локальные пуши:
+ * оффсеты, «выезжайте», старт и «оцените визит» для этого слота.
+ */
+export async function cancelScheduledRemindersForCancelledBooking(meta: {
+  icafeId: number;
+  visitStartMs: number;
+}): Promise<void> {
+  await cancelBookingScheduledReminders();
+  await cancelVisitFeedbackReminderForBookingSlot(meta);
+}
+
 export type BookingReminderKind =
   | 't60'
   | 't30'

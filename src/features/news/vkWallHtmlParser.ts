@@ -70,10 +70,24 @@ function stripHtml(html: string): string {
     });
 }
 
+function normalizeImageUrl(url: string | undefined): string | null {
+  if (!url) return null;
+  const trimmed = url.trim().replace(/&amp;/g, '&');
+  if (!trimmed) return null;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (trimmed.startsWith('//')) return `https:${trimmed}`;
+  if (trimmed.startsWith('/')) return `https://vk.com${trimmed}`;
+  return null;
+}
+
 function pickPreview(images: { url?: string; width?: number }[] | undefined): string | null {
   if (!images?.length) return null;
   const sorted = [...images].sort((a, b) => (b.width ?? 0) - (a.width ?? 0));
-  return sorted[0]?.url ?? null;
+  for (const img of sorted) {
+    const normalized = normalizeImageUrl(img.url);
+    if (normalized) return normalized;
+  }
+  return null;
 }
 
 type VkInner = {
@@ -231,4 +245,19 @@ export function buildVkVideoEmbedUrl(p: VkWallPostVideo): string {
   const id = p.videoId;
   const h = encodeURIComponent(p.accessKey);
   return `https://vk.com/video_ext.php?oid=${oid}&id=${id}&hash=${h}&hd=2&autoplay=1`;
+}
+
+const OWN_BLOCK_AVATAR_RE = /<img[^>]+class="ui_ownblock_img"[^>]*\s+src="(https?:\/\/[^"]+)"/i;
+const OWN_BLOCK_AVATAR_RE_SRC_FIRST = /<img[^>]+src="(https?:\/\/[^"]+)"[^>]+class="ui_ownblock_img"/i;
+
+/**
+ * Аватар сообщества в SSR desktop-страницы стены: блок «шапка» стены, класс `ui_ownblock_img`.
+ */
+export function extractCommunityAvatarFromVkWallHtml(html: string): string | null {
+  if (!html) return null;
+  const m1 = OWN_BLOCK_AVATAR_RE.exec(html);
+  if (m1?.[1]) return normalizeImageUrl(m1[1].replace(/&amp;/g, '&'));
+  const m2 = OWN_BLOCK_AVATAR_RE_SRC_FIRST.exec(html);
+  if (m2?.[1]) return normalizeImageUrl(m2[1].replace(/&amp;/g, '&'));
+  return null;
 }
